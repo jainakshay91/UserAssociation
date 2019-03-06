@@ -1,8 +1,7 @@
-# ===> This file consists of all the scenario variables
+# ========================================
+# This file defines the Scenario Variables
+# ========================================
 
-# Define the Scenario Variables
-
-test_idx = 0
 c = 3e8; # Speed of light in m/s
 simulation_area = 1e6; #The area is in square meters; The shape is also a square 
 MCBS_intersite = 200; #Intersite distance for Macro BS
@@ -24,4 +23,4 @@ mc_bw = 20*1e6; # 20 MHz bandwidth for the LTE macro cells
 N = -174; # This is the noise spectral density in dbm/Hz
 min_num_hops = 1; # If a local breakout exists
 max_num_hops = 4; # Maximum hops to the IMS core
-   
+wl_bh_bp = 0.25*MCBS_intersite; # This is the distance beyond which a wired backhaul should be used (Can be changed later to the specifications)   

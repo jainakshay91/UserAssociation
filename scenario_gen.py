@@ -52,16 +52,18 @@ def user_dump(UE_density_eMBB, UE_density_URLLC, UE_density_mMTC, MCBS_intersite
 # Generate the backhaul network
 # =============================
 
-def backhaul_dump(min_hops, max_hops, SCBS_per_MCBS, num_MCBS, assoc_mat):
+def backhaul_dump(min_hops, max_hops, SCBS_per_MCBS, num_MCBS, assoc_mat, np):
 
     # We create the backhaul matrix specifying the number of wired/wireless links and the total number of hops
 
     mat_backhaul_sc = np.zeros((sum(SCBS_per_MCBS),3)); # For the Small Cells 
-    mat_backhaul_sc[:,1] = np.random.randint(1,2,(mat_backhaul_sc.shape[0],1)); # The number of backhaul links for the small cells
-    mat_backhaul_sc[:,2] = np.random.randint(0,1,(mat_backhaul_sc.shape[0],1)); # The number of wireless backhaul links for the small cells
-    mat_backhaul_sc[:,3] = np.random.randint(min_hops,max_hops,(mat_backhaul_sc.shape[0],1)) + np.ones(mat_backhaul_sc.shape[0],1); # The total backhaul hops for small cells
-    
-    mat_backhaul_mc = np.random.randint(min_hops,max_hops,(num_MCBS,1)) - np.ones(num_MCBS,1); # The macro cells always have wired backhaul and they may have a local breakout
+
+    # Need to decide on how many backhaul links to have as well as the threshold distance at which we have a wired BH link 
+    mat_backhaul_sc[:,0] = np.random.randint(1,3,size = mat_backhaul_sc.shape[0]); # The number of backhaul links for the small cells
+    mat_backhaul_sc[:,1] = np.random.randint(0,2,size = mat_backhaul_sc.shape[0]); # The number of wireless backhaul links for the small cells
+    mat_backhaul_sc[:,2] = np.random.randint(min_hops,max_hops,size = mat_backhaul_sc.shape[0]) + np.ones(mat_backhaul_sc.shape[0],dtype = int); # The total backhaul hops for small cells
+    #print mat_backhaul_sc    
+    mat_backhaul_mc = np.random.randint(min_hops,max_hops,size = num_MCBS) - np.ones(num_MCBS,dtype = int); # The macro cells always have wired backhaul and they may have a local breakout
     
     return 0, 0, 0; # Bogus returs so far
 

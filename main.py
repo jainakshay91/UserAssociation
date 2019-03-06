@@ -44,7 +44,7 @@ for i in range(0,macro_cell_locations.shape[0]):
 # Create the AP-Backhaul association for the scenario dump
 # ========================================================
 
-var1, var2, var3 = backhaul_dump(min_hops, max_hops, SCBS_per_MCBS, macro_cell_locations.shape[0], SCBS_MCBS_assoc); # We drop the backhaul into the scenario
+var1, var2, var3 = scenario_gen.backhaul_dump(min_num_hops, max_num_hops, SCBS_per_MCBS, macro_cell_locations.shape[0], SCBS_MCBS_assoc, np); # We drop the backhaul into the scenario
 
 # ====================================
 # Dump the Users onto the scenario map 
