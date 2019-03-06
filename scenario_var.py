@@ -2,6 +2,7 @@
 
 # Define the Scenario Variables
 
+test_idx = 0
 c = 3e8; # Speed of light in m/s
 simulation_area = 1e6; #The area is in square meters; The shape is also a square 
 MCBS_intersite = 200; #Intersite distance for Macro BS
