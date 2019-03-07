@@ -93,6 +93,17 @@ def breakpt_dist (bs_ht, usr_ht, fc, dist, flag_sc, np): # Generates the breakpo
     bp_dist = 4*bs_eff*usr_eff*fc/c; # Breakpoint dist 
     return bp_dist
 
+# ===========================
+# Generic Distance Calculator
+# ===========================
+
+def dist_calc(locs_src, locs_tgt, np):
+    #print locs_src
+    #print locs_tgt
+    x_diff = locs_src[:,0] - locs_tgt[0]; # X coordinate difference
+    y_diff = locs_src[:,1] - locs_tgt[1]; # Y coordinate difference
+    return np.sqrt(np.power(x_diff,2) + np.power(y_diff,2)) # Returning the distance between two points
+
 # ===============================
 # SINR Calculator per Application
 # ===============================
