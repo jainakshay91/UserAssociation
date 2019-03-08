@@ -4,8 +4,9 @@
 # Import the necessary libraries
 # ==============================
 
-import os.path
-import dist_check
+#import os.path
+#import dist_check
+from pathloss import *
 
 # ===================================================
 # Load/Generate the Macro Cell base station locations
@@ -54,18 +55,18 @@ def user_dump(UE_density_eMBB, UE_density_URLLC, UE_density_mMTC, MCBS_intersite
 
 def backhaul_dump(min_hops, max_hops, SCBS_per_MCBS, MCBS_locs, assoc_mat, np, wl_bh_bp):
 
-    # We create the backhaul matrix specifying the number of wired/wireless links and the total number of hops
+    # We create the wired and wireless backhaul matrix (Restricting it to just one backhaul link currently)
 
-    mat_backhaul_sc = np.zeros((sum(SCBS_per_MCBS),3)); # For the Small Cells 
+    mat_wlbh_sc = (assoc_mat <= wl_bh_bp)*1; # Wireless backhaul enabled small cells
+    mat_wrdbh_sc = (assoc_mat > wl_bh_bp)*1; # Wired backhaul enabled small cells
+    MC_hops = np.random.randint(min_hops,max_hops,size = MCBS_locs.shape[0]); # The macro cells always have wired backhaul (Local breakouts can be added later)
+    SC_hops = ((assoc_mat > 0)*1)*np.transpose(MC_hops) + 1; # The number of hops for each small cells to the IMS core
 
-    for 
-    mat_backhaul_sc[:,0] = np.random.randint(1,2,size = mat_backhaul_sc.shape[0]); # The number of backhaul links for the small cells
-    mat_backhaul_sc[:,1] = np.random.randint(0,2,size = mat_backhaul_sc.shape[0]); # The number of wireless backhaul links for the small cells
-    mat_backhaul_sc[:,2] = np.random.randint(min_hops,max_hops,size = mat_backhaul_sc.shape[0]) + np.ones(mat_backhaul_sc.shape[0],dtype = int); # The total backhaul hops for small cells
-    #print mat_backhaul_sc    
-    mat_backhaul_mc = np.random.randint(min_hops,max_hops,size = MCBS_locs.shape[0]) - np.ones(MCBS_locs.shape[0],dtype = int); # The macro cells always have wired backhaul and they may have a local breakout
-    
-    return 0, 0, 0; # Bogus returs so far
+    return mat_wlbh_sc, mat_wrdbh_sc, MC_hops, SC_hops # Return the hops and wired/wireless backhaul configuration 
 
-        
+# ===============================
+# SINR Calculator per Application
+# ===============================
+
+#def sinr_gen (mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC): # Generates the SINR per application      
 
