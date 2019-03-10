@@ -104,11 +104,7 @@ def dist_calc(locs_src, locs_tgt, np):
     y_diff = locs_src[:,1] - locs_tgt[1]; # Y coordinate difference
     return np.sqrt(np.power(x_diff,2) + np.power(y_diff,2)) # Returning the distance between two points
 
-# ===============================
-# SINR Calculator per Application
-# ===============================
 
-#def sinr_gen (mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC): # Generates the SINR per application
 
 
     

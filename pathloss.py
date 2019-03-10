@@ -51,7 +51,7 @@ def pathloss_MC(usr_ht, np, dist, d3d, fc, dsc):
     # ==================================================
     # We consider a LOS scenario if the los probability is greater than 50%
     
-    bs_ht = 25; # Small cell base station height is 10m
+    bs_ht = 25; # Macro cell base station height is 25m
     if los_probability.los_prob_mc(np,dist,dsc.los_prob_var_gen(usr_ht)) >= 0.5:
         bp_dst = dsc.breakpt_dist(bs_ht, usr_ht, fc, dist, 1, np); # Breakpoint distance 
         if dist>=10 and dist<bp_dst:
