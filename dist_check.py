@@ -104,8 +104,19 @@ def dist_calc(locs_src, locs_tgt, np):
     y_diff = locs_src[:,1] - locs_tgt[1]; # Y coordinate difference
     return np.sqrt(np.power(x_diff,2) + np.power(y_diff,2)) # Returning the distance between two points
 
+# ============================
+# Matrix Array Element Locator
+# ============================
 
+def idx_mat(src_mat, idx_req, srch_type, np): # This function works as an element locator 
+    if srch_type == 'minimum':
+        sorted_mat = np.sort(src_mat,kind='mergesort'); # Sort the matrix first
 
+        # Indexing has to be improved. At present its very inefficient
+
+        idx_min_elem = np.where(src_mat == sorted_mat[:,1:idx_req]); # Find the index of the elements needed
+        return sorted_mat, idx_min_elem # Returning the sorted matrix and the index of the requested elements in the original matrix
+    # This function can be extended further for maximum or non-maximal/minimal scenarios
 
     
     

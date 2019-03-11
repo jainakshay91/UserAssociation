@@ -13,8 +13,10 @@ from pathloss import *
 # ===================================================
 
 def macro_cell(simulation_area,MCBS_intersite,np,dsc):
+    
+    # =====================================
     # We distribute the Macro BSs as a grid
-#    num_macro_BS = simulation_area/MCBS_intersite; # Number of BSs on the grid
+    
     offset = MCBS_intersite/2; # Offset param
     locs_interim = np.arange(offset, np.sqrt(simulation_area).astype(int), MCBS_intersite); # Range of numbers from 0 to the end of the grid area, with intersite distance spacing 
     print locs_interim
@@ -55,6 +57,7 @@ def user_dump(UE_density_eMBB, UE_density_URLLC, UE_density_mMTC, MCBS_intersite
 
 def backhaul_dump(min_hops, max_hops, SCBS_per_MCBS, MCBS_locs, assoc_mat, np, wl_bh_bp):
 
+    # =====================================================================================================
     # We create the wired and wireless backhaul matrix (Restricting it to just one backhaul link currently)
 
     mat_wlbh_sc = (assoc_mat <= wl_bh_bp)*1; # Wireless backhaul enabled small cells
@@ -68,14 +71,29 @@ def backhaul_dump(min_hops, max_hops, SCBS_per_MCBS, MCBS_locs, assoc_mat, np, w
 # SINR Calculator per Application
 # ===============================
 
-def sinr_gen (mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC, dsc): # Generates the SINR per application      
+def sinr_gen (PTX, G_mc, G_sc, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC, dsc): # Generates the SINR per application      
     
-    # First the distances to the serving and interfering base stations is calculated
+    # ======================================================
+    # First the distances to the base stations is calculated
 
     for i in range(0,mc_locs.shape[0]): # Distance to all MC cells
-        dist_serv_cell_eMBB[:,i] = np.sort(dsc.dist_calc(usr_locs_eMBB, mc_locs[i], np),type = 'mergesort'); # Calculate the distance of each eMBB application location with each MC and sort them
-        dist_serv_cell_URLLC[:,i] = np.sort(dsc.dist_calc(usr_locs_URLLC, mc_locs[i], np),type = 'mergesort'); # Calculate the distance of each URLLC application location with each MC and sort them
-        dist_serv_cell_mMTC[:,i] = np.sort(dsc.dist_calc(usr_locs_mMTC, mc_locs[i], np), type = 'mergesort'); # Calculate the distance of each mMTC application location with each MC and sort them
+        dist_serv_cell_eMBB[:,i] = dsc.dist_calc(usr_locs_eMBB, mc_locs[i], np); # Calculate the distance of each eMBB application location with each MC and sort them
+        dist_serv_cell_URLLC[:,i] = dsc.dist_calc(usr_locs_URLLC, mc_locs[i], np); # Calculate the distance of each URLLC application location with each MC and sort them
+        dist_serv_cell_mMTC[:,i] = dsc.dist_calc(usr_locs_mMTC, mc_locs[i], np); # Calculate the distance of each mMTC application location with each MC and sort them
     
-    # For small cells we consider only the 4 closest Macro Cell domains
-    sc_domain = 
+    for i in range(0,sc_locs.shape[0]): # Distance to all small cells
+        dist_serv_sc_eMBB[:,i] = dsc.dist_calc(usr_locs_eMBB, sc_locs[i], np); # Distance of each eMBB application location with each SC
+        dist_serv_sc_URLLC[:,i] = dsc.dist_calc(usr_locs_URLLC, sc_locs[i], np); # Distance of each URLLC application location with each SC
+        dist_serv_sc_mMTC[:,i] = dsc.dist_calc(usr_locs_mMTC, sc_locs[i], np); # Distance of each mMTC application location with each SC
+
+    # =============================================================
+    # We now limit the number of MC and SC for the SINR calculation
+
+    num_MCBS_SINR_eMBB = 4; # We choose the 4 closest MCs for the SINR calculation 
+    sorted_MCBS_eMBB_mat, idx_MCBS_SINR_eMBB = dsc.idx_mat(dist_serv_cell_eMBB, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
+    
+    
+
+
+
+
