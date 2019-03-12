@@ -3,6 +3,10 @@
 # ========================================
 
 c = 3e8; # Speed of light in m/s
+fc_mc = 3.5e9; # Carrier frequency of the MC
+fc_sc = 27e9; # Carrier frequency of the SC
+fc_bh_sc = 73e9; # Carrier frequency for the wireless BH in SC
+usr_ht = 1.5; # User height
 simulation_area = 1e6; #The area is in square meters; The shape is also a square 
 MCBS_intersite = 200; #Intersite distance for Macro BS
 SCBS_intersite = 20; #Intersite distance for Small cell BS

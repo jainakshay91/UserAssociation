@@ -71,28 +71,34 @@ def backhaul_dump(min_hops, max_hops, SCBS_per_MCBS, MCBS_locs, assoc_mat, np, w
 # SINR Calculator per Application
 # ===============================
 
-def sinr_gen (PTX, G_mc, G_sc, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC, dsc): # Generates the SINR per application      
+def sinr_gen (PTX, G_mc, G_sc, fc_mc, fc_sc, fc_bh_sc, usr_ht, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC, dsc): # Generates the SINR per application      
     
     # ======================================================
     # First the distances to the base stations is calculated
 
     for i in range(0,mc_locs.shape[0]): # Distance to all MC cells
-        dist_serv_cell_eMBB[:,i] = dsc.dist_calc(usr_locs_eMBB, mc_locs[i], np); # Calculate the distance of each eMBB application location with each MC and sort them
-        dist_serv_cell_URLLC[:,i] = dsc.dist_calc(usr_locs_URLLC, mc_locs[i], np); # Calculate the distance of each URLLC application location with each MC and sort them
-        dist_serv_cell_mMTC[:,i] = dsc.dist_calc(usr_locs_mMTC, mc_locs[i], np); # Calculate the distance of each mMTC application location with each MC and sort them
+        dist_serv_cell_eMBB[:,i] = dsc.dist_calc(usr_locs_eMBB, mc_locs[i], 0, 0, np); # Calculate the distance of each eMBB application location with each MC and sort them
+        dist_serv_cell_URLLC[:,i] = dsc.dist_calc(usr_locs_URLLC, mc_locs[i], 0, 0, np); # Calculate the distance of each URLLC application location with each MC and sort them
+        dist_serv_cell_mMTC[:,i] = dsc.dist_calc(usr_locs_mMTC, mc_locs[i], 0, 0, np); # Calculate the distance of each mMTC application location with each MC and sort them
     
     for i in range(0,sc_locs.shape[0]): # Distance to all small cells
-        dist_serv_sc_eMBB[:,i] = dsc.dist_calc(usr_locs_eMBB, sc_locs[i], np); # Distance of each eMBB application location with each SC
-        dist_serv_sc_URLLC[:,i] = dsc.dist_calc(usr_locs_URLLC, sc_locs[i], np); # Distance of each URLLC application location with each SC
-        dist_serv_sc_mMTC[:,i] = dsc.dist_calc(usr_locs_mMTC, sc_locs[i], np); # Distance of each mMTC application location with each SC
+        dist_serv_sc_eMBB[:,i] = dsc.dist_calc(usr_locs_eMBB, sc_locs[i], 0, 0, np); # Distance of each eMBB application location with each SC
+        dist_serv_sc_URLLC[:,i] = dsc.dist_calc(usr_locs_URLLC, sc_locs[i], 0, 0, np); # Distance of each URLLC application location with each SC
+        dist_serv_sc_mMTC[:,i] = dsc.dist_calc(usr_locs_mMTC, sc_locs[i], 0, 0, np); # Distance of each mMTC application location with each SC
 
     # =============================================================
     # We now limit the number of MC and SC for the SINR calculation
 
+    
+    # ==> eMBB users
+
     num_MCBS_SINR_eMBB = 4; # We choose the 4 closest MCs for the SINR calculation 
+    dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
     sorted_MCBS_eMBB_mat, idx_MCBS_SINR_eMBB = dsc.idx_mat(dist_serv_cell_eMBB, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
-    
-    
+    sorted_SCBS_eMBB_mat, idx_SCBS_SINR_eMBB = dsc.idx_mat(dist_serv_sc_eMBB, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
+
+
+
 
 
 
