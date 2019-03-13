@@ -71,10 +71,8 @@ def los_prob_var_gen(h): # Generates the variables needed for the los probabilit
 # Breakpoint distance calculator
 # ==============================
 
-def breakpt_dist (bs_ht, usr_ht, fc, dist, flag_sc, np): # Generates the breakpoint distance parameter
+def breakpt_dist (scn, dist, flag_sc, np): # Generates the breakpoint distance parameter
     # We first initiate some local parameters to calculate the breakpoint distance
-    c = 3e8; # This is the speed of light 
-
     # Calculating the effective environmental height
     if flag_sc: # This is for small cells
         eff_ht = 1; # Effective environment height 

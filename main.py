@@ -9,13 +9,19 @@ import matplotlib.pyplot as plt
 import scenario_gen
 import dist_check as dsc 
 # from gurobipy import *
-from scenario_var import *
+from scenario_var import scenario_var 
+
+
+# ==============================
+# Initialize the class variables
+# ==============================
+scn = scenario_var(); # Getting the class object
 
 # ====================
 # Macro cell placement 
 # ====================
 
-macro_cell_locations = scenario_gen.macro_cell(simulation_area, MCBS_intersite, np,dsc); # Get the macro cell locations
+macro_cell_locations = scenario_gen.macro_cell(scn.simulation_area, scn.MCBS_intersite, np, dsc); # Get the macro cell locations
 
 #print macro_cell_locations
 #print "===================
@@ -31,9 +37,9 @@ locs_SCBS = []; # We create an empty list of numpy arrays
 l_idx = 0; # lower index for the association matrix 
 u_idx = SCBS_per_MCBS[0]; # upper index for the association matrix
 for i in range(0,macro_cell_locations.shape[0]):
-    small_cell_locations = scenario_gen.small_cell(i, macro_cell_locations, SCBS_intersite, SCBS_per_MCBS[i], MCBS_intersite, np, dsc); #Get the small cell locations for each macro cell domain 
+    small_cell_locations = scenario_gen.small_cell(i, macro_cell_locations, scn.SCBS_intersite, SCBS_per_MCBS[i], scn.MCBS_intersite, np, dsc); #Get the small cell locations for each macro cell domain 
     locs_SCBS.append(small_cell_locations); # Store the small cell locations in the list of numpy arrays
-    SCBS_MCBS_assoc[l_idx:u_idx,i] = dsc.dist_calc(small_cell_locations,macro_cell_locations[i],np); # Insert ones in these indexes for the association matrix
+    SCBS_MCBS_assoc[l_idx:u_idx,i] = dsc.dist_calc(small_cell_locations,macro_cell_locations[i], 0, 0, '2d', np); # Insert ones in these indexes for the association matrix
     #print SCBS_MCBS_assoc[l_idx:u_idx,i]
     l_idx = l_idx + SCBS_per_MCBS[i]; # Update the lower index 
     if i < (macro_cell_locations.shape[0]-1):
@@ -46,16 +52,20 @@ for i in range(0,macro_cell_locations.shape[0]):
 # Create the AP-Backhaul association for the scenario dump
 # ========================================================
 
-SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops = scenario_gen.backhaul_dump(min_num_hops, max_num_hops, SCBS_per_MCBS, macro_cell_locations, SCBS_MCBS_assoc, np, wl_bh_bp); # We drop the backhaul into the scenario
+SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops = scenario_gen.backhaul_dump(scn, SCBS_per_MCBS, macro_cell_locations, SCBS_MCBS_assoc, np); # We drop the backhaul into the scenario
 
 # ====================================
 # Dump the Users onto the scenario map 
 # ====================================
 
-usr_loc_eMBB, usr_loc_URLLC, usr_loc_mMTC = scenario_gen.user_dump(UE_density_eMBB, UE_density_URLLC, UE_density_mMTC, MCBS_intersite, SCBS_per_MCBS, macro_cell_locations.shape[0], simulation_area,np); 
+usr_loc_eMBB, usr_loc_URLLC, usr_loc_mMTC = scenario_gen.user_dump(scn, SCBS_per_MCBS, macro_cell_locations.shape[0], np); 
 
 
+# ======================================
+# Generate the SINR values for the users
+# ======================================
 
+sinr_sc_embb = scenario_gen.sinr_gen (scn, macro_cell_locations, locs_SCBS, usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC, dsc, np)
 # Plots
 
 #plt.plot(macro_cell_locations[:,0], macro_cell_locations[:,1],'rs'); # Plot the macro cells
