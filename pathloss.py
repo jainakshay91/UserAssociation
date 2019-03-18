@@ -4,7 +4,7 @@
 
 #from dsc import breakpt_dist
 #from dsc import los_prob_var_gen
-from los_probability import *
+import los_probability
 
 # ============================================
 # Small Cell Pathloss 
@@ -19,11 +19,11 @@ def pathloss_SC(scn, dist, np, d3d, dsc):
     if los_probability.los_prob_sc(np,dist) >= 0.5:
         bp_dst = dsc.breakpt_dist(scn, dist, 1, np); # Breakpoint distance 
         if dist>=10 and dist<bp_dst:
-            pathloss_sc = 32.4 + 21*np.log10(d3d)+20*np.log10(scn.fc); 
+            pathloss_sc = 32.4 + 21*np.log10(d3d)+20*np.log10(scn.fc_sc); 
         elif dist >= bp_dst and dist <= 5000:
-            pathloss_sc = 32.4 + 40*np.log10(d3d) + 20*np.log10(scn.fc) -9.5*np.log10((bp_dst)**2 + (scn.bs_ht - scn.usr_ht)**2)
+            pathloss_sc = 32.4 + 40*np.log10(d3d) + 20*np.log10(scn.fc_sc) -9.5*np.log10((bp_dst)**2 + (scn.bs_ht_sc - scn.usr_ht)**2)
         shadowing = np.random.normal(0,4); # We introduce shadowing
-        return (pathoss_sc+shadowing) # We return the total large scale fading
+        return (pathloss_sc+shadowing) # We return the total large scale fading
 
     # ===================================================
     # We now consider the N-LOS scenario
@@ -32,10 +32,10 @@ def pathloss_SC(scn, dist, np, d3d, dsc):
         bp_dst = dsc.breakpt_dist(scn, dist, 1, np); # Breakpoint distance 
         if dist>=10 and dist<=5000:
             if dist>=10 and dist<bp_dst:
-                los_sc = 32.4 + 21*np.log10(d3d)+20*np.log10(scn.fc); 
+                los_sc = 32.4 + 21*np.log10(d3d)+20*np.log10(scn.fc_sc); 
             elif dist >= bp_dst and dist <= 5000:
-                los_sc = 32.4 + 40*np.log10(d3d) + 20*np.log10(scn.fc) -9.5*np.log10((bp_dst)**2 + (scn.bs_ht - scn.usr_ht)**2);
-            nlos_sc = 35.3*np.log10(d3d)+22.4+21.3*np.log10(scn.fc)-0.3*(scn.usr_ht-1.5);
+                los_sc = 32.4 + 40*np.log10(d3d) + 20*np.log10(scn.fc_sc) -9.5*np.log10((bp_dst)**2 + (scn.bs_ht_sc - scn.usr_ht)**2);
+            nlos_sc = 35.3*np.log10(d3d)+22.4+21.3*np.log10(scn.fc_sc)-0.3*(scn.usr_ht-1.5);
             pathloss_sc = np.maximum(los_sc,nlos_sc)      
             shadowing = np.random.normal(0,7.82); #Shadowing in NLOS scenarios
     return (pathloss_sc+shadowing)

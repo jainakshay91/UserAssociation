@@ -76,19 +76,23 @@ def breakpt_dist (scn, dist, flag_sc, np): # Generates the breakpoint distance p
     # Calculating the effective environmental height
     if flag_sc: # This is for small cells
         eff_ht = 1; # Effective environment height 
+        bs_ht = scn.bs_ht_sc; # Small cell height
+        fc = scn.fc_sc; #Small cell frequency
     else: # This is when we have an urban macro
         # We have to calculate the probability for the effective environmental height
+        bs_ht = scn.bs_ht_mc; # Macro cell height
+        fc = scn.fc_mc; # Macro cell frequency
         bp = bp_assist(); # breakpoint distance
-        prob_1m = 1/(1+bp.bp_assister(dist,usr_ht)); # Probability of effective environmental height being 1m
+        prob_1m = 1/(1+bp.bp_assister(dist,scn.usr_ht)); # Probability of effective environmental height being 1m
         if prob_1m > 0.5:
             eff_ht = 1; # Effective environment height
         else: 
-            eff_ht = 12 + ((usr_ht-1.5)-12)*np.random_integers(np.floor((usr_ht-13.5)/3.)-1)/(np.floor((usr_ht-13.5)/3.));
+            eff_ht = 12 + ((scn.usr_ht-1.5)-12)*np.random_integers(np.floor((scn.usr_ht-13.5)/3.)-1)/(np.floor((scn.usr_ht-13.5)/3.));
     
     # Final Breakpoint distance calculation
     bs_eff = bs_ht - eff_ht; 
-    usr_eff = usr_ht - eff_ht; 
-    bp_dist = 4*bs_eff*usr_eff*fc/c; # Breakpoint dist 
+    usr_eff = scn.usr_ht - eff_ht; 
+    bp_dist = 4*bs_eff*usr_eff*fc/scn.c; # Breakpoint dist 
     return bp_dist
 
 # ===========================
@@ -108,6 +112,7 @@ def dist_calc(locs_src, locs_tgt, usr_ht, bs_ht, dist_type, np):
         y_diff = locs_src[:,1] - locs_tgt[1]; # Y coordinate difference
         z_diff = bs_ht - usr_ht; # Z coordinate difference
         return np.sqrt(np.power(x_diff,2) + np.power(y_diff,2) + np.power(z_diff,2)) # Returning the 3-D distance between two points
+
 # ============================
 # Matrix Array Element Locator
 # ============================
