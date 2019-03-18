@@ -67,7 +67,6 @@ usr_loc_eMBB, usr_loc_URLLC, usr_loc_mMTC = scenario_gen.user_dump(scn, SCBS_per
 
 sinr_sc_embb, locs_sc_ret, usr_lcs = scenario_gen.pathloss_tester(scn, np, dsc); # Testing the Pathloss function implementation
 
-
 #sinr_sc_embb, locs_sc_ret, usr_lcs = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_loc_eMBB, usr_loc_URLLC, usr_loc_mMTC, dsc, np)
 
 
@@ -75,7 +74,9 @@ sinr_sc_embb, locs_sc_ret, usr_lcs = scenario_gen.pathloss_tester(scn, np, dsc);
 # Plotting and Proof Checking
 
 
-plt.plot(sinr_sc_embb, locs_sc_ret,'rs');
+plt.plot(locs_sc_ret, sinr_sc_embb, 'r-o');
+plt.xticks(np.arange(min(locs_sc_ret),max(locs_sc_ret),10));
+plt.grid(which='major',axis='both');
 #plt.plot(usr_lcs[0], usr_lcs[1],'k+');
 #plt.plot(macro_cell_locations[:,0], macro_cell_locations[:,1],'rs'); # Plot the macro cells
 #for j in range(0,macro_cell_locations.shape[0]):

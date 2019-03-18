@@ -15,6 +15,7 @@ def pathloss_SC(scn, dist, np, d3d, dsc):
     # ====================================================
     # We consider a LOS scenario if the los probability is greater than 50%
     
+    pathloss_sc = 0; # Declaring the pathloss variable
     #bs_ht = 10; # Small cell base station height is 10m
     if los_probability.los_prob_sc(np,dist) >= 0.5:
         bp_dst = dsc.breakpt_dist(scn, dist, 1, np); # Breakpoint distance 
