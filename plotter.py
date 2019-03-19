@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 # Plotter
 # =======
 
-def plotter(typ_plt, x_val, y_val, tick_space_x, tick_space_y, rtn_flag_x, rtn_angle_x, rtn_flag_y, rtn_angle_y, grid_flag, grid_type, grid_ax_type,np):
+def plotter(typ_plt, x_val, y_val, tick_space_x, tick_space_y, rtn_flag_x, rtn_angle_x, rtn_flag_y, rtn_angle_y, grid_flag, grid_type, grid_ax_type, title_flag, title_name, np):
 	if typ_plt == 'dashline':
 		plt.plot(x_val, y_val, 'r--');
 		if rtn_flag_x:
@@ -27,6 +27,8 @@ def plotter(typ_plt, x_val, y_val, tick_space_x, tick_space_y, rtn_flag_x, rtn_a
 			plt.yticks(np.arange(min(y_val),max(y_val),tick_space_y));
 		if grid_flag:
 			plt.grid(which=grid_type,axis=grid_ax_type);
+		if title_flag:
+			plt.title(title_name);
 	plt.show() 
 #plt.plot(usr_lcs[0], usr_lcs[1],'k+');
 #plt.plot(macro_cell_locations[:,0], macro_cell_locations[:,1],'rs'); # Plot the macro cells
