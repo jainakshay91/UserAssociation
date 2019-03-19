@@ -126,14 +126,17 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, us
 
     
     # ==> eMBB users
-
+    
     num_MCBS_SINR_eMBB = 4; # We choose the 4 closest MCs for the SINR calculation 
     dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
     sorted_MCBS_eMBB_mat, idx_MCBS_SINR_eMBB = dsc.idx_mat(dist_serv_cell_eMBB, num_MCBS_SINR_eMBB,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
     sorted_SCBS_eMBB_mat, idx_SCBS_SINR_eMBB = dsc.idx_mat(dist_serv_sc_eMBB, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
 
+    print sorted_SCBS_eMBB_mat.shape
     # ====================
     # Pathloss Calculation
+
+    #while i in range(0,)
 
     PL_sc = pathloss.pathloss_SC(scn, sorted_SCBS_eMBB_mat[1,1], np, dist_serv_sc_eMBB_3d[1,1], dsc); # Calculating the pathloss for Small cells
 
@@ -156,8 +159,8 @@ def pathloss_tester(scn,np,dsc): # This function helps to test the pathloss mode
     # ======================================
     # Generate the test UE and eNB locations
 
-    ue_sim_x = np.arange(15,300,1).reshape(((300-15)/1,1)); # Generates the location of a single UE along the x axis
-    ue_sim_y = np.zeros((1,ue_sim_x.shape[0]),dtype='int').reshape(((300-15)/1,1)); # The UE is moving along the x axis only
+    ue_sim_x = np.arange(10,300,1).reshape(((300-10)/1,1)); # Generates the location of a single UE along the x axis
+    ue_sim_y = np.zeros((1,ue_sim_x.shape[0]),dtype='int').reshape(((300-10)/1,1)); # The UE is moving along the x axis only
     eNB_loc =  [min(ue_sim_x),min(ue_sim_y)]; # We place the eNB at the start point of the UE trajectory
 
     # ================================
@@ -176,6 +179,7 @@ def pathloss_tester(scn,np,dsc): # This function helps to test the pathloss mode
     # ================
     # SINR Calculation
     snr_sc = 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc/10)))/(10**(scn.N/10)*scn.sc_bw*10**(-3))); # This is the SNR from one Small cell 
+    #snr_sc_1 = 10*np.log10((10**(55/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc/10)))/(10**(scn.N/10)*scn.sc_bw*10**(-3))); # This is the SNR from one Small cell 
     prx_sc_others = 0; # This is the received power from other Small cells
     sinr_sc = snr_sc - prx_sc_others; # We subtract the received power from other small cells to obtain the sinr 
     return sinr_sc, ue_sim_x, eNB_loc

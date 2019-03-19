@@ -1,5 +1,3 @@
-#!/usr/bin/env	python
-
 # ==================================================================================================================================
 # This is a function file enables the program to check if the ISD rule, according to the considered specifications, is satisfied
 # This function file also consists of a grid creator function to place the Macro BS
