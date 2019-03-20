@@ -67,10 +67,11 @@ usr_loc_eMBB, usr_loc_URLLC, usr_loc_mMTC = scenario_gen.user_dump(scn, SCBS_per
 
 #sinr_sc_embb,locs_sc_ret, usr_lcs = scenario_gen.pathloss_tester(scn, np, dsc); # Testing the Pathloss function implementation
 
-sinr_sc_embb, locs_sc_ret, usr_lcs, locator = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_loc_eMBB, usr_loc_URLLC, usr_loc_mMTC, dsc, np)
+sinr_sc_embb, locs_sc_ret, usr_lcs, idx_sc = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_loc_eMBB, usr_loc_URLLC, usr_loc_mMTC, dsc, np)
 
 
 # ===========================
 # Plotting and Proof Checking
 
 #plotter.plotter('dashline',locs_sc_ret,sinr_sc_embb,5,10,1,45,0,0,1,'major','both', 'yes', 'SNR profile of Small Cell', np)
+plotter.plotter('heatmap',sinr_sc_embb,locs_sc_ret,5,10,1,45,0,0,1,'major','both', 'yes', 'SNR profile of Small Cell', np)

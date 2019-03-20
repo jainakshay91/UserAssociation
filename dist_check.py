@@ -111,11 +111,11 @@ def dist_calc(locs_src, locs_tgt, usr_ht, bs_ht, dist_type, np):
         z_diff = bs_ht - usr_ht; # Z coordinate difference
         return np.sqrt(np.power(x_diff,2) + np.power(y_diff,2) + np.power(z_diff,2)) # Returning the 3-D distance between two points
 
-# ============================
-# Matrix Array Element Locator
-# ============================
+# =======================================
+# Matrix Array Element Locator and Sorter
+# =======================================
 
-def idx_mat(src_mat, param_val, srch_type, np): # This function works as an element locator 
+def idx_mat(src_mat, param_val, srch_type, np): # This function works as an element locator and distance based Sorter
     if srch_type == 'minimum':
         sorted_mat = np.sort(src_mat,kind='mergesort'); # Sort the matrix first
         sorted_idx = np.argsort(src_mat,kind='mergesort')[:,:param_val]; #Indices of the sorted matrix
@@ -126,10 +126,28 @@ def idx_mat(src_mat, param_val, srch_type, np): # This function works as an elem
         sorted_idx = np.nonzero(np.where(src_mat>200,0,src_mat)); # Indices of the SCs that are within 200m and can impact the UE through interference
         return np.where(sorted_mat>200,0,sorted_mat),sorted_idx # Return Sorted Matrix and the indices 
     
-    
+# ==============================
+# Interference Matrix Calculator
+# ==============================
 
+def interf(PL, scn, np): # This function returns the overall interference matrix given a Pathloss matrix
 
-    
+    interf = np.empty((PL.shape[0],PL.shape[1])); # Initialize the interference matrix
+    PR_interf = interf; # This is a temporary matrix to hold Rx Power values due to all other APs other than AP of interest
+    print PL[1,:]
+    print "Next"
+    for i in range(0, PL.shape[1]):
+        PL_temp = PL; # This is a temporary array store
+        PL_temp[:,i] = None; # So the array now has None where we have our AP of interest
+        for j in range(0, PL.shape[0]):
+            PR_interf[j,i] = np.where(PL_temp[j,i] != None, (10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL[j,i]/10)), None); # PL for interference matrix
+        for j in range(0, PL.shape[0]):
+            if PL[j,i] != None:
+                interf[j,i] = np.sum(PR_interf[j, np.where(PR_interf[j,:]!= None)], axis=1)   
+            else:
+                interf[j,i] = 0; # Interference power is 0 if the SC is not under consideration
+    print PR_interf[1,:]
+    return interf
 
     
 
