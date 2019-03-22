@@ -138,7 +138,7 @@ def interf(PL, scn, np): # This function returns the overall interference matrix
     print "Next"
     for i in range(0, PL.shape[1]):
         PL_temp = PL; # This is a temporary array store
-        PL_temp[:,i] = None; # So the array now has Nan where we have our AP of interest
+        PL_temp[:,i] = float('nan'); # So the array now has Nan where we have our AP of interest
         for j in range(0, PL.shape[0]):
             PR_interf[j,i] = np.where(np.isnan(PL_temp[j,i]), float('nan'), (10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL[j,i]/10))); # PL for interference matrix
         for j in range(0, PL.shape[0]):
