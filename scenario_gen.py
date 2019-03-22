@@ -145,7 +145,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, us
                 PL_sc[i,j] = pathloss.pathloss_SC(scn, sorted_SCBS_eMBB_mat[i][j], np, dist_serv_sc_eMBB_3d[i][j], dsc); # Calculating the pathloss for Small cells
                 #snr_sc[i][j] = scn.transmit_power + scn.transmit_gain_sc + scn.receiver_gain - PL_sc - (scn.N + 10*np.log10(scn.sc_bw)); # This is the SNR from one Small cell 
             else:
-                PL_sc[i,j] = None; # Zero for no PL calc
+                PL_sc[i,j] = None; # Nan for no PL calc
 
     # ========================
     # Interference Calculation
@@ -153,7 +153,6 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, us
     interf_sc = dsc.interf(PL_sc, scn, np); # Calulate the interference matrix
     print interf_sc[1,:]
 
-    # ================
     # SINR Calculation
 
     sinr_sc = np.empty((sorted_SCBS_eMBB_mat.shape[0],sorted_SCBS_eMBB_mat.shape[1])); # Initialize SINR array
@@ -161,8 +160,8 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, us
     
     for i in range(0,PL_sc.shape[0]):
         for j in range(0,PL_sc.shape[1]):
-                sinr_sc[i,j] = np.where(PL_sc[i,j] != None, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3))), None); # We subtract the received power from other small cells to obtain the sinr 
-        sinr_sc[i, np.where(sinr_sc[i,:] == None )] = np.amin(sinr_sc[i,:]); # Replace the None values with the minimum of that row 
+                sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
+        sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
     print sinr_sc[1,:]
     return sinr_sc, sorted_SCBS_eMBB_mat, usr_locs_eMBB, idx_SCBS_SINR_eMBB
     # The above calculation has to be optimally calculated for N users and M small cells. 
