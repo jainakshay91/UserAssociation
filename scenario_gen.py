@@ -145,13 +145,13 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, us
                 PL_sc[i,j] = pathloss.pathloss_SC(scn, sorted_SCBS_eMBB_mat[i][j], np, dist_serv_sc_eMBB_3d[i][j], dsc); # Calculating the pathloss for Small cells
                 #snr_sc[i][j] = scn.transmit_power + scn.transmit_gain_sc + scn.receiver_gain - PL_sc - (scn.N + 10*np.log10(scn.sc_bw)); # This is the SNR from one Small cell 
             else:
-                PL_sc[i,j] = None; # Nan for no PL calc
+                PL_sc[i,j] = float('nan'); # Nan for no PL calc
 
     # ========================
     # Interference Calculation
 
     interf_sc = dsc.interf(PL_sc, scn, np); # Calulate the interference matrix
-    print interf_sc[1,:]
+    #print interf_sc[1,:]
 
     # SINR Calculation
 

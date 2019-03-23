@@ -9,6 +9,7 @@
 # ======================
 
 from bp_assister import bp_assist
+import copy
 
 # ===========================
 # Inter-site distance checker
@@ -131,22 +132,25 @@ def idx_mat(src_mat, param_val, srch_type, np): # This function works as an elem
 # ==============================
 
 def interf(PL, scn, np): # This function returns the overall interference matrix given a Pathloss matrix
-
     interf = np.empty((PL.shape[0],PL.shape[1])); # Initialize the interference matrix
     PR_interf = interf; # This is a temporary matrix to hold Rx Power values due to all other APs other than AP of interest
-    print PL[1,:]
-    print "Next"
+    #print PL[1,:]
+    #print "Next"
     for i in range(0, PL.shape[1]):
-        PL_temp = PL; # This is a temporary array store
+        PL_temp = copy.copy(PL); # This is a temporary array store
         PL_temp[:,i] = float('nan'); # So the array now has Nan where we have our AP of interest
-        for j in range(0, PL.shape[0]):
-            PR_interf[j,i] = np.where(np.isnan(PL_temp[j,i]), float('nan'), (10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL[j,i]/10))); # PL for interference matrix
-        for j in range(0, PL.shape[0]):
-            if np.isnan(PL[j,i]):
-                interf[j,i] = 0; # Interference power is 0 if the SC is not under consideration
-            else:
-                interf[j,i] = np.sum(PR_interf[j, np.where(np.isnan(PR_interf[j,:]) != True)], axis=1)   
-    print PR_interf[1,:]
+        print PL_temp[1,:]
+        print "Next"
+        PR_interf = (10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_temp/10)); # Compute the received power on each UE-AP pair
+        interf[:,i] = np.sum(np.where(np.isnan(PR_interf), 0, PR_interf), axis=1); #Interference from other APs for a given UE-AP pair
+        #for j in range(0, PL.shape[0]):
+        #    PR_interf[j,:] = np.where(np.isnan(PL_temp[j,:]), float('nan'), (10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL[j,:]/10))); # PL for interference matrix
+        #for j in range(0, PL.shape[0]):
+         #   if np.isnan(PL[j,i]):
+        #        interf[j,i] = 0; # Interference power is 0 if the SC is not under consideration
+        #    else:
+        #        interf[j,i] = np.sum(PR_interf[j, np.where(np.isnan(PR_interf[j,:]) != True)], axis=1)   
+    print interf[1,:]
     return interf
 
     
