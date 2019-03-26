@@ -142,7 +142,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, us
     for i in range(0,sorted_SCBS_eMBB_mat.shape[0]):
         for j in range(0,sorted_SCBS_eMBB_mat.shape[1]):
             if sorted_SCBS_eMBB_mat[i][j] != 0:
-                PL_sc[i,j] = pathloss.pathloss_SC(scn, sorted_SCBS_eMBB_mat[i][j], np, dist_serv_sc_eMBB_3d[i][j], dsc); # Calculating the pathloss for Small cells
+                PL_sc[i,j] = pathloss.pathloss_CI(scn, sorted_SCBS_eMBB_mat[i][j], np, dist_serv_sc_eMBB_3d[i][j], dsc, 1); # Calculating the pathloss for Small cells
                 #snr_sc[i][j] = scn.transmit_power + scn.transmit_gain_sc + scn.receiver_gain - PL_sc - (scn.N + 10*np.log10(scn.sc_bw)); # This is the SNR from one Small cell 
             else:
                 PL_sc[i,j] = float('nan'); # Nan for no PL calc
@@ -156,12 +156,15 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, us
     # SINR Calculation
 
     sinr_sc = np.empty((sorted_SCBS_eMBB_mat.shape[0],sorted_SCBS_eMBB_mat.shape[1])); # Initialize SINR array
+    sinr_pad_value = -150; # This is a pad value to be padded at the end of the vectors 
     #nz_idx = np.nonzero(PL_sc); # We store the non zero indices to extract the right SINR values for each user-AP pair
     
     for i in range(0,PL_sc.shape[0]):
         for j in range(0,PL_sc.shape[1]):
-                sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
-        sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
+            sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
+        #print sinr_sc[i,:]
+        sinr_sc[i,:] = np.where(np.isnan(sinr_sc[i,:]), sinr_pad_value, sinr_sc[i,:]);
+        #sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
     print sinr_sc[1,:]
     return sinr_sc, sorted_SCBS_eMBB_mat, usr_locs_eMBB, idx_SCBS_SINR_eMBB
     # The above calculation has to be optimally calculated for N users and M small cells. 
@@ -204,4 +207,24 @@ def pathloss_tester(scn,np,dsc): # This function helps to test the pathloss mode
 # =============================
 # Backhaul Reliability Estimate
 # =============================
+
+def bh_reliability(scn, np, critical_time):
+
+    # ==============================================
+    # Establishing the Outage probability Parameters
+
+    fade_margin = [-20,-15,-10,-5,0,5]; # We randomly choose a fade margin between -20 dB and 5dB for a BH link. It indicates the ratio of sensitivity to received power in dB.  
+    fmgn_selector = np.random.randint(0,6,1); # Fade Margin value selector
+    K = 10; # We choose the rician shape parameter to be 10 based on Mona Jaber's paper 
+    f = (3e9/(38*1e9))*(73*1e9/(3*1e8)); # We compute the doppler shift at 73 GHz  due to scattering objects between T-R pair using 10 Hz from Mona Jaber's paper as a baseline
+    
+    # ==================================
+    # Compute the Expected Fade Duration
+
+    rho = 10**(fade_margin[fmgn_selector]/10); # Convert from dB to real power
+    exp_fade_dur_numr = np.array([5.0187*1e-8, 5.244*1e-7, 7.709*1e-6, 7.387*1e-4, 5.4309*1e-1, 1]); # Values from Octave for the Marcum Q Function
+    fad_dur_bess_func = np.array([1.011,1.1131,2.4421, 1.2016*1e2, 1.1286*1e8, 3.1529*1e27]); # Values from Octave for the Bessel Function 
+    exp_fade_dur_deno = np.sqrt(2*np.pi*(K+1.0))*f*rho*np.exp(-K-(K+1.0)*np.power(rho,2))*fad_dur_bess_func[fmgn_selector]; 
+    exp_fade_dur = exp_fade_dur_numr[fmgn_selector]/exp_fade_dur_deno; # Expected value of the Fade duration 
+    outage_prob = exp((-1*critical_time)/exp_fade_dur); # Given the critical time for a given application we can compute the outage probability for the BS. 
 

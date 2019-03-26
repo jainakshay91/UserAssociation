@@ -7,12 +7,48 @@
 import los_probability
 
 # ============================================
-# Small Cell Pathloss 
+# CI Model Pathloss 
 # ============================================
 
-def pathloss_SC(scn, dist, np, d3d, dsc):
+def pathloss_CI(scn, dist, np, d3d, dsc, sc_flag):
    
-    # ====================================================
+    # =====================================================
+    # We implement the NYU CI model for full distance range
+   
+    FSPL = 20*np.log10((4*np.pi*1e9*np.where(sc_flag,scn.fc_sc,scn.fc_mc))/scn.c); # Calculate the Free Space Path loss
+
+    # =====================================================================
+    # We consider a LOS scenario if the los probability is greater than 50%
+
+    if los_probability.los_prob_sc(np,dist) >= 0.5:
+    
+        n = np.where(sc_flag, 2.1, 2.0); # For LOS scenarios UMa has PLE = 2.0 and UMi at 28 and 73GHz has PLE = 2.1
+        SF_dev = np.where(sc_flag, 4.4, 2.4); # For LOS Scenarios UMa has a SF dev of 2.4 and UMi at 28 and 73 GHz has SF dev of 4.4 
+        shadowing = np.random.normal(0,SF_dev);
+        if dist < 1:
+            return (FSPL + shadowing)  # Below 1m it is PL is just FSPL in CI model
+        else: 
+            PL_CI = FSPL + 10*n*np.log10(d3d) + shadowing; # CI model Pathloss 
+            return PL_CI
+
+    else:
+        
+        n = np.where(sc_flag, 3.2, 2.9); # For LOS scenarios UMa has PLE = 2.0 and UMi at 28 and 73GHz has PLE = 2.1
+        SF_dev = np.where(sc_flag, 8.0, 5.7); # For LOS Scenarios UMa has a SF dev of 2.4 and UMi at 28 and 73 GHz has SF dev of 4.4 
+        shadowing = np.random.normal(0,SF_dev);
+        if dist < 1:
+            return (FSPL + shadowing)  # Below 1m it is PL is just FSPL in CI model
+        else: 
+            PL_CI = FSPL + 10*n*np.log10(d3d) + shadowing; # CI model Pathloss 
+            return PL_CI
+
+# ============================================
+# 3GPP Small Cell Pathloss 
+# ============================================
+
+def pathloss_SC_3GPP(scn, dist, np, d3d, dsc):
+   
+    # =====================================================================
     # We consider a LOS scenario if the los probability is greater than 50%
     
     pathloss_sc = 0; # Declaring the pathloss variable
@@ -43,11 +79,11 @@ def pathloss_SC(scn, dist, np, d3d, dsc):
 
 
 # =====================================================
-# Macro Cell Pathloss
+# 3GPP Macro Cell Pathloss
 # =====================================================
 
 
-def pathloss_MC(scn, dist, np, d3d, dsc):
+def pathloss_MC_3GPP(scn, dist, np, d3d, dsc):
 
     # ==================================================
     # We consider a LOS scenario if the los probability is greater than 50%
