@@ -4,10 +4,9 @@
 # Import the necessary libraries
 # ==============================
 
-#import os.path
 #import dist_check
 import pathloss
-
+from multiprocessing import Process
 # ===================================================
 # Load/Generate the Macro Cell base station locations
 # ===================================================
@@ -43,13 +42,32 @@ def small_cell(num, MCBS_locs, SCBS_intersite,SCBS_per_MCBS,MCBS_intersite,np,ds
 
 def user_dump(scn, SCBS_per_MCBS, num_MCBS, np):
 
-    tot_dev_eMBB = (sum(SCBS_per_MCBS)+num_MCBS)*scn.UE_density_eMBB; # Total eMBB devices in the scenario
-    tot_dev_URLLC = scn.UE_density_URLLC*scn.simulation_area; # Total URLLC devices in the scenario
-    tot_dev_mMTC = scn.UE_density_mMTC*num_MCBS; # Total mMTC devices in the scenario
-    usr_locs_eMBB = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_eMBB,2)); # We obtain a set of eMBB locations
-    usr_locs_URLLC = np.random.uniform(0,np.sqrt(scn.simulation_area),(int(tot_dev_URLLC),2)); # We obtain a set of URLLC locations
-    usr_locs_mMTC = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_mMTC,2)); # We obtain a set of mMTC locations
-    return usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC; # Return the locations of these applications/users with these applications
+    # =============================================================
+    # Compute total users and total applications in Simulation area
+
+    tot_users_scenario = np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml, dtype='int'); # Adding the users list for simulation 
+    #print tot_users_scenario
+    #tot_dev_eMBB = (sum(SCBS_per_MCBS)+num_MCBS)*scn.UE_density_eMBB; # Total eMBB devices in the scenario
+    #tot_dev_URLLC = scn.UE_density_URLLC*scn.simulation_area; # Total URLLC devices in the scenario
+    #tot_dev_mMTC = scn.UE_density_mMTC*num_MCBS; # Total mMTC devices in the scenario
+    
+    # =======================================================
+    # Generate User locations and User-App Association Matrix
+
+    usr_locs = {}; # We establish an empty dictionary
+    assoc_usapp = {}; # We establish an empty dictionary for USER and APPs association
+    attr_name_usr = 'user_locations'; # Attribute name
+    attr_name_assoc = 'user_app'; # Attribute name for the USER-APPs association matrix (eMBB)
+    for i in range(0,tot_users_scenario.shape[0]):
+        usr_locs[attr_name_usr + str(i)] = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_users_scenario[i],2)); # Generate User locations
+        assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_users_scenario[i], scn.max_num_appl_UE)); # Generate User-App Association 
+
+    return usr_locs, assoc_usapp
+    #usr_locs_eMBB = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_eMBB,2)); # We obtain a set of eMBB locations
+    #usr_locs_URLLC = np.random.uniform(0,np.sqrt(scn.simulation_area),(int(tot_dev_URLLC),2)); # We obtain a set of URLLC locations
+    #usr_locs_mMTC = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_mMTC,2)); # We obtain a set of mMTC locations
+    #return usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC; # Return the locations of these applications/users with these applications
+
 
 # =============================
 # Generate the backhaul network
@@ -71,91 +89,115 @@ def backhaul_dump(scn, SCBS_per_MCBS, MCBS_locs, assoc_mat, np):
 # SINR Calculator per Application
 # ===============================
 
-def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC, dsc, np): # Generates the SINR per application      
+def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates the SINR per application      
     
     # ======================================================
     # First the distances to the base stations is calculated
 
     # ==> We declare a set of empty arrays
-    dist_serv_cell_eMBB = np.empty([usr_locs_eMBB.shape[0],mc_locs.shape[0]]);
-    dist_serv_cell_URLLC = np.empty([usr_locs_URLLC.shape[0],mc_locs.shape[0]]);
-    dist_serv_cell_mMTC = np.empty([usr_locs_mMTC.shape[0],mc_locs.shape[0]]); 
+    dist_serv_cell = np.empty([usr_lcs.shape[0],mc_locs.shape[0]]);
 
-    dist_serv_cell_eMBB_3d = np.empty([usr_locs_eMBB.shape[0],mc_locs.shape[0]]);
-    dist_serv_cell_URLLC_3d = np.empty([usr_locs_URLLC.shape[0],mc_locs.shape[0]]);
-    dist_serv_cell_mMTC_3d = np.empty([usr_locs_mMTC.shape[0],mc_locs.shape[0]]); 
+    #dist_serv_cell_eMBB = np.empty([usr_locs_eMBB.shape[0],mc_locs.shape[0]]);
+    #dist_serv_cell_URLLC = np.empty([usr_locs_URLLC.shape[0],mc_locs.shape[0]]);
+    #dist_serv_cell_mMTC = np.empty([usr_locs_mMTC.shape[0],mc_locs.shape[0]]); 
+
+    dist_serv_cell_3d = np.empty([usr_lcs.shape[0],mc_locs.shape[0]]);
+   
+    #dist_serv_cell_eMBB_3d = np.empty([usr_locs_eMBB.shape[0],mc_locs.shape[0]]);
+    #dist_serv_cell_URLLC_3d = np.empty([usr_locs_URLLC.shape[0],mc_locs.shape[0]]);
+    #dist_serv_cell_mMTC_3d = np.empty([usr_locs_mMTC.shape[0],mc_locs.shape[0]]); 
 
     for i in range(0,mc_locs.shape[0]): # Distance to all MC cells
 
         # ==> 2D distance calculation 
-        dist_serv_cell_eMBB[:,i] = dsc.dist_calc(usr_locs_eMBB, mc_locs[i,:], 0, 0, '2d', np); # Calculate the distance of each eMBB application location with each MC and sort them
-        dist_serv_cell_URLLC[:,i] = dsc.dist_calc(usr_locs_URLLC, mc_locs[i,:], 0, 0, '2d', np); # Calculate the distance of each URLLC application location with each MC and sort them
-        dist_serv_cell_mMTC[:,i] = dsc.dist_calc(usr_locs_mMTC, mc_locs[i,:], 0, 0,'2d', np); # Calculate the distance of each mMTC application location with each MC and sort them
+        
+        dist_serv_cell[:,i] = dsc.dist_calc(usr_lcs, mc_locs[i,:], 0, 0, '2d', np); # Calculate the distance of each eMBB application location with each MC and sort them
+        
+        #dist_serv_cell_eMBB[:,i] = dsc.dist_calc(usr_locs_eMBB, mc_locs[i,:], 0, 0, '2d', np); # Calculate the distance of each eMBB application location with each MC and sort them
+        #dist_serv_cell_URLLC[:,i] = dsc.dist_calc(usr_locs_URLLC, mc_locs[i,:], 0, 0, '2d', np); # Calculate the distance of each URLLC application location with each MC and sort them
+        #dist_serv_cell_mMTC[:,i] = dsc.dist_calc(usr_locs_mMTC, mc_locs[i,:], 0, 0,'2d', np); # Calculate the distance of each mMTC application location with each MC and sort them
         
         # ==> 3D distance calculation
-        dist_serv_cell_eMBB_3d[:,i] = dsc.dist_calc(usr_locs_eMBB, mc_locs[i,:], scn.bs_ht_mc, scn.usr_ht, '3d', np); # Calculate the distance of each eMBB application location with each MC and sort them
-        dist_serv_cell_URLLC_3d[:,i] = dsc.dist_calc(usr_locs_URLLC, mc_locs[i,:], scn.bs_ht_mc, scn.usr_ht, '3d', np); # Calculate the distance of each URLLC application location with each MC and sort them
-        dist_serv_cell_mMTC_3d[:,i] = dsc.dist_calc(usr_locs_mMTC, mc_locs[i,:], scn.bs_ht_mc, scn.usr_ht,'3d', np); # Calculate the distance of each mMTC application location with each MC and sort them
+        
+        dist_serv_cell_3d[:,i] = dsc.dist_calc(usr_lcs, mc_locs[i,:], scn.bs_ht_mc, scn.usr_ht, '3d', np); # Calculate the distance of each eMBB application location with each MC and sort them
+       
+
+        #dist_serv_cell_eMBB_3d[:,i] = dsc.dist_calc(usr_locs_eMBB, mc_locs[i,:], scn.bs_ht_mc, scn.usr_ht, '3d', np); # Calculate the distance of each eMBB application location with each MC and sort them
+        #dist_serv_cell_URLLC_3d[:,i] = dsc.dist_calc(usr_locs_URLLC, mc_locs[i,:], scn.bs_ht_mc, scn.usr_ht, '3d', np); # Calculate the distance of each URLLC application location with each MC and sort them
+        #dist_serv_cell_mMTC_3d[:,i] = dsc.dist_calc(usr_locs_mMTC, mc_locs[i,:], scn.bs_ht_mc, scn.usr_ht,'3d', np); # Calculate the distance of each mMTC application location with each MC and sort them
 
 
     # ==> We declare empty arrays first
     #print sc_locs.shape
-    dist_serv_sc_eMBB = np.empty([usr_locs_eMBB.shape[0],num_SCBS]);
-    dist_serv_sc_URLLC = np.empty([usr_locs_URLLC.shape[0],num_SCBS]);
-    dist_serv_sc_mMTC = np.empty([usr_locs_mMTC.shape[0],num_SCBS]); 
+    
+    dist_serv_sc = np.empty([usr_lcs.shape[0],num_SCBS]);
+    
+    #dist_serv_sc_eMBB = np.empty([usr_locs_eMBB.shape[0],num_SCBS]);
+    #dist_serv_sc_URLLC = np.empty([usr_locs_URLLC.shape[0],num_SCBS]);
+    #dist_serv_sc_mMTC = np.empty([usr_locs_mMTC.shape[0],num_SCBS]); 
 
-    dist_serv_sc_eMBB_3d = np.empty([usr_locs_eMBB.shape[0],num_SCBS]);
-    dist_serv_sc_URLLC_3d = np.empty([usr_locs_URLLC.shape[0],num_SCBS]);
-    dist_serv_sc_mMTC_3d = np.empty([usr_locs_mMTC.shape[0],num_SCBS]); 
+    dist_serv_sc_3d = np.empty([usr_lcs.shape[0],num_SCBS]);
+    
+    #dist_serv_sc_eMBB_3d = np.empty([usr_locs_eMBB.shape[0],num_SCBS]);
+    #dist_serv_sc_URLLC_3d = np.empty([usr_locs_URLLC.shape[0],num_SCBS]);
+    #dist_serv_sc_mMTC_3d = np.empty([usr_locs_mMTC.shape[0],num_SCBS]); 
 
     for i in range(0,num_SCBS): # Distance to all small cells
        
         # ==> 2D distance calulation
-        dist_serv_sc_eMBB[:,i] = dsc.dist_calc(usr_locs_eMBB, sc_locs[i,:], 0, 0,'2d', np); # Distance of each eMBB application location with each SC
-        dist_serv_sc_URLLC[:,i] = dsc.dist_calc(usr_locs_URLLC, sc_locs[i,:], 0, 0,'2d', np); # Distance of each URLLC application location with each SC
-        dist_serv_sc_mMTC[:,i] = dsc.dist_calc(usr_locs_mMTC, sc_locs[i,:], 0, 0,'2d', np); # Distance of each mMTC application location with each SC
+        dist_serv_sc[:,i] = dsc.dist_calc(usr_lcs, sc_locs[i,:], 0, 0,'2d', np); # Distance of each eMBB application location with each SC
+        
+        #dist_serv_sc_eMBB[:,i] = dsc.dist_calc(usr_locs_eMBB, sc_locs[i,:], 0, 0,'2d', np); # Distance of each eMBB application location with each SC
+        #dist_serv_sc_URLLC[:,i] = dsc.dist_calc(usr_locs_URLLC, sc_locs[i,:], 0, 0,'2d', np); # Distance of each URLLC application location with each SC
+        #dist_serv_sc_mMTC[:,i] = dsc.dist_calc(usr_locs_mMTC, sc_locs[i,:], 0, 0,'2d', np); # Distance of each mMTC application location with each SC
 
         # ==> 3D distance calculation
-        dist_serv_sc_eMBB_3d[:,i] = dsc.dist_calc(usr_locs_eMBB, sc_locs[i,:], scn.bs_ht_sc, scn.usr_ht, '3d', np); # Calculate the distance of each eMBB application location with each MC and sort them
-        dist_serv_sc_URLLC_3d[:,i] = dsc.dist_calc(usr_locs_URLLC, sc_locs[i,:], scn.bs_ht_sc, scn.usr_ht, '3d', np); # Calculate the distance of each URLLC application location with each MC and sort them
-        dist_serv_sc_mMTC_3d[:,i] = dsc.dist_calc(usr_locs_mMTC, sc_locs[i,:], scn.bs_ht_sc, scn.usr_ht,'3d', np); # Calculate the distance of each mMTC application location with each MC and sort them
+        dist_serv_sc_3d[:,i] = dsc.dist_calc(usr_lcs, sc_locs[i,:], scn.bs_ht_sc, scn.usr_ht, '3d', np); # Calculate the distance of each eMBB application location with each MC and sort them
+        
+        #dist_serv_sc_eMBB_3d[:,i] = dsc.dist_calc(usr_locs_eMBB, sc_locs[i,:], scn.bs_ht_sc, scn.usr_ht, '3d', np); # Calculate the distance of each eMBB application location with each MC and sort them
+        #dist_serv_sc_URLLC_3d[:,i] = dsc.dist_calc(usr_locs_URLLC, sc_locs[i,:], scn.bs_ht_sc, scn.usr_ht, '3d', np); # Calculate the distance of each URLLC application location with each MC and sort them
+        #dist_serv_sc_mMTC_3d[:,i] = dsc.dist_calc(usr_locs_mMTC, sc_locs[i,:], scn.bs_ht_sc, scn.usr_ht,'3d', np); # Calculate the distance of each mMTC application location with each MC and sort them
 
-
+    print "Finished Distance calculation"
     # ======================================================
     # Limit the number of MC and SC for the SINR calculation
 
     
     # ==> eMBB users
     
-    num_MCBS_SINR_eMBB = 4; # We choose the 4 closest MCs for the SINR calculation 
+    num_MCBS_SINR = 4; # We choose the 4 closest MCs for the SINR calculation 
     dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
-    sorted_MCBS_eMBB_mat, idx_MCBS_SINR_eMBB = dsc.idx_mat(dist_serv_cell_eMBB, num_MCBS_SINR_eMBB,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
-    sorted_SCBS_eMBB_mat, idx_SCBS_SINR_eMBB = dsc.idx_mat(dist_serv_sc_eMBB, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
+    sorted_MCBS_mat, idx_MCBS_SINR = dsc.idx_mat(dist_serv_cell, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
+    sorted_SCBS_mat, idx_SCBS_SINR = dsc.idx_mat(dist_serv_sc, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
 
-    
     # ====================
     # Pathloss Calculation
 
+    print "Initiating Pathloss Calculation"
     # Note: This part can be optimized even more -- Potential Compute time reduction
 
-    PL_sc = np.empty((sorted_SCBS_eMBB_mat.shape[0],sorted_SCBS_eMBB_mat.shape[1])); # Initializing the Pathloss matrix 
-    for i in range(0,sorted_SCBS_eMBB_mat.shape[0]):
-        for j in range(0,sorted_SCBS_eMBB_mat.shape[1]):
-            if sorted_SCBS_eMBB_mat[i][j] != 0:
-                PL_sc[i,j] = pathloss.pathloss_CI(scn, sorted_SCBS_eMBB_mat[i][j], np, dist_serv_sc_eMBB_3d[i][j], dsc, 1); # Calculating the pathloss for Small cells
+    
+    PL_sc = np.empty((sorted_SCBS_mat.shape[0],sorted_SCBS_mat.shape[1])); # Initializing the Pathloss matrix 
+    for i in range(0,sorted_SCBS_mat.shape[0]):
+        for j in range(0,sorted_SCBS_mat.shape[1]):
+            if sorted_SCBS_mat[i][j] != 0:
+                PL_sc[i,j] = pathloss.pathloss_CI(scn, sorted_SCBS_mat[i][j], np, dist_serv_sc_3d[i][j], dsc, 1); # Calculating the pathloss for Small cells
                 #snr_sc[i][j] = scn.transmit_power + scn.transmit_gain_sc + scn.receiver_gain - PL_sc - (scn.N + 10*np.log10(scn.sc_bw)); # This is the SNR from one Small cell 
             else:
                 PL_sc[i,j] = float('nan'); # Nan for no PL calc
 
     # ========================
     # Interference Calculation
-
+    
+    print "Performing Interference Calculation"
     interf_sc = dsc.interf(PL_sc, scn, np); # Calulate the interference matrix
     #print interf_sc[1,:]
 
+    # ================
     # SINR Calculation
 
-    sinr_sc = np.empty((sorted_SCBS_eMBB_mat.shape[0],sorted_SCBS_eMBB_mat.shape[1])); # Initialize SINR array
+    print "Performing SINR Calculation"
+    sinr_sc = np.empty((sorted_SCBS_mat.shape[0],sorted_SCBS_mat.shape[1])); # Initialize SINR array
     sinr_pad_value = -150; # This is a pad value to be padded at the end of the vectors 
     #nz_idx = np.nonzero(PL_sc); # We store the non zero indices to extract the right SINR values for each user-AP pair
     
@@ -165,8 +207,9 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_locs_eMBB, usr_locs_URLLC, us
         #print sinr_sc[i,:]
         sinr_sc[i,:] = np.where(np.isnan(sinr_sc[i,:]), sinr_pad_value, sinr_sc[i,:]);
         #sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
-    print sinr_sc[1,:]
-    return sinr_sc, sorted_SCBS_eMBB_mat, usr_locs_eMBB, idx_SCBS_SINR_eMBB
+    #print sinr_sc[1,:]
+    print "Finished All Calculations and Returning to main Function"
+    return sinr_sc, sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR
     # The above calculation has to be optimally calculated for N users and M small cells. 
 
 

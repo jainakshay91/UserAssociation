@@ -31,3 +31,8 @@ class scenario_var:
 	min_num_hops = 1; # If a local breakout exists
 	max_num_hops = 4; # Maximum hops to the IMS core
 	wl_bh_bp = 0.25*MCBS_intersite; # This is the distance beyond which a wired backhaul should be used (Can be changed later to the specifications)   
+	num_appl_types = 3; # We current have a broad category of 3 application types
+	max_num_appl_UE = 3; # Maximum number of applications on any given UE
+	num_users_min = 5000; # Minimum number of users in the scenario
+	num_users_max = 1e6; # Maximum number of users in the scenario
+	user_steps_siml = 1e4; # For the simulation we increase users in steps of 10,000

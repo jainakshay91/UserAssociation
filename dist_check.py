@@ -123,8 +123,11 @@ def idx_mat(src_mat, param_val, srch_type, np): # This function works as an elem
         return sorted_mat,sorted_idx # Returning the sorted matrix and the index of the requested elements in the original matrix
     # This function can be extended further for maximum or non-maximal/minimal scenarios
     elif srch_type == 'distance':
+        #print src_mat[1,:]
         sorted_mat = np.sort(src_mat,kind='mergesort'); # Sort the SC distance matrix
-        sorted_idx = np.nonzero(np.where(src_mat>200,0,src_mat)); # Indices of the SCs that are within 200m and can impact the UE through interference
+        #print sorted_mat[1,:]
+        sorted_idx = np.where(sorted_mat<=200,np.argsort(src_mat,kind='mergesort'),'None'); # Indices of the SCs that are within 200m and can impact the UE through interference
+        #print sorted_idx[1]
         return np.where(sorted_mat>200,0,sorted_mat),sorted_idx # Return Sorted Matrix and the indices 
     
 # ==============================
