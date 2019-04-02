@@ -8,7 +8,6 @@ import numpy as np
 import scenario_gen
 import dist_check as dsc 
 import plotter
-# from gurobipy import *
 from scenario_var import scenario_var 
 
 

@@ -6,7 +6,7 @@
 
 #import dist_check
 import pathloss
-from multiprocessing import Process
+#from multiprocessing import Process
 # ===================================================
 # Load/Generate the Macro Cell base station locations
 # ===================================================
