@@ -36,3 +36,4 @@ class scenario_var:
 	num_users_min = 5000; # Minimum number of users in the scenario
 	num_users_max = 1e6; # Maximum number of users in the scenario
 	user_steps_siml = 1e4; # For the simulation we increase users in steps of 10,000
+	
