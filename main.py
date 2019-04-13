@@ -65,16 +65,16 @@ print "User and AP Dump completed"
 
 #sinr_sc_embb,locs_sc_ret, usr_lcs = scenario_gen.pathloss_tester(scn, np, dsc); # Testing the Pathloss function implementation
 
-sinr_sc, locs_sc_ret, usr_lcs, idx_sc = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_locs['user_locations0'], dsc, np)
+sinr_sc, locs_sc_ret, usr_lcs, idx_sc, sinr_pad = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_locs['user_locations0'], dsc, np)
 
 # ================================
 # Create Compressed Variable Files
 # ================================
 
-np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var',sinr_sc, usr_apps_assoc, usr_lcs, idx_sc); # Save these variables to be utilized by the optimizer
+np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var',sinr_sc, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad); # Save these variables to be utilized by the optimizer
 
 # ===========================
 # Plotting and Proof Checking
 
 #plotter.plotter('dashline',locs_sc_ret,sinr_sc_embb,5,10,1,45,0,0,1,'major','both', 'yes', 'SNR profile of Small Cell', np)
-#plotter.plotter('heatmap',sinr_sc_embb,locs_sc_ret,5,10,1,45,0,0,1,'major','both', 'yes', 'SNR profile of Small Cell', np)
+plotter.plotter('heatmap',sinr_sc,locs_sc_ret,5,10,1,45,0,0,1,'major','both', 'yes', 'SNR profile of Small Cell', np)

@@ -15,7 +15,7 @@ def pathloss_CI(scn, dist, np, d3d, dsc, sc_flag):
     # =====================================================
     # We implement the NYU CI model for full distance range
    
-    FSPL = 20*np.log10((4*np.pi*1e9*np.where(sc_flag,scn.fc_sc,scn.fc_mc))/scn.c); # Calculate the Free Space Path loss
+    FSPL = 20*np.log10((4*np.pi*np.where(sc_flag,scn.fc_sc,scn.fc_mc))/scn.c); # Calculate the Free Space Path loss
 
     # =====================================================================
     # We consider a LOS scenario if the los probability is greater than 50%
