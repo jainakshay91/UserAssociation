@@ -117,11 +117,14 @@ def dist_calc(locs_src, locs_tgt, usr_ht, bs_ht, dist_type, np):
 # =======================================
 
 def idx_mat(src_mat, param_val, srch_type, np): # This function works as an element locator and distance based Sorter
+   
     if srch_type == 'minimum':
-        sorted_mat = np.sort(src_mat,kind='mergesort'); # Sort the matrix first
+        sorted_mat = np.sort(src_mat,kind='mergesort')[:,:param_val]; # Sort the matrix first
         sorted_idx = np.argsort(src_mat,kind='mergesort')[:,:param_val]; #Indices of the sorted matrix
         return sorted_mat,sorted_idx # Returning the sorted matrix and the index of the requested elements in the original matrix
+   
     # This function can be extended further for maximum or non-maximal/minimal scenarios
+   
     elif srch_type == 'distance':
         #print src_mat[1,:]
         sorted_mat = np.sort(src_mat,kind='mergesort'); # Sort the SC distance matrix

@@ -18,24 +18,33 @@ print "Collecting the Stored Variables"
 
 optim_data = np.load('/home/akshayjain/Desktop/Simulation/optim_var.npz')
 sinr_APs = optim_data['arr_0']; # Load the SINR data to be used for the optimization
-user_AP_assoc = optim_data['arr_1'].item()['user_app0']; # Load the User Association data to be used for the optimization
-sinr_applications = np.empty([np.sum(user_AP_assoc),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
-sinr_pad_val = optim_data['arr_4'];
+user_AP_assoc = optim_data['arr_1'].item()['user_app0']; # Load the User-Applications Association data to be used for the optimization
+sinr_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
+sinr_pad_val = optim_data['arr_4']; # In the small cell calculation we use an sinr pad value for ease of computation
+num_scbs = optim_data['arr_5']; # Number of Small cells
+num_mcbs = optim_data['arr_6']; # Number of Macro cells
 
 print "Creating the Application to Access Point SINR association matrix"
 iter = 0; # Application number tracking
 for i in range(0,sinr_APs.shape[0]):
-	sinr_applications [iter:iter + np.sum(user_AP_assoc[i,:]), :] = np.delete(np.outer(user_AP_assoc[i,:],sinr_APs[i,:]), np.where(user_AP_assoc[i,:] == 0), 0);# Application to Base Station SINR matrix 
- 	iter = iter + np.sum(user_AP_assoc[i,:]); # Incrementing the iterator for the next user-application sets
+	sinr_eMBB [iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],sinr_APs[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
+ 	iter = iter + np.sum(user_AP_assoc[i,1]); # Incrementing the iterator for the next user-application sets
 
 
 #print sinr_applications[0]
+rate = np.empty((sinr_eMBB.shape[0], sinr_eMBB.shape[1])); # Initializing the received data rate matrix
 
-log_pow = np.where(sinr_applications == sinr_pad_val, 0, scn.sc_bw*np.log2(1 + 10**(sinr_applications/10))); # Log Power calculation part of the Shannon-Hartley theorem
-var_row_num = sinr_applications.shape[0];
+for i in range(0, sinr_eMBB.shape[1]):
+	if i <= num_scbs:
+		rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, scn.sc_bw*np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Log Power calculation part of the Shannon-Hartley theorem
+	else:
+		rate[:,i] = scn.mc_bw*np.log2(1 + 10**(sinr_eMBB[:,i]/10)); 
+
+var_row_num = sinr_eMBB.shape[0];
 var_col_num = sinr_APs.shape[1];
 
-print log_pow
+#print rate
+
 # =========
 # Optimizer
 # =========
@@ -48,19 +57,25 @@ try:
 	
 	# ===> Establish the Objective Function
 
-	obj_func = 0; # Initialize the objective function
-
+	obj_func = 0; 
+	#obj_func = LinExpr(); # Initialize the objective function
+	#obj_func.addTerms(rate,X);
 	for i in range(0,var_row_num):
 		for j in range(0, var_col_num):
-				obj_func = obj_func + X[i,j]*log_pow[i,j]; #np.where( log_pow[i,j] == 0, X[i,j]*0, X[i,j]*log_pow[i,j] ); # Objective function 
+				obj_func = obj_func + X[i,j]*rate[i,j]; #np.where( log_pow[i,j] == 0, X[i,j]*0, X[i,j]*log_pow[i,j] ); # Objective function 
 				#print obj_func
 
 	#print obj_func
+
 	# ===> Set up the Constraints
 
+	num_AP_sel = np.sum(X,axis=1); # Dual Connectivity constraint
+	print num_AP_sel.shape 
 	# print "Setting up the Constraints"
 
 	m.setObjective(obj_func, GRB.MAXIMIZE); # This is the objective function that we aim to maximize
+	#m.addConstr((num_AP_sel[i] <= 1 for i in range(num_AP_sel.shape[0])), name='c')
+
 
 	m.optimize()
 

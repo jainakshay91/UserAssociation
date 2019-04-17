@@ -169,7 +169,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
     dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
     sorted_MCBS_mat, idx_MCBS_SINR = dsc.idx_mat(dist_serv_cell, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
     sorted_SCBS_mat, idx_SCBS_SINR = dsc.idx_mat(dist_serv_sc, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
-    #print sorted_MCBS_mat
+    
     # ====================
     # Pathloss Calculation
 
@@ -190,15 +190,20 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
 
     # ==> For Macro Cell
 
-    print "Initiating Pathloss Calculation for Small Cells"
+    print "Initiating Pathloss Calculation for Macro Cells"
 
-    #PL_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initializing the Pathloss matrix
+    PL_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initializing the Pathloss matrix
+    for i in range(0, sorted_MCBS_mat.shape[0]):
+        for j in range(0, sorted_MCBS_mat.shape[1]):
+            PL_mc[i,j] = pathloss.pathloss_CI(scn, sorted_MCBS_mat[i][j], np, dist_serv_cell_3d[i][j], dsc, 0); # Calculating the pathloss for Macro cells
 
+    
     # ========================
     # Interference Calculation
     
     print "Performing Interference Calculation"
-    interf_sc = dsc.interf(PL_sc, scn, np); # Calulate the interference matrix
+    interf_sc = dsc.interf(PL_sc, scn, np); # Calculate the interference matrix for small cells
+    interf_mc = dsc.interf(PL_mc, scn, np); # Calculate the interference matrix for macro cells. MCs and SCs work on different frequency bands and hence do not interfere with each other
     #print interf_sc[1,:]
 
     # ================
@@ -212,13 +217,22 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
     
     for i in range(0,PL_sc.shape[0]):
         for j in range(0,PL_sc.shape[1]):
-            sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, (scn.transmit_power - 30 + scn.transmit_gain_sc + scn.receiver_gain - PL_sc[i,j] - 10*np.log10(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
-        #print sinr_sc[i,:] 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
+            sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
+        # print sinr_sc[i,:] 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
+        # (scn.transmit_power - 30 + scn.transmit_gain_sc + scn.receiver_gain - PL_sc[i,j] - 10*np.log10(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
         sinr_sc[i,:] = np.where(np.isnan(sinr_sc[i,:]), sinr_pad_value, sinr_sc[i,:]);
         #sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
     #print sinr_sc[1,:]
+  
+    print "Performing SINR Calculation for Macro cells"
+
+    sinr_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initialize SINR matrix
+    for i in range(0,PL_mc.shape[0]):
+        for j in range(0, PL_mc.shape[1]):
+            sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
+
     print "Finished All Calculations and Returning to main Function"
-    return sinr_sc, sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, sinr_pad_value
+    return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1]
     # The above calculation has to be optimally calculated for N users and M small cells. 
 
 
