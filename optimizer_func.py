@@ -67,15 +67,29 @@ try:
 
 	#print obj_func
 
-	# ===> Set up the Constraints
+	# ===> Set up the Dual and Single Connectivity Constraints
 
-	num_AP_sel = np.sum(X,axis=1); # Dual Connectivity constraint
-	print num_AP_sel.shape 
-	# print "Setting up the Constraints"
+	DC = m.addVars(var_row_num,1, name = "DC"); # Initializing the Constraint Variables
+	for i in range(0,var_row_num):
+		DC[i,0] = X.sum(i,'*'); # Constraint Expression
+	
+	# ===> Set up the Minimum Rate Constraint for the Applications
+
+	min_RATE = m.addVars(var_row_num, 1, name = "min_RATE"); # Initializing the Constraint variable
+	for i in range(0,var_row_num):
+		min_RATE[i,0] = LinExpr(rate[i,:],X.select(i,'*')); # Constraint expression
+
+	# ===> Set up the Maximum Bandwidth Constraint for an AP
+
+	max_BW = m.addVars(var_col_num,1, name="Max_BW"); # Initializing the Constraint Variable
+	
+
+	# ===> Solve the MILP problem 
 
 	m.setObjective(obj_func, GRB.MAXIMIZE); # This is the objective function that we aim to maximize
-	#m.addConstr((num_AP_sel[i] <= 1 for i in range(num_AP_sel.shape[0])), name='c')
-
+	#m.addConstrs((DC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
+	m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+	m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint 
 
 	m.optimize()
 
@@ -87,7 +101,8 @@ try:
 
 	for v in m.getVars():
 		X_optimal.append(v.x); 
-
+		if len(X_optimal) >= var_row_num*var_col_num:
+			break
 	plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
 	print('Obj:', m.objVal)
 

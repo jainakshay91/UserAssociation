@@ -36,4 +36,4 @@ class scenario_var:
 	num_users_min = 5000; # Minimum number of users in the scenario
 	num_users_max = 1e4; # Maximum number of users in the scenario
 	user_steps_siml = 1e6; # For the simulation we increase users in steps of 10,000
-	
+	eMBB_minrate = 1e8; # 100 mbps minimum required data rate for most eMBB applications
