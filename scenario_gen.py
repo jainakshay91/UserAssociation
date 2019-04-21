@@ -6,6 +6,7 @@
 
 #import dist_check
 import pathloss
+import copy
 #from multiprocessing import Process
 # ===================================================
 # Load/Generate the Macro Cell base station locations
@@ -78,7 +79,7 @@ def backhaul_dump(scn, SCBS_per_MCBS, MCBS_locs, assoc_mat, np):
     # =====================================================================================================
     # We create the wired and wireless backhaul matrix (Restricting it to just one backhaul link currently)
 
-    mat_wlbh_sc = (assoc_mat <= scn.wl_bh_bp)*1; # Wireless backhaul enabled small cells
+    mat_wlbh_sc = np.where(assoc_mat != 0, (assoc_mat <= scn.wl_bh_bp)*1, 0); # Wireless backhaul enabled small cells
     mat_wrdbh_sc = (assoc_mat > scn.wl_bh_bp)*1; # Wired backhaul enabled small cells
     MC_hops = np.random.randint(scn.min_num_hops, scn.max_num_hops,size = MCBS_locs.shape[0]); # The macro cells always have wired backhaul (Local breakouts can be added later)
     SC_hops = ((assoc_mat > 0)*1)*np.transpose(MC_hops) + 1; # The number of hops for each small cells to the IMS core
@@ -169,7 +170,9 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
     dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
     sorted_MCBS_mat, idx_MCBS_SINR = dsc.idx_mat(dist_serv_cell, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
     sorted_SCBS_mat, idx_SCBS_SINR = dsc.idx_mat(dist_serv_sc, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
-    
+    print idx_MCBS_SINR
+    print "============"
+    print idx_SCBS_SINR
     # ====================
     # Pathloss Calculation
 
@@ -293,4 +296,47 @@ def bh_reliability(scn, np, critical_time):
     exp_fade_dur_deno = np.sqrt(2*np.pi*(K+1.0))*f*rho*np.exp(-K-(K+1.0)*np.power(rho,2))*fad_dur_bess_func[fmgn_selector]; 
     exp_fade_dur = exp_fade_dur_numr[fmgn_selector]/exp_fade_dur_deno; # Expected value of the Fade duration 
     outage_prob = exp((-1*critical_time)/exp_fade_dur); # Given the critical time for a given application we can compute the outage probability for the BS. 
+
+# ===================
+# Backhaul Throughput
+# ===================
+
+def backhaul_tput(assoc_mat, SCBS_per_MCBS, wl_mat, np, scn, dsc):
+
+    # ==========================================================
+    # We compute the throughput for the backhaul link of each SC
+
+    PL_SC_MC = np.empty((wl_mat.shape[0],1)); # Initialize the Pathloss matrix
+    tput_SC = copy.copy(PL_SC_MC); # Initialize the Throughput matrix
+    dist_SC_MC = copy.copy(PL_SC_MC); # Initialize the 3D distance matrix
+    
+    # ===> Computing the 3D distance 
+    for k in range(0,assoc_mat.shape[0]):
+        dist_SC_MC[k] = np.sqrt(assoc_mat[k,next((i for i, x in enumerate(assoc_mat[k,:].tolist()) if x), None)]**2 + (scn.bs_ht_mc-scn.bs_ht_sc)**2); # The 3D distance from the MC for a given SC
+
+    # ===> Computing the Pathloss for the Small Cells to the Macro cells
+
+    for l in range(0, tput_SC.shape[0]):
+        if next((i for i, x in enumerate(wl_mat[l,:].tolist()) if x), None) != None:
+            #print assoc_mat[l,next((i for i, x in enumerate(assoc_mat[l,:].tolist()) if x), None)]
+            PL_SC_MC[l] = pathloss.pathloss_CI(scn, assoc_mat[l,next((i for i, x in enumerate(assoc_mat[l,:].tolist()) if x), None)], np, dist_SC_MC[l], dsc, 2); # Calculating the pathloss for Small cells to Macro Cells
+        else:
+            PL_SC_MC[l] = 0; # This is the Fiber based backhaul
+            tput_SC[l] = scn.fib_BH_capacity; # Fiber backhaul capacity
+
+    #print PL_SC_MC
+    # ===> Computing the Throughput for the Small Cells to Macro Cells
+
+    #interf_sc_mc = dsc.interf(PL_SC_MC, scn, np); # Calculate the interference matrix for small cells
+    l_idx = 0; 
+    u_idx = SCBS_per_MCBS[0];
+    #print SCBS_per_MCBS
+    for j in range(0,tput_SC.shape[0]):
+        if j < u_idx: 
+            tput_SC[j] = np.where(PL_SC_MC[j] != 0, (scn.sc_bw/SCBS_per_MCBS[l_idx])*np.log2(1+(10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.ant_gain_MCBS/10)*10**(-3))/(10**(PL_SC_MC[j]/10)))/(10**(scn.N/10)*(scn.sc_bw/SCBS_per_MCBS[l_idx])*10**(-3))), tput_SC[j]); # We subtract the received power from other small cells to obtain the sinr 
+        else:
+            l_idx = l_idx + 1; # Increment the lower index
+            u_idx = u_idx + SCBS_per_MCBS[l_idx]; # Increment the 
+            tput_SC[j] = np.where(PL_SC_MC[j] != 0, (scn.sc_bw/SCBS_per_MCBS[l_idx])*np.log2(1+(10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.ant_gain_MCBS/10)*10**(-3))/(10**(PL_SC_MC[j]/10)))/(10**(scn.N/10)*(scn.sc_bw/SCBS_per_MCBS[l_idx])*10**(-3))), tput_SC[j]); # We subtract the received power from other small cells to obtain the sinr 
+    return tput_SC
 

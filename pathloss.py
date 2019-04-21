@@ -14,33 +14,57 @@ def pathloss_CI(scn, dist, np, d3d, dsc, sc_flag):
    
     # =====================================================
     # We implement the NYU CI model for full distance range
-   
-    FSPL = 20*np.log10((4*np.pi*np.where(sc_flag,scn.fc_sc,scn.fc_mc))/scn.c); # Calculate the Free Space Path loss
+    if sc_flag == 0 or sc_flag == 1:
+        FSPL = 20*np.log10((4*np.pi*np.where(sc_flag,scn.fc_sc,scn.fc_mc))/scn.c); # Calculate the Free Space Path loss
 
-    # =====================================================================
-    # We consider a LOS scenario if the los probability is greater than 50%
+        # =====================================================================
+        # We consider a LOS scenario if the los probability is greater than 50%
 
-    if los_probability.los_prob_sc(np,dist) >= 0.5:
+        if los_probability.los_prob_sc(np,dist) >= 0.5:
     
-        n = np.where(sc_flag, 2.1, 2.0); # For LOS scenarios UMa has PLE = 2.0 and UMi at 28 and 73GHz has PLE = 2.1
-        SF_dev = np.where(sc_flag, 4.4, 2.4); # For LOS Scenarios UMa has a SF dev of 2.4 and UMi at 28 and 73 GHz has SF dev of 4.4 
-        shadowing = np.random.normal(0,SF_dev);
-        if dist < 1:
-            return (FSPL + shadowing)  # Below 1m it is PL is just FSPL in CI model
-        else: 
-            PL_CI = FSPL + 10*n*np.log10(d3d) + shadowing; # CI model Pathloss 
+            n = np.where(sc_flag, 2.1, 2.0); # For LOS scenarios UMa has PLE = 2.0 and UMi at 28 and 73GHz has PLE = 2.1
+            SF_dev = np.where(sc_flag, 4.4, 2.4); # For LOS Scenarios UMa has a SF dev of 2.4 and UMi at 28 and 73 GHz has SF dev of 4.4 
+            shadowing = np.random.normal(0,SF_dev);
+            if dist < 1:
+                return (FSPL + shadowing)  # Below 1m it is PL is just FSPL in CI model
+            else: 
+                PL_CI = FSPL + 10*n*np.log10(d3d) + shadowing; # CI model Pathloss 
             return PL_CI
 
-    else:
-        
-        n = np.where(sc_flag, 3.2, 2.9); # For LOS scenarios UMa has PLE = 2.0 and UMi at 28 and 73GHz has PLE = 2.1
-        SF_dev = np.where(sc_flag, 8.0, 5.7); # For LOS Scenarios UMa has a SF dev of 2.4 and UMi at 28 and 73 GHz has SF dev of 4.4 
-        shadowing = np.random.normal(0,SF_dev);
-        if dist < 1:
-            return (FSPL + shadowing)  # Below 1m it is PL is just FSPL in CI model
-        else: 
-            PL_CI = FSPL + 10*n*np.log10(d3d) + shadowing; # CI model Pathloss 
+        else:
+            
+            n = np.where(sc_flag, 3.2, 2.9); # For LOS scenarios UMa has PLE = 2.0 and UMi at 28 and 73GHz has PLE = 2.1
+            SF_dev = np.where(sc_flag, 8.0, 5.7); # For LOS Scenarios UMa has a SF dev of 2.4 and UMi at 28 and 73 GHz has SF dev of 4.4 
+            shadowing = np.random.normal(0,SF_dev);
+            if dist < 1:
+                return (FSPL + shadowing)  # Below 1m it is PL is just FSPL in CI model
+            else: 
+                PL_CI = FSPL + 10*n*np.log10(d3d) + shadowing; # CI model Pathloss 
             return PL_CI
+            
+    elif sc_flag == 2:
+
+        if los_probability.los_prob_sc(np,dist) >= 0.5:
+            FSPL = 20*np.log10((4*np.pi*scn.fc_bh_sc)/scn.c); # Calculate the Free Space Path loss for Backhaul
+            n = 2.0; # We consider BH to be in LOS scenario with a pathloss exponent of 2.1
+            SF_dev = 4.2; # Standard deviation for Shadow Fading
+            shadowing = np.random.normal(0, SF_dev);
+            if dist < 1:
+                return (FSPL+shadowing); # Unusual between SC and MC but can happen
+            else: 
+                PL_SC_MC_CI = FSPL + 10*n*np.log10(d3d) + shadowing; # CI model Pathloss between SC and MC
+            return PL_SC_MC_CI
+        else:
+            FSPL = 20*np.log10((4*np.pi*scn.fc_bh_sc)/scn.c); # Calculate the Free Space Path loss for Backhaul
+            n = 3.5; # We consider BH to be in LOS scenario with a pathloss exponent of 2.1
+            SF_dev = 7.9; # Standard deviation for Shadow Fading
+            shadowing = np.random.normal(0, SF_dev);
+            if dist < 1:
+                return (FSPL+shadowing); # Unusual between SC and MC but can happen
+            else: 
+                PL_SC_MC_CI = FSPL + 10*n*np.log10(d3d) + shadowing; # CI model Pathloss between SC and MC
+            return PL_SC_MC_CI
+
 
 # ============================================
 # 3GPP Small Cell Pathloss 

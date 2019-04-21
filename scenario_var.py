@@ -33,7 +33,9 @@ class scenario_var:
 	wl_bh_bp = 0.25*MCBS_intersite; # This is the distance beyond which a wired backhaul should be used (Can be changed later to the specifications)   
 	num_appl_types = 3; # We current have a broad category of 3 application types
 	max_num_appl_UE = 3; # Maximum number of applications on any given UE
-	num_users_min = 5000; # Minimum number of users in the scenario
-	num_users_max = 1e4; # Maximum number of users in the scenario
-	user_steps_siml = 1e6; # For the simulation we increase users in steps of 10,000
+	num_users_min = 500; # Minimum number of users in the scenario
+	num_users_max = 1e3; # Maximum number of users in the scenario
+	user_steps_siml = 1e2; # For the simulation we increase users in steps of 10,000
 	eMBB_minrate = 1e8; # 100 mbps minimum required data rate for most eMBB applications
+	fib_BH_capacity = 1e9; # 1Gbps of fibre backhaul capacity (Find a reference for this)
+	fib_BH_MC_capacity = 10e9; # 10Gbps of fiber backhaul for MCs

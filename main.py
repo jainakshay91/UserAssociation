@@ -32,7 +32,7 @@ macro_cell_locations = scenario_gen.macro_cell(scn.simulation_area, scn.MCBS_int
 SCBS_per_MCBS = np.random.randint(3,10,size=macro_cell_locations.shape[0]); # Randomly choosing number of SCBS within an MCBS domain in the range 3 to 1
 SCBS_MCBS_assoc = np.zeros((sum(SCBS_per_MCBS),macro_cell_locations.shape[0]), dtype=int); # Create a MCBS and SCBS association matrix (distance based)
 #print sum(SCBS_per_MCBS)
-locs_SCBS = np.empty([sum(SCBS_per_MCBS),2]); # We create an empty list of numpy arrays
+locs_SCBS = np.empty([sum(SCBS_per_MCBS),2], dtype = int); # We create an empty list of numpy arrays
 l_idx = 0; # lower index for the association matrix 
 u_idx = SCBS_per_MCBS[0]; # upper index for the association matrix
 for i in range(0,macro_cell_locations.shape[0]):
@@ -52,6 +52,8 @@ for i in range(0,macro_cell_locations.shape[0]):
 # ========================================================
 
 SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops = scenario_gen.backhaul_dump(scn, SCBS_per_MCBS, macro_cell_locations, SCBS_MCBS_assoc, np); # We drop the backhaul into the scenario
+BH_capacity_SC = scenario_gen.backhaul_tput(SCBS_MCBS_assoc, SCBS_per_MCBS, SC_wl_bh, np, scn, dsc); # Also Calculate the# BH capacity vector
+#print BH_capacity_SC 
 
 # ====================================
 # Dump the Users onto the scenario map 
@@ -71,7 +73,7 @@ sinr, locs_sc_ret, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS = scenario_gen.
 # Create Compressed Variable Files
 # ================================
 
-np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var',sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS); # Save these variables to be utilized by the optimizer
+np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var',sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC); # Save these variables to be utilized by the optimizer
 
 # ===========================
 # Plotting and Proof Checking

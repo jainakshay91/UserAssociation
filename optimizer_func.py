@@ -23,6 +23,17 @@ sinr_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float)
 sinr_pad_val = optim_data['arr_4']; # In the small cell calculation we use an sinr pad value for ease of computation
 num_scbs = optim_data['arr_5']; # Number of Small cells
 num_mcbs = optim_data['arr_6']; # Number of Macro cells
+mat_wlbh_sc = optim_data['arr_7']; # Wireless backhaul matrix for Small Cells
+mat_wrdbh_sc = optim_data['arr_8']; # Wired backhaul matrix for Macro cells
+BH_Capacity_SC = optim_data['arr_11']; # Backhaul capacity for Small cells
+BH_Capacity_MC = scn.fib_BH_MC_capacity; # Backhaul capacity for Macro cells
+#print mat_wlbh_sc
+#print mat_wlbh_sc.shape 
+#print "========="
+#print mat_wrdbh_sc
+#print mat_wrdbh_sc.shape
+
+
 
 print "Creating the Application to Access Point SINR association matrix"
 iter = 0; # Application number tracking
@@ -42,6 +53,7 @@ for i in range(0, sinr_eMBB.shape[1]):
 
 var_row_num = sinr_eMBB.shape[0];
 var_col_num = sinr_APs.shape[1];
+
 
 #print rate
 
@@ -79,10 +91,16 @@ try:
 	for i in range(0,var_row_num):
 		min_RATE[i,0] = LinExpr(rate[i,:],X.select(i,'*')); # Constraint expression
 
-	# ===> Set up the Maximum Bandwidth Constraint for an AP
+	# ===> Set up the Resource Allocation Constraint for an AP
 
-	max_BW = m.addVars(var_col_num,1, name="Max_BW"); # Initializing the Constraint Variable
-	
+	#max_BW = m.addVars(var_col_num,1, name="Max_BW"); # Initializing the Constraint Variable
+	#for i in range(0,)
+
+	# ===> Set up the Backhaul Capacity constraint 
+
+	BH_CAP_RES = m.addVars(var_col_num, 1, name = "BH_CAP_RES"); # Initializing the Constraint variable
+	for i in range(0, var_col_num):
+		BH_CAP_RES[i,0] = LinExpr(rate[:,i],X.select('*',i)); # Constraint Expression
 
 	# ===> Solve the MILP problem 
 
@@ -90,7 +108,7 @@ try:
 	#m.addConstrs((DC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
 	m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
 	m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint 
-
+	#m.addConstrs((BH_CAP_RES[i,0] <= ))
 	m.optimize()
 
 	# ===> Print the Optimized Solution 

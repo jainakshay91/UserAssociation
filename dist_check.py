@@ -149,5 +149,21 @@ def interf(PL, scn, np): # This function returns the overall interference matrix
         interf[:,i] = np.sum(np.where(np.isnan(PR_interf), 0, PR_interf), axis=1); #Interference from other APs for a given UE-AP pair
     return interf
 
+# ==================
+# Matrix Reorganizer
+# ==================
+
+def reorganizer(SRC_mat, IDX_mat_SC, IDX_mat_MC, np, scn):
+    reorg_mat = np.empty((num_users, num_scbs+num_mcbs)); # The total matrix to hold the SINR values
     
+    # ===================================
+    # First we reorganize the Small Cells
+
+    for i in range(0,IDX_mat_SC.shape[0]):
+        for j in range(0, IDX_mat_SC.shape[1]):
+            if IDX_mat_SC[i,j] ! = 'None':
+                reorg_mat[i,int(IDX_mat_SC[i,j])] = SRC_mat[i,j]; # Reorganizing the Small cells
+
+    # ==================================
+    # We reorganize the Macro Cells
 
