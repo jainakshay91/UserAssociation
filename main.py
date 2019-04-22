@@ -67,13 +67,14 @@ print "User and AP Dump completed"
 
 #sinr_sc_embb,locs_sc_ret, usr_lcs = scenario_gen.pathloss_tester(scn, np, dsc); # Testing the Pathloss function implementation
 
-sinr, locs_sc_ret, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_locs['user_locations0'], dsc, np)
-
+sinr_sorted, locs_sc_ret, usr_lcs, idx_sc, idx_mc, sinr_pad, num_SCBS, num_MCBS, num_MCBS_tot = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_locs['user_locations0'], dsc, np)
+sinr = dsc.reorganizer(sinr_sorted, idx_sc, idx_mc, num_SCBS, num_MCBS_tot, sinr_pad, np, scn); # We reorganize the SINR matrix for the optimization framework
 # ================================
 # Create Compressed Variable Files
 # ================================
 
-np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var',sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC); # Save these variables to be utilized by the optimizer
+np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var',sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS_tot, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC); # Save these variables to be utilized by the optimizer
+#np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var_1',sinr_sorted, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC); # Save these variables to be utilized by the optimizer
 
 # ===========================
 # Plotting and Proof Checking

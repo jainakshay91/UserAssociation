@@ -153,17 +153,26 @@ def interf(PL, scn, np): # This function returns the overall interference matrix
 # Matrix Reorganizer
 # ==================
 
-def reorganizer(SRC_mat, IDX_mat_SC, IDX_mat_MC, np, scn):
-    reorg_mat = np.empty((num_users, num_scbs+num_mcbs)); # The total matrix to hold the SINR values
+def reorganizer(SRC_mat, IDX_mat_SC, IDX_mat_MC, num_scbs, num_mcbs, sinr_pad, np, scn):
+    
+    reorg_mat = np.zeros((IDX_mat_SC.shape[0], num_scbs+num_mcbs)); # The total matrix to hold the SINR values
     
     # ===================================
     # First we reorganize the Small Cells
 
     for i in range(0,IDX_mat_SC.shape[0]):
         for j in range(0, IDX_mat_SC.shape[1]):
-            if IDX_mat_SC[i,j] ! = 'None':
+            if IDX_mat_SC[i,j] != 'None':
                 reorg_mat[i,int(IDX_mat_SC[i,j])] = SRC_mat[i,j]; # Reorganizing the Small cells
 
     # ==================================
     # We reorganize the Macro Cells
+    #print reorg_mat 
+    #print "======="
+    for i in range(0,IDX_mat_MC.shape[0]):
+        for j in range(0, IDX_mat_MC.shape[1]):
+            reorg_mat[i, num_scbs + IDX_mat_MC[i,j]] = SRC_mat[i, num_scbs+j]; # Reorganizing the Macro Cells 
 
+    #print reorg_mat
+    reorg_mat = np.where(reorg_mat == 0, sinr_pad, reorg_mat)
+    return reorg_mat

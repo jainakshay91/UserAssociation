@@ -39,3 +39,6 @@ class scenario_var:
 	eMBB_minrate = 1e8; # 100 mbps minimum required data rate for most eMBB applications
 	fib_BH_capacity = 1e9; # 1Gbps of fibre backhaul capacity (Find a reference for this)
 	fib_BH_MC_capacity = 10e9; # 10Gbps of fiber backhaul for MCs
+	wl_link_delay = 1e-3; # 1 ms link delay for the wireless link 
+	wrd_link_delay = 0.5*1e-3; # 0.5 ms link delay for the wired link
+	eMBB_latency_req = 3*1e-3; # 3 ms link latency requirement for the eMBB applications

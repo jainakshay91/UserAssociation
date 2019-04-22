@@ -170,9 +170,10 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
     dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
     sorted_MCBS_mat, idx_MCBS_SINR = dsc.idx_mat(dist_serv_cell, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
     sorted_SCBS_mat, idx_SCBS_SINR = dsc.idx_mat(dist_serv_sc, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
-    print idx_MCBS_SINR
-    print "============"
-    print idx_SCBS_SINR
+    #print idx_MCBS_SINR
+    #print "============"
+    #print idx_SCBS_SINR
+    
     # ====================
     # Pathloss Calculation
 
@@ -235,7 +236,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
             sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
 
     print "Finished All Calculations and Returning to main Function"
-    return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1]
+    return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, idx_MCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1], mc_locs.shape[0]
     # The above calculation has to be optimally calculated for N users and M small cells. 
 
 
