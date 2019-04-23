@@ -146,13 +146,14 @@ for k in range(0,num_iter):
 		# Solve the MILP problem 
 
 		m.setObjective(obj_func, GRB.MAXIMIZE); # This is the objective function that we aim to maximize
-		#m.addConstrs((DC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
-		m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
-		m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+		m.addConstrs((DC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
+		#m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+		#.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
 		#m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint 
 		m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
 		m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
-		#m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
+		m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
+		m.Params.MIPGap = 0.01; # Set the Upper and Lower Bound Gap to 0.1%
 		m.optimize()
 
 		# ============================ 
@@ -166,7 +167,7 @@ for k in range(0,num_iter):
 			X_optimal.append(v.x); 
 			if len(X_optimal) >= var_row_num*var_col_num:
 				break
-		#plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
+		plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
 		print('Obj:', m.objVal)
 
 		# =========================
@@ -180,4 +181,4 @@ for k in range(0,num_iter):
 
 	except GurobiError:
 		print('Error Reported')
-np.savez_compressed('/home/akshayjain/Desktop/Simulation/dat_DC_BHCAP', Data); # Saving the necessary data to generate plots later
+np.savez_compressed('/home/akshayjain/Desktop/Simulation/dat_SA_BHCAP_LAT', Data); # Saving the necessary data to generate plots later
