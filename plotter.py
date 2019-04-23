@@ -52,6 +52,7 @@ def optimizer_plotter(data_plt):
 	plt.show()	
 
 
+
 #plt.plot(usr_lcs[0], usr_lcs[1],'k+');
 #plt.plot(macro_cell_locations[:,0], macro_cell_locations[:,1],'rs'); # Plot the macro cells
 #for j in range(0,macro_cell_locations.shape[0]):
