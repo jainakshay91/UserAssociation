@@ -8,7 +8,26 @@ from gurobipy import *
 import numpy as np 
 import plotter
 from scenario_var import scenario_var 
+from argparse import ArgumentParser
 
+# =======================
+# Optimizer Configuration
+# =======================
+
+parser = ArgumentParser(description = 'The Optimizer Function for User Association'); # Initializing the class variable
+
+# =========================================================
+# Add the Command Line Arguments to Configure the Optimizer
+
+parser.add_argument('-iter', type = int, help = 'Iteration Number of the Simulation');
+parser.add_argument('-minRate', type = int, help = 'Minimum Rate Constraint Flag');
+parser.add_argument('-dual', type = int, help = 'Dual Connectivity Flag');
+parser.add_argument('-bhaul', type = int, help = 'Backhaul Capacity Constraint Flag');
+parser.add_argument('-latency', type = int, help = 'Path Latency Constraint Flag');
+
+args = parser.parse_args(); # Parse the Arguments
+
+#print vars(args)['iter']
 # ==============================
 # Create the Model and Variables
 # ==============================
@@ -16,10 +35,11 @@ scn = scenario_var(); # Initializing the class variables
 
 Data = {}; # Dictionary that holds the data 
 num_iter = ((scn.num_users_max - scn.num_users_min)/scn.user_steps_siml); 
+
 for k in range(0,num_iter):
 	#k = 1
 	print "=============================================="
-	print "#" + str(k) + "Collecting the Stored Variables"
+	print "Dataset # " + str(k) + ": Collecting the Stored Variables"
 
 	optim_data = np.load('/home/akshayjain/Desktop/Simulation/optim_var_'+ str(k) +'.npz')
 	sinr_APs = optim_data['arr_0']; # Load the SINR data to be used for the optimization
@@ -146,13 +166,33 @@ for k in range(0,num_iter):
 		# Solve the MILP problem 
 
 		m.setObjective(obj_func, GRB.MAXIMIZE); # This is the objective function that we aim to maximize
-		m.addConstrs((DC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
-		#m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
-		#.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+		
+		if vars(args)['dual'] == 'None':
+			m.addConstrs((DC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
+			if vars(args)['minRate'] == 1:
+				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
+			if vars(args)['bhaul'] == 1:
+				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
+				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
+			if vars(args)['latency'] == 1:
+				m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
+		elif vars(args)['dual'] == 1:		
+			m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+			m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
+			if vars(args)['minRate'] == 1:
+				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
+			if vars(args)['bhaul'] == 1:
+				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
+				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
+			if vars(args)['latency'] == 1:
+				m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
+		
+
 		#m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint 
-		m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
-		m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
-		m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
+		#m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
+		#m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
+		#m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
+		
 		m.Params.MIPGap = 0.01; # Set the Upper and Lower Bound Gap to 0.1%
 		m.optimize()
 
@@ -167,7 +207,7 @@ for k in range(0,num_iter):
 			X_optimal.append(v.x); 
 			if len(X_optimal) >= var_row_num*var_col_num:
 				break
-		plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
+		#plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
 		print('Obj:', m.objVal)
 
 		# =========================
@@ -181,4 +221,4 @@ for k in range(0,num_iter):
 
 	except GurobiError:
 		print('Error Reported')
-np.savez_compressed('/home/akshayjain/Desktop/Simulation/dat_SA_BHCAP_LAT', Data); # Saving the necessary data to generate plots later
+np.savez_compressed('/home/akshayjain/Desktop/Simulation/' + str(vars(args)['iter']) + 'dat_' + str(vars(args)['dual']) + str(vars(args)['minRate']) + str(vars(args)['bhaul']) + str(vars(args)['latency']), Data); # Saving the necessary data to generate plots later 

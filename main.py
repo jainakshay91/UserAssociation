@@ -10,7 +10,6 @@ import dist_check as dsc
 import plotter
 from scenario_var import scenario_var 
 
-
 # ==============================
 # Initialize the class variables
 # ==============================
