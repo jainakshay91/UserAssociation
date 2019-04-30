@@ -58,7 +58,7 @@ for i in range(1000):
 	subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
 	subprocess.check_call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '1','-dual', '1','-bhaul', '0','-latency', '1'])
 	chat = last_chat_id(get_updates()) # Get the Bot Chat ID
-	if i%250 == 0:
+	if i%chat_frequency == 0:
 		try:
 			message = "Execution of Iteration " + str(i) + " Completed"
 			send_message(message,chat) # Send the Message 
