@@ -8,6 +8,7 @@ import numpy as np
 import scenario_gen
 import dist_check as dsc 
 import plotter
+import os
 from scenario_var import scenario_var 
 
 # ==============================
@@ -74,7 +75,7 @@ for i in range(0,len(usr_locs.keys())):
 	# ================================
 	# Create Compressed Variable Files
 	
-	np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var_'+ str(i),sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS_tot, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC); # Save these variables to be utilized by the optimizer
+	np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_'+str(i),sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS_tot, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC, allow_pickle = True); # Save these variables to be utilized by the optimizer
 	#np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var_1',sinr_sorted, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC); # Save these variables to be utilized by the optimizer
 
 	# ===========================

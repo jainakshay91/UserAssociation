@@ -7,6 +7,7 @@
 from gurobipy import *
 import numpy as np 
 import plotter
+import os
 from scenario_var import scenario_var 
 from argparse import ArgumentParser
 
@@ -41,7 +42,7 @@ for k in range(0,num_iter):
 	print "=============================================="
 	print "Dataset # " + str(k) + ": Collecting the Stored Variables"
 
-	optim_data = np.load('/home/akshayjain/Desktop/Simulation/optim_var_'+ str(k) +'.npz')
+	optim_data = np.load(os.getcwd() + '/Data/Temp/optim_var_'+ str(k) +'.npz', allow_pickle = True)
 	sinr_APs = optim_data['arr_0']; # Load the SINR data to be used for the optimization
 	user_AP_assoc = optim_data['arr_1'].item()['user_app' + str(k)]; # Load the User-Applications Association data to be used for the optimization
 	sinr_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
@@ -193,7 +194,7 @@ for k in range(0,num_iter):
 		#m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 		#m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
 		
-		m.Params.MIPGap = 0.01; # Set the Upper and Lower Bound Gap to 0.1%
+		#m.Params.MIPGap = 0.01; # Set the Upper and Lower Bound Gap to 0.1%
 		m.optimize()
 
 		# ============================ 
@@ -221,4 +222,4 @@ for k in range(0,num_iter):
 
 	except GurobiError:
 		print('Error Reported')
-np.savez_compressed('/home/akshayjain/Desktop/Simulation/' + str(vars(args)['iter']) + 'dat_' + str(vars(args)['dual']) + str(vars(args)['minRate']) + str(vars(args)['bhaul']) + str(vars(args)['latency']), Data); # Saving the necessary data to generate plots later 
+np.savez_compressed(os.getcwd() +'/Data/Process/_' + str(vars(args)['iter']) + 'dat_' + str(vars(args)['dual']) + str(vars(args)['minRate']) + str(vars(args)['bhaul']) + str(vars(args)['latency']), Data, allow_pickle = True); # Saving the necessary data to generate plots later 

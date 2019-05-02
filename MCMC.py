@@ -51,16 +51,20 @@ def send_message(text, chat_id):
 
 sys.path.append(os.getcwd()); # Add current working directory to python path
 os.chdir(os.getcwd()); # Change to the current working directory
-chat_frequency = 250; # Select the divider so as to obtain timely update messages
+chat_frequency = 10; # Select the divider so as to obtain timely update messages
 
 
 for i in range(1000):
-	subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
-	subprocess.check_call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '1','-dual', '1','-bhaul', '0','-latency', '1'])
-	chat = last_chat_id(get_updates()) # Get the Bot Chat ID
-	if i%chat_frequency == 0:
-		try:
-			message = "Execution of Iteration " + str(i) + " Completed"
-			send_message(message,chat) # Send the Message 
-		except(RuntimeError, TypeError, NameError):
-			pass
+	try:
+		subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+		subprocess.check_call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '0','-latency', '0'])
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		if i%chat_frequency == 0:
+			try:
+				message = "Execution of Iteration " + str(i) + " Completed"
+				send_message(message,chat) # Send the Message 
+			except(RuntimeError, TypeError, NameError, IndexError):
+				pass
+	except:
+		message = "Programme has encountered an error"
+		send_message(message, chat) # Send the message if an error has been encountered in the code
