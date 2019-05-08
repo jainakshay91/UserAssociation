@@ -4,12 +4,21 @@
 # Import the necessary binaries
 # =============================
 
-import numpy as np
 import subprocess 
 import time
 import os, sys
 import json, requests
+from multiprocessing import Pool
+import numpy as np
+import signal 
 
+
+# ==========================
+# Parallel Process Function
+# ==========================
+
+def parallel_executor(iter_num):
+	subprocess.call(['python',os.path.join(os.getcwd(),"main.py"), '-iter', str(iter_num)])
 
 # ==================================
 # Create a Telegram Bot Communicator
@@ -49,22 +58,46 @@ def send_message(text, chat_id):
 # Monte Carlo Simulation
 # ======================
 
+
 sys.path.append(os.getcwd()); # Add current working directory to python path
 os.chdir(os.getcwd()); # Change to the current working directory
 chat_frequency = 10; # Select the divider so as to obtain timely update messages
+num_processors = int(int(subprocess.check_output(['nproc']))/2); # Number of Processors to be utilized 
+MCMC_iter = 8; # Number of Monte Carlo Iterations
 
 
-for i in range(1000):
-	try:
-		subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
-		subprocess.check_call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '0','-latency', '0'])
-		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
-		if i%chat_frequency == 0:
-			try:
-				message = "Execution of Iteration " + str(i) + " Completed"
-				send_message(message,chat) # Send the Message 
-			except(RuntimeError, TypeError, NameError, IndexError):
-				pass
-	except:
-		message = "Programme has encountered an error"
-		send_message(message, chat) # Send the message if an error has been encountered in the code
+# =============
+# Main Function 
+
+if __name__ == '__main__':
+	file_indexer = 0; # For File Indexing
+	for i in range(0, MCMC_iter/num_processors):
+		print "Entering Round " + str(i) + " of Processing"
+		print "------------------------------"
+		print ""
+		idx_range = np.arange(file_indexer, file_indexer + num_processors); # Data file Index numbers
+		pool = Pool(processes = num_processors); # Creates a pool of 10 parallel processes to be done
+		pool.map(parallel_executor,idx_range.tolist()); # Maps the function to parallel processes
+		file_indexer = file_indexer + num_processors; # Increase the Iterator number
+		print file_indexer
+	pool.close()
+	pool.join()
+	
+	print "Entering the Optimizer"
+	for i in range(MCMC_iter):
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.check_call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '0','-latency', '0'])
+			chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')

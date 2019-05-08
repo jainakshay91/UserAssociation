@@ -29,6 +29,33 @@ parser.add_argument('-latency', type = int, help = 'Path Latency Constraint Flag
 args = parser.parse_args(); # Parse the Arguments
 
 #print vars(args)['iter']
+
+# =====================================
+# Check Presence of Storage Directories
+# =====================================
+
+path = os.getcwd() + '/Data'; # This is the path we have to check for
+subpath = os.getcwd() + '/Data/Process'; # This is the subdirectory to store data  
+if os.path.isdir(path):
+	print "Directory to save data found"
+	print "----------------------------"
+	print ""
+	if os.path.isdir(subpath):
+		print "Subdirectory found"
+		print "------------------"
+		print ""
+	else: 
+		os.mkdir(subpath)
+		print "Subdirectory Created"
+		print "--------------------"
+		print ""
+else:
+	os.mkdir(path); # Create this directory 
+	os.mkdir(subpath); # Created the Subdirectory 
+	print "Created the Directory to save data"
+	print "----------------------------------"
+	print ""
+
 # ==============================
 # Create the Model and Variables
 # ==============================
@@ -42,7 +69,7 @@ for k in range(0,num_iter):
 	print "=============================================="
 	print "Dataset # " + str(k) + ": Collecting the Stored Variables"
 
-	optim_data = np.load(os.getcwd() + '/Data/Temp/optim_var_'+ str(k) +'.npz', allow_pickle = True)
+	optim_data = np.load(os.getcwd() + '/Data/Temp/optim_var_'+ str(k) + str(vars(args)['iter']) +'.npz', allow_pickle = True)
 	sinr_APs = optim_data['arr_0']; # Load the SINR data to be used for the optimization
 	user_AP_assoc = optim_data['arr_1'].item()['user_app' + str(k)]; # Load the User-Applications Association data to be used for the optimization
 	sinr_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
