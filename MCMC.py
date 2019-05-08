@@ -13,6 +13,19 @@ import numpy as np
 import signal 
 
 
+# =====================================
+# Check Presence of Storage Directories
+# =====================================
+
+path = os.getcwd() + '/Data'; # This is the path we have to check for
+subpath = os.getcwd() + '/Data/Temp'; # This is the subdirectory to store data  
+if os.path.isdir(path):
+	if os.path.isdir(subpath):
+		dat_gen_flag = 0; # We do not need to generate the scenario data again
+	else:
+		dat_gen_flag = 1; # Generate the Data 
+	
+
 # ==========================
 # Parallel Process Function
 # ==========================
@@ -70,19 +83,21 @@ MCMC_iter = 8; # Number of Monte Carlo Iterations
 # Main Function 
 
 if __name__ == '__main__':
-	file_indexer = 0; # For File Indexing
-	for i in range(0, MCMC_iter/num_processors):
-		print "Entering Round " + str(i) + " of Processing"
-		print "------------------------------"
-		print ""
-		idx_range = np.arange(file_indexer, file_indexer + num_processors); # Data file Index numbers
-		pool = Pool(processes = num_processors); # Creates a pool of 10 parallel processes to be done
-		pool.map(parallel_executor,idx_range.tolist()); # Maps the function to parallel processes
-		file_indexer = file_indexer + num_processors; # Increase the Iterator number
-		print file_indexer
-	pool.close()
-	pool.join()
-	
+
+	if dat_gen_flag == 1:
+		file_indexer = 0; # For File Indexing
+		for i in range(0, MCMC_iter/num_processors):
+			print "Entering Round " + str(i) + " of Processing"
+			print "------------------------------"
+			print ""
+			idx_range = np.arange(file_indexer, file_indexer + num_processors); # Data file Index numbers
+			pool = Pool(processes = num_processors); # Creates a pool of 10 parallel processes to be done
+			pool.map(parallel_executor,idx_range.tolist()); # Maps the function to parallel processes
+			file_indexer = file_indexer + num_processors; # Increase the Iterator number
+			print file_indexer
+		pool.close()
+		pool.join()
+		
 	print "Entering the Optimizer"
 	for i in range(MCMC_iter):
 		try:
