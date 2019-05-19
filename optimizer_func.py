@@ -195,7 +195,10 @@ for k in range(0,num_iter):
 
 		m.setObjective(obj_func, GRB.MAXIMIZE); # This is the objective function that we aim to maximize
 		
-		if vars(args)['dual'] == 'None':
+		if vars(args)['dual'] == 0:
+			print "==================="
+			print "Single Connectivity"
+			print "==================="
 			m.addConstrs((DC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
@@ -204,9 +207,12 @@ for k in range(0,num_iter):
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 			if vars(args)['latency'] == 1:
 				m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
-		elif vars(args)['dual'] == 1:		
+		elif vars(args)['dual'] == 1:	
+			print "================="	
+			print "Dual Connectivity"
+			print "================="
 			m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
-			m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
+			#m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
 			if vars(args)['bhaul'] == 1:

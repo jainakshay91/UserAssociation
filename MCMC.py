@@ -17,14 +17,18 @@ import signal
 # Check Presence of Storage Directories
 # =====================================
 
-path = os.getcwd() + '/Data'; # This is the path we have to check for
-subpath = os.getcwd() + '/Data/Temp'; # This is the subdirectory to store data  
-if os.path.isdir(path):
-	if os.path.isdir(subpath):
-		dat_gen_flag = 0; # We do not need to generate the scenario data again
+def path_checker():
+	flag = -1; # Initialize the flag variable 
+	path = os.getcwd() + '/Data'; # This is the path we have to check for
+	subpath = os.getcwd() + '/Data/Temp'; # This is the subdirectory to store data  
+	if os.path.isdir(path):
+		if os.path.isdir(subpath):
+			flag = 0; # We do not need to generate the scenario data again
+		else:
+			flag = 1; # Generate the Data if the Subpath does not exist
 	else:
-		dat_gen_flag = 1; # Generate the Data 
-	
+		flag = 1; # Generate the Data if the Path does not exist 
+	return flag 
 
 # ==========================
 # Parallel Process Function
@@ -76,13 +80,15 @@ sys.path.append(os.getcwd()); # Add current working directory to python path
 os.chdir(os.getcwd()); # Change to the current working directory
 chat_frequency = 10; # Select the divider so as to obtain timely update messages
 num_processors = int(int(subprocess.check_output(['nproc']))/2); # Number of Processors to be utilized 
-MCMC_iter = 8; # Number of Monte Carlo Iterations
+MCMC_iter = 16; # Number of Monte Carlo Iterations
 
 
 # =============
 # Main Function 
 
 if __name__ == '__main__':
+
+	dat_gen_flag = path_checker(); # Get the Data generation flag value
 
 	if dat_gen_flag == 1:
 		file_indexer = 0; # For File Indexing
@@ -102,7 +108,7 @@ if __name__ == '__main__':
 	for i in range(MCMC_iter):
 		try:
 			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
-			subprocess.check_call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '0','-latency', '0'])
+			subprocess.check_call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '0','-latency', '1'])
 			chat = last_chat_id(get_updates()) # Get the Bot Chat ID
 			if i%chat_frequency == 0:
 				try:
