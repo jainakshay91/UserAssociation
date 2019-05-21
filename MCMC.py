@@ -8,10 +8,11 @@ import subprocess
 import time
 import os, sys
 import json, requests
-from multiprocessing import Pool
+from multiprocessing import Pool, Process
 import numpy as np
 import signal 
 from scenario_var import scenario_var 
+from functools import partial
 
 # =====================================
 # Check Presence of Storage Directories
@@ -29,13 +30,6 @@ def path_checker():
 	else:
 		flag = 1; # Generate the Data if the Path does not exist 
 	return flag 
-
-# ==========================
-# Parallel Process Function
-# ==========================
-
-def parallel_executor(iter_num):
-	subprocess.call(['python',os.path.join(os.getcwd(),"main.py"), '-iter', str(iter_num)])
 
 # ==================================
 # Create a Telegram Bot Communicator
@@ -68,6 +62,217 @@ def last_chat_id(updates):
 def send_message(text, chat_id):
 	url = URL + "sendMessage?text={}&chat_id={}".format(text,chat_id)
 	get_url(url)
+
+# ==========================
+# Parallel Process Function
+# ==========================
+
+def parallel_executor(iter_num):
+	subprocess.call(['python',os.path.join(os.getcwd(),"main.py"), '-iter', str(iter_num)])
+
+def Single_assoc(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			print MCMC_iter
+			print chat_frequency
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '0','-latency', '0', '-mipGP', '0'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for SA"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')
+
+def Dual_assoc(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '1','-bhaul', '0','-latency', '0', '-mipGP', '0'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for DA"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')
+
+def DA_MRT(MCMC_iter):
+	for i in range(MCMC_iter, chat_frequency):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '1','-dual', '1','-bhaul', '0','-latency', '0', '-mipGP', '0'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for DA + MRT"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')
+
+def DA_BHCAP(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '1','-bhaul', '1','-latency', '0', '-mipGP', '1'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for DA + BHCAP"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')
+
+def DA_BHCAP_LAT(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '1','-bhaul', '1','-latency', '1', '-mipGP', '1'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for DA + BHCAP + LAT"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')
+
+def DA_LAT(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '1','-bhaul', '0','-latency', '1', '-mipGP', '0'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for DA + LAT"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')	
+
+def SA_MRT(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '1','-dual', '0','-bhaul', '0','-latency', '0', '-mipGP', '0'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for SA + MRT"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')	
+
+def SA_BHCAP(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '1','-latency', '0', '-mipGP', '1'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for SA + BHCAP"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')	
+
+def SA_BHCAP_LAT(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '1','-latency', '1', '-mipGP', '1'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for SA + BHCAP + LAT"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')	
+
+def SA_LAT(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '0','-latency', '1', '-mipGP', '0'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for SA + LAT"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')	
+
+
 
 
 
@@ -106,20 +311,60 @@ if __name__ == '__main__':
 		pool.join()
 		
 	print "Entering the Optimizer"
-	for i in range(MCMC_iter):
-		try:
-			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
-			subprocess.check_call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '0','-latency', '1'])
-			chat = last_chat_id(get_updates()) # Get the Bot Chat ID
-			if i%chat_frequency == 0:
-				try:
-					message = "Execution of Iteration " + str(i) + " Completed"
-					send_message(message,chat) # Send the Message 
-				except(RuntimeError, TypeError, NameError, IndexError):
-					pass
-		except:
-			message = "Programme has encountered an error"
-			send_message(message, chat) # Send the message if an error has been encountered in the code
-			message = "Ending the Processing for Debugging"
-			send_message(message, chat) # Send the End process message
-			sys.exit('Error Encountered')
+	
+	# =====================================================
+	# Multiple Processes for Parallel Scenario Optimization
+
+	p1 = Process(target = Single_assoc, args = (MCMC_iter,chat_frequency))
+	p2 = Process(target = Dual_assoc, args = (MCMC_iter, chat_frequency))
+	p3 = Process(target = DA_MRT, args = (MCMC_iter, chat_frequency))
+	p4 = Process(target = DA_BHCAP, args = (MCMC_iter, chat_frequency))
+	p5 = Process(target = DA_BHCAP_LAT, args = (MCMC_iter, chat_frequency))
+	p6 = Process(target = DA_LAT, args = (MCMC_iter, chat_frequency))
+	p7 = Process(target = SA_MRT, args = (MCMC_iter, chat_frequency))
+	p8 = Process(target = SA_LAT, args = (MCMC_iter, chat_frequency))
+	p9 = Process(target = SA_BHCAP_LAT, args = (MCMC_iter, chat_frequency))
+	p10 = Process(target = SA_BHCAP, args = (MCMC_iter, chat_frequency))
+
+	#p1.start()
+	#p2.start()
+	#p3.start()
+	p4.start()
+	p5.start()
+	#p6.start()
+	#p7.start()
+	#p8.start()
+	#p9.start()
+	#p10.start()
+
+	#p1.join()
+	#p2.join()
+	#p3.join()
+	p4.join()
+	p5.join()
+	#p6.join()
+	#p7.join()
+	#p8.join()
+	#p9.join()
+	#p10.join()
+	
+	
+	
+
+	#for i in range(MCMC_iter):
+	#	try:
+	#		#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+	#		subprocess.check_call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '0','-dual', '0','-bhaul', '0','-latency', '1'])
+	#		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+	#		if i%chat_frequency == 0:
+	#			try:
+	#				message = "Execution of Iteration " + str(i) + " Completed"
+	#				send_message(message,chat) # Send the Message 
+	#			except(RuntimeError, TypeError, NameError, IndexError):
+	#				pass
+	#	except:
+	#		message = "Programme has encountered an error"
+	#		send_message(message, chat) # Send the message if an error has been encountered in the code
+	#		message = "Ending the Processing for Debugging"
+	#		send_message(message, chat) # Send the End process message
+	#		sys.exit('Error Encountered')

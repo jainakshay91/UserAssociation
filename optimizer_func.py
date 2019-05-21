@@ -25,6 +25,7 @@ parser.add_argument('-minRate', type = int, help = 'Minimum Rate Constraint Flag
 parser.add_argument('-dual', type = int, help = 'Dual Connectivity Flag');
 parser.add_argument('-bhaul', type = int, help = 'Backhaul Capacity Constraint Flag');
 parser.add_argument('-latency', type = int, help = 'Path Latency Constraint Flag');
+parser.add_argument('-mipGP', type = int, help = 'Optimizer bound Interval'); 
 
 args = parser.parse_args(); # Parse the Arguments
 
@@ -227,7 +228,11 @@ for k in range(0,num_iter):
 		#m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 		#m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
 		
-		#m.Params.MIPGap = 0.01; # Set the Upper and Lower Bound Gap to 0.1%
+		if vars(args)['mipGP'] == 1:
+			m.Params.MIPGap = 0.01; # Set the Upper and Lower Bound Gap to 0.1%
+		else:
+			pass
+
 		m.optimize()
 
 		# ============================ 
