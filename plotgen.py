@@ -21,7 +21,7 @@ scn = scenario_var(); # Getting the class object
 # Initialize the Necessary Variables
 # ==================================
 
-MCMC_iter = 16; # Number of Iterations to be analyzed
+MCMC_iter = scn.MCMC_iter; # Number of Iterations to be analyzed
 simdata_path = os.getcwd() + '/Data/Process/'
 constraint_fp = {'Baseline':'0000', 'DC':'1000', 'DC_MRT':'1100','DC_BHCAP':'1010', 'DC_BHCAP_LAT':'1011', 'DC_LAT':'1001', 'SA_MRT':'0100','SA_BHCAP':'0010','SA_BHCAP_LAT':'0011','SA_LAT':'0001'}
 num_iter = ((scn.num_users_max - scn.num_users_min)/scn.user_steps_siml); 

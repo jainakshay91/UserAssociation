@@ -11,7 +11,7 @@ import json, requests
 from multiprocessing import Pool
 import numpy as np
 import signal 
-
+from scenario_var import scenario_var 
 
 # =====================================
 # Check Presence of Storage Directories
@@ -80,7 +80,8 @@ sys.path.append(os.getcwd()); # Add current working directory to python path
 os.chdir(os.getcwd()); # Change to the current working directory
 chat_frequency = 10; # Select the divider so as to obtain timely update messages
 num_processors = int(int(subprocess.check_output(['nproc']))/2); # Number of Processors to be utilized 
-MCMC_iter = 16; # Number of Monte Carlo Iterations
+scn = scenario_var(); # Getting the class object
+MCMC_iter = scn.MCMC_iter; # Number of Monte Carlo Iterations
 
 
 # =============
