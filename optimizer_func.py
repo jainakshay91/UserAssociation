@@ -117,9 +117,13 @@ for k in range(0,num_iter):
 
 	for i in range(0, sinr_eMBB.shape[1]):
 		if i <= num_scbs:
-			rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, scn.sc_bw*np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for SC
+			#rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, scn.sc_bw*np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for SC
+			rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, scn.usr_scbw*np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for SC
+
+			#rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for SC				
 		else:
 			rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, scn.mc_bw*np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for MC  
+			#rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for MC  
 
 	var_row_num = sinr_eMBB.shape[0];
 	var_col_num = sinr_APs.shape[1];
@@ -173,6 +177,10 @@ for k in range(0,num_iter):
 
 		# ===> Set up the Resource Allocation Constraint for an AP
 
+		RB = m.addVars(var_col_num, 1, name = "Subcarriers"); # Allocated Subcarriers
+		for i in range(0, var_col_num):
+			RB[i,0] = LinExpr([scn.usr_scbw]*var_row_num,X.select('*',i)); # Constraint Expression
+
 		#max_BW = m.addVars(var_col_num,1, name="Max_BW"); # Initializing the Constraint Variable
 		#for i in range(0,)
 
@@ -196,6 +204,10 @@ for k in range(0,num_iter):
 
 		m.setObjective(obj_func, GRB.MAXIMIZE); # This is the objective function that we aim to maximize
 		
+		# We add a Compulsory Resource allocation Constraint 
+
+		m.addConstrs((RB[i,0] <= scn.sc_bw for i in range(num_scbs)), name = 'c0'); # Small cells have their bandwidth distributed 
+
 		if vars(args)['dual'] == 0:
 			print "==================="
 			print "Single Connectivity"
