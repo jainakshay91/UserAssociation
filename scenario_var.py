@@ -42,3 +42,4 @@ class scenario_var:
 	wl_link_delay = 1e-3; # 1 ms link delay for the wireless link 
 	wrd_link_delay = 0.5*1e-3; # 0.5 ms link delay for the wired link
 	eMBB_latency_req = 3*1e-3; # 3 ms link latency requirement for the eMBB applications
+	MCMC_iter = 1000; # Number of Monte Carlo Iterations
