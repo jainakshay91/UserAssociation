@@ -112,7 +112,7 @@ def Dual_assoc(MCMC_iter, chat_frequency):
 			send_message(message, chat) # Send the End process message
 			sys.exit('Error Encountered')
 
-def DA_MRT(MCMC_iter):
+def DA_MRT(MCMC_iter, chat_frequency):
 	for i in range(MCMC_iter, chat_frequency):
 		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
 		try:
@@ -285,7 +285,6 @@ sys.path.append(os.getcwd()); # Add current working directory to python path
 os.chdir(os.getcwd()); # Change to the current working directory
 chat_frequency = 10; # Select the divider so as to obtain timely update messages
 num_processors = int(int(subprocess.check_output(['nproc']))/2); # Number of Processors to be utilized 
-scn = scenario_var(); # Getting the class object
 MCMC_iter = scn.MCMC_iter; # Number of Monte Carlo Iterations
 
 
