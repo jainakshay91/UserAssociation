@@ -231,10 +231,8 @@ jfr_SA_BHCAP_LAT = jains_fairness(application_DR_SA_BHCAP_LAT, avg_idx);
 
 
 
-	# ===============
-	# Throughput Plot
-	#print Net_Throughput_DC_MRT
-	#print Net_Throughput_DC
+# ===============
+# Throughput Plot
 
 x_axis = np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml);
 y_min = np.amin([np.amin(Net_Throughput_avg), np.amin(Net_Throughput_DC_avg), np.amin(Net_Throughput_DC_MRT_avg), np.amin(Net_Throughput_DC_BHCAP_avg), np.amin(Net_Throughput_DC_BHCAP_LAT_avg), np.amin(Net_Throughput_DC_LAT_avg), np.amin(Net_Throughput_SA_MRT_avg), np.amin(Net_Throughput_SA_LAT_avg), np.amin(Net_Throughput_SA_BHCAP_avg), np.amin(Net_Throughput_SA_BHCAP_LAT_avg)]);
@@ -243,10 +241,27 @@ y_max = np.max([np.amax(Net_Throughput_avg), np.amax(Net_Throughput_DC_avg), np.
 plt.plot(x_axis, Net_Throughput_avg, 'r--*', x_axis, Net_Throughput_DC_avg, 'b--*' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'k--s', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm--d', x_axis , Net_Throughput_DC_LAT_avg, 'c--p',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--D', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:');
 plt.xticks(np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml));
 plt.yticks(np.arange(y_min,y_max,5e10));
-plt.legend(['Single Association (SA)','Dual Association (DA)', 'DA + Minimum Rate', 'DA + Constrained Backhaul (CB) [1% Bound Gap]', 'DA + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DA + Minimum Rate + CPL', 'SA + Minimum Rate', 'SA + Minimum Rate + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]'])
+plt.legend(['Single Association (SA)','Dual Association (DA)', 'DA + Minimum Rate', 'DA + Constrained Backhaul (CB) [1% Bound Gap]', 'DA + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DA + Minimum Rate + CPL', 'SA + Minimum Rate', 'SA + Minimum Rate + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]'], loc='upper left', bbox_to_anchor=(0., 0.5, 0.5, 0.5), prop={'size': 6})
 plt.grid(which= 'major',axis= 'both');
 plt.title('Network Wide Throughput')
-plt.show()
+plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
+        orientation='landscape', papertype='letter', format='png',
+        transparent=False, bbox_inches='tight', pad_inches=0.1,
+        frameon=None, metadata=None)
+
+
+# ================
+# Fairness BoxPlot
+
+box_data = [jfr_SA, jfr_DC, jfr_DC_MRT, jfr_SA_BHCAP, jfr_SA_LAT, jfr_SA_MRT, jfr_DC_LAT, jfr_DC_BHCAP, jfr_SA_BHCAP_LAT, jfr_DC_BHCAP_LAT] 
+fig, ax = plt.subplots()
+plt.title('Jain\'s Fairness Index Deviation')
+plt.boxplot(box_data)
+plt.xticks(range(1,11), ['SA', 'DA', 'DA+MRT', 'SA+BHCAP', 'SA+LAT', 'SA+MRT', 'DC+LAT', 'DC+BHCAP', 'SA+BHCAP+LAT', 'DC+BHCAP+LAT'], fontsize = 8, rotation = '45')
+plt.savefig('Boxplot', dpi=1200, facecolor='w', edgecolor='w',
+        orientation='landscape', papertype='letter', format='png',
+        transparent=False, bbox_inches='tight', pad_inches=0.1,
+        frameon=None, metadata=None)
 
 #print application_DR.tolist()
 #plt.bar(np.arange(1,Rate.shape[0]+1),application_DR_SA_BHCAP_LAT)
