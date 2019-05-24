@@ -247,30 +247,33 @@ for k in range(0,num_iter):
 
 		m.optimize()
 
-		# ============================ 
-		# Print the Optimized Solution 
-
-		print "Plotting the Optimized Association"
-
-		X_optimal = []; # Initializing the Variable to store the optimal solution
-
-		for v in m.getVars():
-			X_optimal.append(v.x); 
-			if len(X_optimal) >= var_row_num*var_col_num:
-				break
-		#plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
-		print('Obj:', m.objVal)
-
-		# =========================
-		# Store Optimized Variables
 		if m.status == 2:
+			# ============================ 
+			# Print the Optimized Solution 
+
+			print "Plotting the Optimized Association"
+
+			X_optimal = []; # Initializing the Variable to store the optimal solution
+
+			for v in m.getVars():
+				X_optimal.append(v.x); 
+				if len(X_optimal) >= var_row_num*var_col_num:
+					break
+			#plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
+			print('Obj:', m.objVal)
+
+			# =========================
+			# Store Optimized Variables
+
 			print "Saving Data"
 
 			Data['X_optimal_data' + str(k)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
 			Data['Net_Throughput' + str(k)] = m.objVal; # Network wide throughput
 			Data['Rates' + str(k)] = rate; # Data rate matrix  
-		else: 
-			pass
+			Data['status' + str(k)] = m.status; # Insert the status
+		else
+			Data['Status' + str(k)] = m.status; # Add the status for detecting infeasible solution
+
 	except GurobiError:
 		print('Error Reported')
 np.savez_compressed(os.getcwd() +'/Data/Process/_' + str(vars(args)['iter']) + 'dat_' + str(vars(args)['dual']) + str(vars(args)['minRate']) + str(vars(args)['bhaul']) + str(vars(args)['latency']), Data, allow_pickle = True); # Saving the necessary data to generate plots later 
