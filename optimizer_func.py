@@ -271,9 +271,9 @@ for k in range(0,num_iter):
 			Data['Net_Throughput' + str(k)] = m.objVal; # Network wide throughput
 			Data['Rates' + str(k)] = rate; # Data rate matrix  
 			Data['status' + str(k)] = m.status; # Insert the status
-		else
+		else:
 			Data['Status' + str(k)] = m.status; # Add the status for detecting infeasible solution
-
+			continue
 	except GurobiError:
 		print('Error Reported')
 np.savez_compressed(os.getcwd() +'/Data/Process/_' + str(vars(args)['iter']) + 'dat_' + str(vars(args)['dual']) + str(vars(args)['minRate']) + str(vars(args)['bhaul']) + str(vars(args)['latency']), Data, allow_pickle = True); # Saving the necessary data to generate plots later 
