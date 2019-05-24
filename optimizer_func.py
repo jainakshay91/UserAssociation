@@ -263,13 +263,14 @@ for k in range(0,num_iter):
 
 		# =========================
 		# Store Optimized Variables
+		if m.status == 2:
+			print "Saving Data"
 
-		print "Saving Data"
-
-		Data['X_optimal_data' + str(k)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
-		Data['Net_Throughput' + str(k)] = m.objVal; # Network wide throughput
-		Data['Rates' + str(k)] = rate; # Data rate matrix  
-
+			Data['X_optimal_data' + str(k)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
+			Data['Net_Throughput' + str(k)] = m.objVal; # Network wide throughput
+			Data['Rates' + str(k)] = rate; # Data rate matrix  
+		else: 
+			pass
 	except GurobiError:
 		print('Error Reported')
 np.savez_compressed(os.getcwd() +'/Data/Process/_' + str(vars(args)['iter']) + 'dat_' + str(vars(args)['dual']) + str(vars(args)['minRate']) + str(vars(args)['bhaul']) + str(vars(args)['latency']), Data, allow_pickle = True); # Saving the necessary data to generate plots later 
