@@ -21,6 +21,19 @@ scn = scenario_var(); # Getting the class object
 # Initialize the Necessary Variables
 # ==================================
 
+
+iters_infeas = []; # Infeasible iteration numbers 
+iters_infeas_DC = []; 
+iters_infeas_DC_MRT = [];
+iters_infeas_DC_BHCAP = [];
+iters_infeas_DC_BHCAP_LAT = [];
+iters_infeas_DC_LAT = [];
+iters_infeas_SA_MRT = [];
+iters_infeas_SA_LAT = [];
+iters_infeas_SA_BHCAP = [];
+iters_infeas_SA_BHCAP_LAT = [];
+
+
 MCMC_iter = scn.MCMC_iter; # Number of Iterations to be analyzed
 simdata_path = os.getcwd() + '/Data/Process/'
 constraint_fp = {'Baseline':'0000', 'DC':'1000', 'DC_MRT':'1100','DC_BHCAP':'1010', 'DC_BHCAP_LAT':'1011', 'DC_LAT':'1001', 'SA_MRT':'0100','SA_BHCAP':'0010','SA_BHCAP_LAT':'0011','SA_LAT':'0001'}
@@ -49,17 +62,6 @@ application_DR_SA_BHCAP = [];
 application_DR_SA_BHCAP_LAT = [];
 
 avg_idx = []; # This is for calculating the average application throughput 
-
-# =========================
-# Student's T test Function
-# =========================
-
-def student_t(Data):
-
-	mean_vec = []; # List to hold the mean values
-	var_vec = []; # List to hold the variance values
-	idx_begin = 0; 
-
 
 
 # ========================
@@ -90,6 +92,7 @@ for i in range(0,MCMC_iter):
 	# ================================
 	# Load the Data from the Optimizer
 
+
 	Baseline_dat = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['Baseline'] + '.npz')
 	Dat_DC = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['DC'] + '.npz')
 	Dat_DC_MRT = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['DC_MRT'] + '.npz')
@@ -100,6 +103,7 @@ for i in range(0,MCMC_iter):
 	Dat_SA_LAT = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['SA_LAT'] + '.npz')
 	Dat_SA_BHCAP = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['SA_BHCAP'] + '.npz')
 	Dat_SA_BHCAP_LAT = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['SA_BHCAP_LAT'] + '.npz')
+
 
 	Data = Baseline_dat['arr_0'];
 	Data_DC = Dat_DC['arr_0'];
@@ -113,19 +117,56 @@ for i in range(0,MCMC_iter):
 	Data_SA_BHCAP_LAT = Dat_SA_BHCAP_LAT['arr_0'];
 
 	for k in range(0,num_iter):
-		Net_Throughput[i,k] = Data.item()['Net_Throughput'+str(k)];
-		#print Net_Throughput
-		Net_Throughput_DC[i,k] = Data_DC.item()['Net_Throughput'+str(k)];
-		#print Net_Throughput_DC
-		Net_Throughput_DC_MRT[i,k] = Data_DC_MRT.item()['Net_Throughput'+str(k)];
-		Net_Throughput_DC_BHCAP[i,k] = Data_DC_BHCAP.item()['Net_Throughput'+str(k)];
-		Net_Throughput_DC_BHCAP_LAT[i,k] = Data_DC_BHCAP_LAT.item()['Net_Throughput'+str(k)];
-		Net_Throughput_DC_LAT[i,k] = Data_DC_LAT.item()['Net_Throughput'+str(k)];
-		Net_Throughput_SA_MRT[i,k] = Data_SA_MRT.item()['Net_Throughput'+str(k)];
-		Net_Throughput_SA_LAT[i,k] = Data_SA_LAT.item()['Net_Throughput'+str(k)];
-		Net_Throughput_SA_BHCAP[i,k] = Data_SA_BHCAP.item()['Net_Throughput'+str(k)];
-		Net_Throughput_SA_BHCAP_LAT[i,k] = Data_SA_BHCAP_LAT.item()['Net_Throughput'+str(k)];
-
+		if Data.item()['Status'+str(k)] == 2:
+			Net_Throughput[i,k] = Data.item()['Net_Throughput'+str(k)];
+		else:
+			Net_Throughput[i,k] = 0; # Zero if its an infeasible solution
+			iters_infeas.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
+		if Data_DC.item()['Status'+str(k)] == 2:
+			Net_Throughput_DC[i,k] = Data_DC.item()['Net_Throughput'+str(k)];
+		else:
+			Net_Throughput_DC[i,k] = 0; # Zero if its an infeasible solution
+			iters_infeas_DC.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
+		if Data_DC_MRT.item()['Status'+str(k)] == 2:
+			Net_Throughput_DC_MRT[i,k] = Data_DC_MRT.item()['Net_Throughput'+str(k)];
+		else:
+			Net_Throughput_DC_MRT[i,k] = 0; # Zero if its an infeasible solution
+			iters_infeas_DC_MRT.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
+		if Data_DC_BHCAP.item()['Status'+str(k)] == 2:
+			Net_Throughput_DC_BHCAP[i,k] = Data_DC_BHCAP.item()['Net_Throughput'+str(k)];
+		else:
+			Net_Throughput_DC_BHCAP[i,k] = 0; # Zero if its an infeasible solution
+			iters_infeas_DC_BHCAP.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
+		if Data_DC_BHCAP_LAT.item()['Status'+str(k)] == 2:
+			Net_Throughput_DC_BHCAP_LAT[i,k] = Data_DC_BHCAP_LAT.item()['Net_Throughput'+str(k)];
+		else:
+			Net_Throughput_DC_BHCAP_LAT[i,k] = 0; # Zero if its an infeasible solution
+			iters_infeas_DC_BHCAP_LAT.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
+		if Data_DC_LAT.item()['Status'+str(k)] == 2:
+			Net_Throughput_DC_LAT[i,k] = Data_DC_LAT.item()['Net_Throughput'+str(k)];
+		else:
+			Net_Throughput_DC_LAT[i,k] = 0; # Zero if its an infeasible solution
+			iters_infeas_DC_LAT.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
+		if Data_SA_MRT.item()['Status'+str(k)] == 2:
+			Net_Throughput_SA_MRT[i,k] = Data_SA_MRT.item()['Net_Throughput'+str(k)];
+		else:
+			Net_Throughput_SA_MRT[i,k] = 0; # Zero if its an infeasible solution
+			iters_infeas_SA_MRT.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
+		if Data_SA_LAT.item()['Status'+str(k)] == 2:
+			Net_Throughput_SA_LAT[i,k] = Data_SA_LAT.item()['Net_Throughput'+str(k)];
+		else:
+			Net_Throughput_SA_LAT[i,k] = 0; # Zero if its an infeasible solution
+			iters_infeas_SA_LAT.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
+		if Data_SA_BHCAP.item()['Status'+str(k)] == 2:
+			Net_Throughput_SA_BHCAP[i,k] = Data_SA_BHCAP.item()['Net_Throughput'+str(k)];
+		else: 
+			Net_Throughput_SA_BHCAP[i,k] = 0; #Zero if its an infeasible solution
+			iters_infeas_SA_BHCAP.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
+		if Data_SA_BHCAP_LAT.item()['Status'+str(k)] == 2:
+			Net_Throughput_SA_BHCAP_LAT[i,k] = Data_SA_BHCAP_LAT.item()['Net_Throughput'+str(k)];
+		else:
+			Net_Throughput_SA_BHCAP_LAT[i,k] = 0; #Zero if its an infeasible solution
+			iters_infeas_SA_BHCAP_LAT.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
 	#print "=================="
 	#print Net_Throughput
 	#print "=================="
@@ -156,42 +197,102 @@ for i in range(0,MCMC_iter):
 	Rate_SA_BHCAP_LAT = copy.copy(Rate);
 
 
-	X_Optimal = Data.item()['X_optimal_data'+str(10)];
-	X_Optimal_DC = Data_DC.item()['X_optimal_data'+str(10)];
-	X_Optimal_DC_MRT = Data_DC_MRT.item()['X_optimal_data'+str(10)];
-	X_Optimal_DC_BHCAP = Data_DC_BHCAP.item()['X_optimal_data'+str(10)];
-	X_Optimal_DC_BHCAP_LAT = Data_DC_BHCAP_LAT.item()['X_optimal_data'+str(10)];
-	X_Optimal_DC_LAT = Data_DC_LAT.item()['X_optimal_data'+str(10)];
-	X_Optimal_SA_MRT = Data_SA_MRT.item()['X_optimal_data'+str(10)];
-	X_Optimal_SA_LAT = Data_SA_LAT.item()['X_optimal_data'+str(10)];
-	X_Optimal_SA_BHCAP = Data_SA_BHCAP.item()['X_optimal_data'+str(10)];
-	X_Optimal_SA_BHCAP_LAT = Data_SA_BHCAP_LAT.item()['X_optimal_data'+str(10)];
-
-	Rate = Data.item()['Rates'+str(10)];
-	Rate_DC = Data_DC.item()['Rates'+str(10)];
-	Rate_DC_MRT = Data_DC_MRT.item()['Rates'+str(10)];
-	Rate_DC_BHCAP = Data_DC_BHCAP.item()['Rates'+str(10)];
-	Rate_DC_BHCAP_LAT = Data_DC_BHCAP_LAT.item()['Rates'+str(10)];
-	Rate_DC_LAT = Data_DC_LAT.item()['Rates'+str(10)];
-	Rate_SA_MRT = Data_SA_MRT.item()['Rates'+str(10)];
-	Rate_SA_LAT = Data_SA_LAT.item()['Rates'+str(10)];
-	Rate_SA_BHCAP = Data_SA_BHCAP.item()['Rates'+str(10)];
-	Rate_SA_BHCAP_LAT = Data_SA_BHCAP_LAT.item()['Rates'+str(10)];
-
+	if Data.item()['Status'+str(10)] == 2:
+		X_Optimal = Data.item()['X_optimal_data'+str(10)];
+		Rate = Data.item()['Rates'+str(10)];
+	else:
+		pass
+	if Data_DC.item()['Status'+str(10)] == 2:
+		X_Optimal_DC = Data_DC.item()['X_optimal_data'+str(10)];
+		Rate_DC = Data_DC.item()['Rates'+str(10)];
+	else:
+		pass
+	if Data_DC_MRT.item()['Status'+str(10)] == 2:
+		X_Optimal_DC_MRT = Data_DC_MRT.item()['X_optimal_data'+str(10)];
+		Rate_DC_MRT = Data_DC_MRT.item()['Rates'+str(10)];
+	else:
+		pass
+	if Data_DC_BHCAP.item()['Status'+str(10)] == 2:
+		X_Optimal_DC_BHCAP = Data_DC_BHCAP.item()['X_optimal_data'+str(10)];
+		Rate_DC_BHCAP = Data_DC_BHCAP.item()['Rates'+str(10)];
+	else:
+		pass
+	if Data_DC_BHCAP_LAT.item()['Status'+str(10)] == 2:
+		X_Optimal_DC_BHCAP_LAT = Data_DC_BHCAP_LAT.item()['X_optimal_data'+str(10)];
+		Rate_DC_BHCAP_LAT = Data_DC_BHCAP_LAT.item()['Rates'+str(10)];
+	else:
+		pass
+	if Data_DC_LAT.item()['Status'+str(10)] == 2:
+		X_Optimal_DC_LAT = Data_DC_LAT.item()['X_optimal_data'+str(10)];
+		Rate_DC_LAT = Data_DC_LAT.item()['Rates'+str(10)];
+	else:
+		pass
+	if Data_SA_MRT.item()['Status'+str(10)] == 2:
+		X_Optimal_SA_MRT = Data_SA_MRT.item()['X_optimal_data'+str(10)];
+		Rate_SA_MRT = Data_SA_MRT.item()['Rates'+str(10)];
+	else:
+		pass
+	if Data_SA_LAT.item()['Status'+str(10)] == 2:
+		X_Optimal_SA_LAT = Data_SA_LAT.item()['X_optimal_data'+str(10)];
+		Rate_SA_LAT = Data_SA_LAT.item()['Rates'+str(10)];
+	else:
+		pass
+	if Data_SA_BHCAP.item()['Status'+str(10)] == 2:
+		X_Optimal_SA_BHCAP = Data_SA_BHCAP.item()['X_optimal_data'+str(10)];
+		Rate_SA_BHCAP = Data_SA_BHCAP.item()['Rates'+str(10)];
+	else:
+		pass
+	if Data_SA_BHCAP_LAT.item()['Status'+str(10)] == 2:
+		X_Optimal_SA_BHCAP_LAT = Data_SA_BHCAP_LAT.item()['X_optimal_data'+str(10)];
+		Rate_SA_BHCAP_LAT = Data_SA_BHCAP_LAT.item()['Rates'+str(10)];
+	else:
+		pass
+	
+	
 	avg_idx.append(X_Optimal.shape[0])	
 
 	for j in range(0,X_Optimal.shape[0]):
 		Base_DR.append(scn.eMBB_minrate); 
-		application_DR.append(sum(Rate[j,:]*X_Optimal[j,:]));
-		application_DR_DC.append(sum(Rate_DC[j,:]*X_Optimal_DC[j,:]));
-		application_DR_DC_MRT.append(sum(Rate_DC_MRT[j,:]*X_Optimal_DC_MRT[j,:]));
-		application_DR_DC_BHCAP.append(sum(Rate_DC_BHCAP[j,:]*X_Optimal_DC_BHCAP[j,:]));
-		application_DR_DC_BHCAP_LAT.append(sum(Rate_DC_BHCAP_LAT[j,:]*X_Optimal_DC_BHCAP_LAT[j,:]));
-		application_DR_DC_LAT.append(sum(Rate_DC_LAT[j,:]*X_Optimal_DC_LAT[j,:]));
-		application_DR_SA_MRT.append(sum(Rate_SA_MRT[j,:]*X_Optimal_SA_MRT[j,:]));
-		application_DR_SA_LAT.append(sum(Rate_SA_LAT[j,:]*X_Optimal_SA_LAT[j,:]));
-		application_DR_SA_BHCAP.append(sum(Rate_SA_BHCAP[j,:]*X_Optimal_SA_BHCAP[j,:]));
-		application_DR_SA_BHCAP_LAT.append(sum(Rate_SA_BHCAP_LAT[j,:]*X_Optimal_SA_BHCAP_LAT[j,:]));
+		if Data.item()['Status'+str(10)] == 2:
+			application_DR.append(sum(Rate[j,:]*X_Optimal[j,:]));
+		else:
+			pass
+		if Data_DC.item()['Status'+str(10)] == 2:
+			application_DR_DC.append(sum(Rate_DC[j,:]*X_Optimal_DC[j,:]));
+		else:
+			pass
+		if Data_DC_MRT.item()['Status'+str(10)] == 2:
+			application_DR_DC_MRT.append(sum(Rate_DC_MRT[j,:]*X_Optimal_DC_MRT[j,:]));
+		else:
+			pass
+		if Data_DC_BHCAP.item()['Status'+str(10)] == 2:
+			application_DR_DC_BHCAP.append(sum(Rate_DC_BHCAP[j,:]*X_Optimal_DC_BHCAP[j,:]));
+		else:
+			pass
+		if Data_DC_BHCAP_LAT.item()['Status'+str(10)] == 2:
+			application_DR_DC_BHCAP_LAT.append(sum(Rate_DC_BHCAP_LAT[j,:]*X_Optimal_DC_BHCAP_LAT[j,:]));
+		else:
+			pass
+		if Data_DC_LAT.item()['Status'+str(10)] == 2:
+			application_DR_DC_LAT.append(sum(Rate_DC_LAT[j,:]*X_Optimal_DC_LAT[j,:]));
+		else:
+			pass
+		if Data_SA_MRT.item()['Status'+str(10)] == 2:
+			application_DR_SA_MRT.append(sum(Rate_SA_MRT[j,:]*X_Optimal_SA_MRT[j,:]));
+		else:
+			pass
+		if Data_SA_LAT.item()['Status'+str(10)] == 2:
+			application_DR_SA_LAT.append(sum(Rate_SA_LAT[j,:]*X_Optimal_SA_LAT[j,:]));
+		else: 
+			pass
+		if Data_SA_BHCAP.item()['Status'+str(10)] == 2:
+			application_DR_SA_BHCAP.append(sum(Rate_SA_BHCAP[j,:]*X_Optimal_SA_BHCAP[j,:]));
+		else:
+			pass
+		if Data_SA_BHCAP_LAT.item()['Status'+str(10)] == 2:
+			application_DR_SA_BHCAP_LAT.append(sum(Rate_SA_BHCAP_LAT[j,:]*X_Optimal_SA_BHCAP_LAT[j,:]));
+		else:
+			pass
 
 
 # ===============
@@ -201,16 +302,16 @@ for i in range(0,MCMC_iter):
 # ==============
 # Net Throughput
 
-Net_Throughput_avg = np.sum(Net_Throughput, axis = 0)/MCMC_iter; # We get the average throughput over MCMC Iteratios
-Net_Throughput_DC_avg = np.sum(Net_Throughput_DC, axis = 0)/MCMC_iter; # Average throughput
-Net_Throughput_DC_MRT_avg = np.sum(Net_Throughput_DC_MRT, axis = 0)/MCMC_iter; # DC + MRT Average throughput
-Net_Throughput_DC_BHCAP_avg = np.sum(Net_Throughput_DC_BHCAP, axis = 0)/MCMC_iter; # DC + BHCAP Average throughput
-Net_Throughput_DC_LAT_avg = np.sum(Net_Throughput_DC_LAT, axis = 0)/MCMC_iter; # DC + LAT Average throughput
-Net_Throughput_DC_BHCAP_LAT_avg = np.sum(Net_Throughput_DC_BHCAP_LAT, axis = 0)/MCMC_iter; # DC + BHCAP + LAT Average throughput
-Net_Throughput_SA_MRT_avg = np.sum(Net_Throughput_SA_MRT, axis = 0)/MCMC_iter; # SA + MRT average 
-Net_Throughput_SA_LAT_avg = np.sum(Net_Throughput_SA_LAT, axis = 0)/MCMC_iter; # SA + LAT average
-Net_Throughput_SA_BHCAP_avg = np.sum(Net_Throughput_SA_BHCAP, axis = 0)/MCMC_iter; # SA + BHCAP average
-Net_Throughput_SA_BHCAP_LAT_avg = np.sum(Net_Throughput_SA_BHCAP_LAT, axis = 0)/MCMC_iter; # SA + BHCAP + LAT average
+Net_Throughput_avg = np.sum(Net_Throughput, axis = 0)/(MCMC_iter - len(iters_infeas)) ; # We get the average throughput over MCMC Iteratios
+Net_Throughput_DC_avg = np.sum(Net_Throughput_DC, axis = 0)/(MCMC_iter - len(iters_infeas_DC)); # Average throughput
+Net_Throughput_DC_MRT_avg = np.sum(Net_Throughput_DC_MRT, axis = 0)/(MCMC_iter - len(iters_infeas_DC_MRT)); # DC + MRT Average throughput
+Net_Throughput_DC_BHCAP_avg = np.sum(Net_Throughput_DC_BHCAP, axis = 0)/(MCMC_iter - len(iters_infeas_DC_BHCAP)); # DC + BHCAP Average throughput
+Net_Throughput_DC_LAT_avg = np.sum(Net_Throughput_DC_LAT, axis = 0)/(MCMC_iter - len(iters_infeas_DC_LAT)); # DC + LAT Average throughput
+Net_Throughput_DC_BHCAP_LAT_avg = np.sum(Net_Throughput_DC_BHCAP_LAT, axis = 0)/(MCMC_iter - len(iters_infeas_DC_BHCAP_LAT)); # DC + BHCAP + LAT Average throughput
+Net_Throughput_SA_MRT_avg = np.sum(Net_Throughput_SA_MRT, axis = 0)/(MCMC_iter - len(iters_infeas_SA_MRT)); # SA + MRT average 
+Net_Throughput_SA_LAT_avg = np.sum(Net_Throughput_SA_LAT, axis = 0)/(MCMC_iter - len(iters_infeas_SA_LAT)); # SA + LAT average
+Net_Throughput_SA_BHCAP_avg = np.sum(Net_Throughput_SA_BHCAP, axis = 0)/(MCMC_iter - len(iters_infeas_SA_BHCAP)); # SA + BHCAP average
+Net_Throughput_SA_BHCAP_LAT_avg = np.sum(Net_Throughput_SA_BHCAP_LAT, axis = 0)/(MCMC_iter - len(iters_infeas_SA_BHCAP_LAT)); # SA + BHCAP + LAT average
 
 # ========================================
 # Jain's Fairness Index and t-student test

@@ -270,7 +270,7 @@ for k in range(0,num_iter):
 			Data['X_optimal_data' + str(k)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
 			Data['Net_Throughput' + str(k)] = m.objVal; # Network wide throughput
 			Data['Rates' + str(k)] = rate; # Data rate matrix  
-			Data['status' + str(k)] = m.status; # Insert the status
+			Data['Status' + str(k)] = m.status; # Insert the status
 		else:
 			Data['Status' + str(k)] = m.status; # Add the status for detecting infeasible solution
 			continue
