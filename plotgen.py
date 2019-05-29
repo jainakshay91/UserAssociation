@@ -37,7 +37,7 @@ Net_Throughput_SA_LAT = copy.copy(Net_Throughput);
 Net_Throughput_SA_BHCAP = copy.copy(Net_Throughput);
 Net_Throughput_SA_BHCAP_LAT = copy.copy(Net_Throughput);
 Net_Throughput_SA_MRT_LAT = copy.copy(Net_Throughput);
-Net_Throughput_DA_MRT_LAT = copy.copy(Net_Throughput);
+Net_Throughput_DC_MRT_LAT = copy.copy(Net_Throughput);
 
 iters_infeas = [0]*num_iter; # Infeasible iteration numbers 
 iters_infeas_DC = [0]*num_iter; 
@@ -50,7 +50,7 @@ iters_infeas_SA_LAT = [0]*num_iter;
 iters_infeas_SA_BHCAP = [0]*num_iter;
 iters_infeas_SA_BHCAP_LAT = [0]*num_iter;
 iters_infeas_SA_MRT_LAT = [0]*num_iter;
-iters_infeas_DA_MRT_LAT = [0]*num_iter;
+iters_infeas_DC_MRT_LAT = [0]*num_iter;
 
 Base_DR = []
 application_DR = []
@@ -64,7 +64,7 @@ application_DR_SA_LAT = [];
 application_DR_SA_BHCAP = [];
 application_DR_SA_BHCAP_LAT = [];
 application_DR_SA_MRT_LAT = [];
-application_DR_DA_MRT_LAT = [];
+application_DR_DC_MRT_LAT = [];
 
 avg_idx = []; # This is for calculating the average application throughput 
 
@@ -431,7 +431,7 @@ box_data = [jfr_SA, jfr_DC, jfr_DC_MRT, jfr_SA_MRT, jfr_SA_LAT, jfr_DC_LAT, jfr_
 fig, ax = plt.subplots()
 plt.title('Jain\'s Fairness Index Deviation')
 plt.boxplot(box_data)
-plt.xticks(range(1,11), ['SA', 'DC', 'DC+MRT', 'SA+MRT', 'SA+LAT', 'DC+LAT', 'DC+BHCAP', 'SA+BHCAP', 'SA+BHCAP+LAT', 'DC+BHCAP+LAT', 'DC+MRT+LAT', 'SA+MRT+LAT'], fontsize = 8, rotation = '45')
+plt.xticks(range(1,13), ['SA', 'DC', 'DC+MRT', 'SA+MRT', 'SA+LAT', 'DC+LAT', 'DC+BHCAP', 'SA+BHCAP', 'SA+BHCAP+LAT', 'DC+BHCAP+LAT', 'DC+MRT+LAT', 'SA+MRT+LAT'], fontsize = 8, rotation = '45')
 plt.savefig('Boxplot', dpi=1200, facecolor='w', edgecolor='w',
         orientation='landscape', papertype='letter', format='png',
         transparent=False, bbox_inches='tight', pad_inches=0.1,
