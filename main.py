@@ -96,7 +96,9 @@ try:
 	# Dump the Users onto the scenario map 
 	# ====================================
 
-	usr_locs,usr_apps_assoc = scenario_gen.user_dump(scn, SCBS_per_MCBS, macro_cell_locations.shape[0], np); # We also retrieve the user and applications association matrix
+	AP_locs = np.vstack((macro_cell_locations, locs_SCBS)); # All AP locations
+	usr_locs,usr_apps_assoc = scenario_gen.user_dump(scn, SCBS_per_MCBS, macro_cell_locations.shape[0], AP_locs, np, dsc); # We also retrieve the user and applications association matrix
+	mMTC_locs = scenario_gen.mMTC_user_dump(scn,SCBS_per_MCBS,macro_cell_locations.shape[0],np); # Massive  Machine Type User locations
 	print "User and AP Dump completed"
 	# ======================================
 	# Generate the SINR values for the users
@@ -120,5 +122,10 @@ try:
 
 		#plotter.plotter('dashline',locs_sc_ret,sinr_sc_embb,5,10,1,45,0,0,1,'major','both', 'yes', 'SNR profile of Small Cell', np)
 		#plotter.plotter('heatmap',sinr,locs_sc_ret,5,10,1,45,0,0,1,'major','both', 'yes', 'SNR profile of Small Cell', np)
+
+	sinr_sorted_mMTC, locs_sc_ret_mMTC, usr_lcs_mMTC, idx_sc_mMTC, idx_mc_mMTC, sinr_pad_mMTC, num_SCBS_mMTC, num_MCBS_mMTC, num_MCBS_tot_mMTC = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), mMTC_locs['user_locations'], dsc, np)
+	sinr_mMTC = dsc.reorganizer(sinr_sorted_mMTC, idx_sc_mMTC, idx_mc_mMTC, num_SCBS_mMTC, num_MCBS_tot_mMTC, sinr_pad_mMTC, np, scn); # We reorganize the SINR matrix for the optimization framework
+	np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']),sinr_mMTC, usr_lcs_mMTC, idx_sc_mMTC, sinr_pad_mMTC, num_SCBS_mMTC, num_MCBS_tot_mMTC, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC, allow_pickle = True); # Save these variables to be utilized by the optimizer
+	
 except KeyboardInterrupt:
 	sys.exit("Exiting this process with Iteration Number" + str(vars(args)['iter']))

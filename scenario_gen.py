@@ -30,45 +30,71 @@ def macro_cell(simulation_area,MCBS_intersite,np,dsc):
 def small_cell(num, MCBS_locs, SCBS_intersite,SCBS_per_MCBS,MCBS_intersite,np,dsc):
     offset = MCBS_intersite/2; # Offset param
     while True:	
-	   locs_SCBS_x = np.random.uniform(MCBS_locs[num,0] - offset,MCBS_locs[num,0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
-	   locs_SCBS_y = np.random.uniform(MCBS_locs[num,1] - offset,MCBS_locs[num,1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
-	   locs_SCBS = np.concatenate((locs_SCBS_x, locs_SCBS_y), axis=1); 
-	   if dsc.checker(locs_SCBS,SCBS_intersite,np)==1:
-		  break
+        dist_from_MCBS = np.random.uniform(0,offset,(SCBS_per_MCBS,1))
+        angular_disp = np.random.uniform(0,2*np.pi,(SCBS_per_MCBS,1))
+        locs_SCBS_x = np.multiply(dist_from_MCBS,np.cos(angular_disp))
+        locs_SCBS_y = np.multiply(dist_from_MCBS,np.sin(angular_disp))
+       
+	   #locs_SCBS_x = np.random.uniform(MCBS_locs[num,0] - offset,MCBS_locs[num,0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
+	   #locs_SCBS_y = np.random.uniform(MCBS_locs[num,1] - offset,MCBS_locs[num,1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
+        locs_SCBS = np.concatenate((locs_SCBS_x, locs_SCBS_y), axis=1); 
+        if dsc.checker(locs_SCBS,SCBS_intersite,np)==1 and dsc.locs_checker(locs_SCBS, MCBS_locs,np, 'sc')==1:
+            break
     return locs_SCBS
 
 # ================================
 # Load/Generate the User locations
 # ================================
 
-def user_dump(scn, SCBS_per_MCBS, num_MCBS, np):
+def user_dump(scn, SCBS_per_MCBS, num_MCBS, AP_locs, np, dsc):
 
     # =============================================================
     # Compute total users and total applications in Simulation area
+    while True:
+        tot_users_scenario = np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml, dtype='int'); # Adding the users list for simulation 
+        #print tot_users_scenario
+        #tot_dev_eMBB = (sum(SCBS_per_MCBS)+num_MCBS)*scn.UE_density_eMBB; # Total eMBB devices in the scenario
+        #tot_dev_URLLC = scn.UE_density_URLLC*scn.simulation_area; # Total URLLC devices in the scenario
+        #tot_dev_mMTC = scn.UE_density_mMTC*num_MCBS; # Total mMTC devices in the scenario
+        
+        # =======================================================
+        # Generate User locations and User-App Association Matrix
 
-    tot_users_scenario = np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml, dtype='int'); # Adding the users list for simulation 
+        usr_locs = {}; # We establish an empty dictionary
+        assoc_usapp = {}; # We establish an empty dictionary for USER and APPs association
+        attr_name_usr = 'user_locations'; # Attribute name
+        attr_name_assoc = 'user_app'; # Attribute name for the USER-APPs association matrix (eMBB)
+        for i in range(0,tot_users_scenario.shape[0]):
+            usr_locs[attr_name_usr + str(i)] = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_users_scenario[i],2)); # Generate User locations
+            if dsc.locs_checker(usr_locs[attr_name_usr + str(i)], AP_locs,np,'user')==0:
+               i = i - 1; # We go back and start the for loop from the current instance
+               continue
+            assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_users_scenario[i], scn.max_num_appl_UE)); # Generate User-App Association 
+        return usr_locs, assoc_usapp
+        #usr_locs_eMBB = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_eMBB,2)); # We obtain a set of eMBB locations
+    #usr_locs_URLLC = np.random.uniform(0,np.sqrt(scn.simulation_area),(int(tot_dev_URLLC),2)); # We obtain a set of URLLC locations
+    #usr_locs_mMTC = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_mMTC,2)); # We obtain a set of mMTC locations
+    #return usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC; # Return the locations of these applications/users with these applications
+
+def mMTC_user_dump(scn, SCBS_per_MCBS, num_MCBS, np):
+
+    # =============================================================
+    # Compute total users and total applications in Simulation area
     #print tot_users_scenario
     #tot_dev_eMBB = (sum(SCBS_per_MCBS)+num_MCBS)*scn.UE_density_eMBB; # Total eMBB devices in the scenario
     #tot_dev_URLLC = scn.UE_density_URLLC*scn.simulation_area; # Total URLLC devices in the scenario
-    #tot_dev_mMTC = scn.UE_density_mMTC*num_MCBS; # Total mMTC devices in the scenario
+    tot_dev_mMTC = scn.UE_density_mMTC*num_MCBS; # Total mMTC devices in the scenario
     
     # =======================================================
     # Generate User locations and User-App Association Matrix
 
     usr_locs = {}; # We establish an empty dictionary
-    assoc_usapp = {}; # We establish an empty dictionary for USER and APPs association
+    #assoc_usapp = {}; # We establish an empty dictionary for USER and APPs association
     attr_name_usr = 'user_locations'; # Attribute name
-    attr_name_assoc = 'user_app'; # Attribute name for the USER-APPs association matrix (eMBB)
-    for i in range(0,tot_users_scenario.shape[0]):
-        usr_locs[attr_name_usr + str(i)] = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_users_scenario[i],2)); # Generate User locations
-        assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_users_scenario[i], scn.max_num_appl_UE)); # Generate User-App Association 
-
-    return usr_locs, assoc_usapp
-    #usr_locs_eMBB = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_eMBB,2)); # We obtain a set of eMBB locations
-    #usr_locs_URLLC = np.random.uniform(0,np.sqrt(scn.simulation_area),(int(tot_dev_URLLC),2)); # We obtain a set of URLLC locations
-    #usr_locs_mMTC = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_mMTC,2)); # We obtain a set of mMTC locations
-    #return usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC; # Return the locations of these applications/users with these applications
-
+    #attr_name_assoc = 'user_app'; # Attribute name for the USER-APPs association matrix (eMBB)
+    usr_locs[attr_name_usr] = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_mMTC,2)); # Generate User locations
+    #assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_dev_mMTC, scn.max_num_appl_UE)); # Generate User-App Association 
+    return usr_locs
 
 # =============================
 # Generate the backhaul network
