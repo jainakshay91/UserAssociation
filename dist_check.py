@@ -20,21 +20,54 @@ def checker(locs,isd,np): # Check the ISD for the selected
     i = 0; # Initialize the iterator variable
     for i in range(0,(locs.shape[0])):
     	dist_X = locs[i,0]*np.ones((locs.shape[0],1), dtype=int) - np.reshape(locs[:,0],(locs[:,0].shape[0],1)); #X coordinate diff	
-	#print dist_X
-	dist_Y = locs[i,1]*np.ones((locs.shape[0],1), dtype=int) - np.reshape(locs[:,1],(locs[:,1].shape[0],1)); #Y coordinate diff
-	#print dist_Y
-	tot_dist = np.sqrt(dist_X**2 + dist_Y**2); # Distance from other base stations
-	#print tot_dist
-	tot_dist[i,:] = tot_dist[i,:] + isd; # Set the self distance to be the minimum to avoid the base stations own location from affecting the decision
-	#print tot_dist
-	flag[i] = (tot_dist>=isd).all(); # Generate the flag (False if ISD violated; True if not)
-    #print flag
+    	#print dist_X
+    	dist_Y = locs[i,1]*np.ones((locs.shape[0],1), dtype=int) - np.reshape(locs[:,1],(locs[:,1].shape[0],1)); #Y coordinate diff
+    	#print dist_Y
+    	tot_dist = np.sqrt(dist_X**2 + dist_Y**2); # Distance from other base stations
+    	#print tot_dist
+    	tot_dist[i,:] = tot_dist[i,:] + isd; # Set the self distance to be the minimum to avoid the base stations own location from affecting the decision
+    	#print tot_dist
+    	flag[i] = (tot_dist>=isd).all(); # Generate the flag (False if ISD violated; True if not)
+        #print flag
     if all(flag) == False:
     	#print all(flag)
-	return 0
+	   return 0
     else:	
-	return 1 # Return 1 if none of the above checks return 0	
+	   return 1 # Return 1 if none of the above checks return 0	
 
+# =====================
+# Same Location Checker
+# =====================
+
+def locs_checker(locs, other_locs, np, indix):
+    if indix == 'sc':
+        flag = [None]*locs.shape[0]; #Empty array for the flag list
+        for i in range(locs.shape[0]):
+            for j in range(other_locs.shape[0]):
+                if locs[i,0] == other_locs[j,0] and locs[i,1] == other_locs[j,1]:
+                    flag[i] = False # If the location matches any of the previous generated locations then regenerate the location
+                else:
+                    flag[i] = True # If not, then pass
+        if all(flag) == False:
+            return 0    
+        else:
+            return 1
+    elif indix == 'user':
+        flag = [None]*locs.shape[0]; #Empty array for the flag list
+        for i in range(locs.shape[0]):
+            if i != locs.shape[0]:
+                comp_locs = np.vstack((other_locs,locs[i+1:,:]))
+            else:
+                comp_locs = other_locs
+            for j in range(comp_locs.shape[0]):
+                if locs[i,0] == comp_locs[j,0] and locs[i,1] == comp_locs[j,1]:
+                    flag[i] = False # If the location matches any of the previous generated locations then regenerate the location
+                else:
+                    flag[i] = True # If not, then pass
+        if all(flag) == False:
+            return 0    
+        else:
+            return 1
 # =======================
 # Macro Cell Grid Creator
 # =======================
