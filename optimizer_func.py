@@ -65,6 +65,14 @@ scn = scenario_var(); # Initializing the class variables
 Data = {}; # Dictionary that holds the data 
 num_iter = ((scn.num_users_max - scn.num_users_min)/scn.user_steps_siml); 
 
+# =========================================
+# Baseline Scenario: RSSI based association
+# =========================================
+
+
+optim_data_mMTC = np.load(os.getcwd() + '/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']) +'.npz', allow_pickle = True); # Extracting the mMTC data 
+
+
 for k in range(0,num_iter):
 	#k = 1
 	print "=============================================="
