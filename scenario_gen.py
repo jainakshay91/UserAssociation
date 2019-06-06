@@ -239,16 +239,18 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
     # ====================
     # Rx Power Computation
 
+    print "Performing Received Power Calculation"
+
     RX_sc = np.empty((PL_sc.shape[0], PL_sc.shape[1]));
     RX_mc = np.empty((PL_mc.shape[0], PL_mc.shape[1]));
 
     for i in range(0, RX_sc.shape[0]): # Small cell Received Power
         for j in range(0, RX_sc.shape[1]):
-            RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))), float('nan'));
+            RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan'));
 
     for i in range(0, RX_mc.shape[0]): # Macro cell Received Power
         for j in range(0, RX_mc.shape[1]):
-            RX_mc[i,j] = np.where(np.isnan(PL_mc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_mc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))), float('nan'));
+            RX_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(10**(scn.N/10)*scn.mc_bw*10**(-3)))
 
     # ================
     # SINR Calculation
@@ -261,7 +263,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
     
     for i in range(0,PL_sc.shape[0]):
         for j in range(0,PL_sc.shape[1]):
-            sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
+            sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
         # print sinr_sc[i,:] 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
         # (scn.transmit_power - 30 + scn.transmit_gain_sc + scn.receiver_gain - PL_sc[i,j] - 10*np.log10(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
         sinr_sc[i,:] = np.where(np.isnan(sinr_sc[i,:]), sinr_pad_value, sinr_sc[i,:]);
@@ -276,7 +278,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
             sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
 
     print "Finished All Calculations and Returning to main Function"
-    return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, idx_MCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1], mc_locs.shape[0], RX_sc, RX_mc
+    return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, idx_MCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1], mc_locs.shape[0], np.hstack((RX_sc, RX_mc))
     # The above calculation has to be optimally calculated for N users and M small cells. 
 
 

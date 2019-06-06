@@ -39,6 +39,11 @@ Net_Throughput_SA_BHCAP_LAT = copy.copy(Net_Throughput);
 Net_Throughput_SA_MRT_LAT = copy.copy(Net_Throughput);
 Net_Throughput_DC_MRT_LAT = copy.copy(Net_Throughput);
 
+B_Dat_DR = copy.copy(Net_Throughput);
+B_Dat_DR_fs = copy.copy(Net_Throughput);
+B_Dat_DR_sn = copy.copy(Net_Throughput);
+B_Dat_DR_sn_fs = copy.copy(Net_Throughput);
+
 iters_infeas = [0]*num_iter; # Infeasible iteration numbers 
 iters_infeas_DC = [0]*num_iter; 
 iters_infeas_DC_MRT = [0]*num_iter;
@@ -102,6 +107,14 @@ def zero_div(num, denom):
 			output[i] = num[i]/denom[i]
 	return output 
 
+def baseline_cal(i,k,simdata_path):
+	B_Dat = np.load(simdata_path + 'Baseline' + str(i) + str(k) + '.npz', allow_pickle = True)
+	B_Dat_DR = np.sum(B_Dat['arr_0'])
+	B_Dat_DR_fs = np.sum(B_Dat['arr_1'])
+	B_Dat_DR_sn = np.sum(B_Dat['arr_2'])
+	B_Dat_DR_sn_fs = np.sum(B_Dat['arr_3'])
+	return B_Dat_DR, B_Dat_DR_fs, B_Dat_DR_sn, B_Dat_DR_sn_fs
+
 # ==============
 # Data Extractor
 # ==============
@@ -110,7 +123,6 @@ for i in range(0,MCMC_iter):
 
 	# ================================
 	# Load the Data from the Optimizer
-
 
 	Baseline_dat = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['Baseline'] + '.npz', allow_pickle='True')
 	Dat_DC = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['DC'] + '.npz',  allow_pickle='True')
@@ -214,6 +226,9 @@ for i in range(0,MCMC_iter):
 			Net_Throughput_DC_MRT_LAT[i,k] = 0; #Zero if its an infeasible solution
 			#iters_infeas_SA_BHCAP_LAT.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
 			iters_infeas_DC_MRT_LAT[k] = iters_infeas_DC_MRT_LAT[k] + 1; # Increment the number of infeasible solution
+	
+		B_Dat_DR[i,k], B_Dat_DR_fs[i,k], B_Dat_DR_sn[i,k], B_Dat_DR_sn_fs[i,k] = baseline_cal(i,k,simdata_path)
+
 	#print "=================="
 	#print Net_Throughput
 	#print "=================="
@@ -384,6 +399,10 @@ Net_Throughput_SA_BHCAP_avg = zero_div(np.sum(Net_Throughput_SA_BHCAP, axis = 0)
 Net_Throughput_SA_BHCAP_LAT_avg = zero_div(np.sum(Net_Throughput_SA_BHCAP_LAT, axis = 0),(MCMC_iter - np.array(iters_infeas_SA_BHCAP_LAT))); # SA + BHCAP + LAT average
 Net_Throughput_SA_MRT_LAT_avg = zero_div(np.sum(Net_Throughput_SA_MRT_LAT, axis = 0),(MCMC_iter - np.array(iters_infeas_SA_MRT_LAT))); # SA + LAT average
 Net_Throughput_DC_MRT_LAT_avg = zero_div(np.sum(Net_Throughput_DC_MRT_LAT, axis = 0),(MCMC_iter - np.array(iters_infeas_DC_MRT_LAT))); # SA + LAT average
+B_Dat_DR_avg = np.sum(B_Dat_DR, axis =0)/MCMC_iter; # Baseline with BW restriction
+B_Dat_DR_fs_avg = np.sum(B_Dat_DR_fs, axis = 0)/MCMC_iter; # Baseline with 1GHz BW
+B_Dat_DR_sn_avg = np.sum(B_Dat_DR_sn, axis = 0)/MCMC_iter; # Baseline with SINR and BW restriction
+B_Dat_DR_sn_fs_avg = np.sum(B_Dat_DR_sn_fs, axis = 0)/MCMC_iter; #Baseline with SINR and 1GHz BW
 #print iters_infeas_DC_MRT
 # ========================================
 # Jain's Fairness Index and t-student test
@@ -409,13 +428,13 @@ jfr_DC_MRT_LAT = jains_fairness(application_DR_DC_MRT_LAT, avg_idx);
 # Throughput Plot
 
 x_axis = np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml);
-y_min = np.amin([np.amin(Net_Throughput_avg), np.amin(Net_Throughput_DC_avg), np.amin(Net_Throughput_DC_MRT_avg), np.amin(Net_Throughput_DC_BHCAP_avg), np.amin(Net_Throughput_DC_BHCAP_LAT_avg), np.amin(Net_Throughput_DC_LAT_avg), np.amin(Net_Throughput_SA_MRT_avg), np.amin(Net_Throughput_SA_LAT_avg), np.amin(Net_Throughput_SA_BHCAP_avg), np.amin(Net_Throughput_SA_BHCAP_LAT_avg), np.amin(Net_Throughput_SA_MRT_LAT_avg), np.amin(Net_Throughput_DC_MRT_LAT_avg)]);
-y_max = np.max([np.amax(Net_Throughput_avg), np.amax(Net_Throughput_DC_avg), np.amax(Net_Throughput_DC_MRT_avg), np.amax(Net_Throughput_DC_BHCAP_avg), np.amax(Net_Throughput_DC_BHCAP_LAT_avg), np.amax(Net_Throughput_DC_LAT_avg), np.amax(Net_Throughput_SA_MRT_avg), np.amax(Net_Throughput_SA_LAT_avg), np.amax(Net_Throughput_SA_BHCAP_avg), np.amax(Net_Throughput_SA_BHCAP_LAT_avg), np.amax(Net_Throughput_SA_MRT_LAT_avg), np.amax(Net_Throughput_DC_MRT_LAT_avg)]);
+y_min = np.amin([np.amin(Net_Throughput_avg), np.amin(Net_Throughput_DC_avg), np.amin(Net_Throughput_DC_MRT_avg), np.amin(Net_Throughput_DC_BHCAP_avg), np.amin(Net_Throughput_DC_BHCAP_LAT_avg), np.amin(Net_Throughput_DC_LAT_avg), np.amin(Net_Throughput_SA_MRT_avg), np.amin(Net_Throughput_SA_LAT_avg), np.amin(Net_Throughput_SA_BHCAP_avg), np.amin(Net_Throughput_SA_BHCAP_LAT_avg), np.amin(Net_Throughput_SA_MRT_LAT_avg), np.amin(Net_Throughput_DC_MRT_LAT_avg), np.amin(B_Dat_DR_avg), np.amin(B_Dat_DR_sn_avg)]);
+y_max = np.max([np.amax(Net_Throughput_avg), np.amax(Net_Throughput_DC_avg), np.amax(Net_Throughput_DC_MRT_avg), np.amax(Net_Throughput_DC_BHCAP_avg), np.amax(Net_Throughput_DC_BHCAP_LAT_avg), np.amax(Net_Throughput_DC_LAT_avg), np.amax(Net_Throughput_SA_MRT_avg), np.amax(Net_Throughput_SA_LAT_avg), np.amax(Net_Throughput_SA_BHCAP_avg), np.amax(Net_Throughput_SA_BHCAP_LAT_avg), np.amax(Net_Throughput_SA_MRT_LAT_avg), np.amax(Net_Throughput_DC_MRT_LAT_avg), np.amax(B_Dat_DR_avg), np.amax(B_Dat_DR_sn_avg)]);
 #plotter.plotter('dashline',np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml),Net_Throughput_avg,5,10,1,45,0,0,1,'major','both', 'yes', 'Total Network Throughput', np)
-plt.plot(x_axis, Net_Throughput_avg, 'r--*', x_axis, Net_Throughput_DC_avg, 'b--*' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'k--s', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm--d', x_axis , Net_Throughput_DC_LAT_avg, 'c--p',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--D', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:', x_axis, Net_Throughput_SA_MRT_LAT_avg, 'r-o', x_axis, Net_Throughput_DC_MRT_LAT_avg, 'k-o');
+plt.plot(x_axis, Net_Throughput_avg, 'r--*', x_axis, Net_Throughput_DC_avg, 'b--*' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'k--s', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm--d', x_axis , Net_Throughput_DC_LAT_avg, 'c--p',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--D', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:', x_axis, Net_Throughput_SA_MRT_LAT_avg, 'r-o', x_axis, Net_Throughput_DC_MRT_LAT_avg, 'k-o', x_axis, B_Dat_DR_avg, 'k--x', x_axis, B_Dat_DR_sn_avg, 'b--x');
 plt.xticks(np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml));
 plt.yticks(np.arange(y_min,y_max,5e10));
-plt.legend(['Single Association (SA)','Dual Connectivity (DC)', 'DC + Minimum Rate', 'DC + Constrained Backhaul (CB) [1% Bound Gap]', 'DC + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DC + CPL', 'SA + Minimum Rate', 'SA + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]','SA + Minimum Rate + CPL', 'DC + Minimum Rate + CPL'], loc='upper left', bbox_to_anchor=(0., 0.5, 0.5, 0.5), prop={'size': 6})
+plt.legend(['Single Association (SA)','Dual Connectivity (DC)', 'DC + Minimum Rate', 'DC + Constrained Backhaul (CB) [1% Bound Gap]', 'DC + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DC + CPL', 'SA + Minimum Rate', 'SA + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]','SA + Minimum Rate + CPL', 'DC + Minimum Rate + CPL', 'Baseline (RSSI)', 'Baseline(SINR)'], loc='upper left', bbox_to_anchor=(0., 0.5, 0.5, 0.5), prop={'size': 6})
 plt.grid(which= 'major',axis= 'both');
 plt.title('Network Wide Throughput')
 plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
@@ -424,6 +443,8 @@ plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
         frameon=None, metadata=None)
 
 
+#plt.plot(x_axis, B_Dat_DR_avg, 'b-', x_axis, B_Dat_DR_sn_avg, 'r-')
+#lt.show()
 # ================
 # Fairness BoxPlot
 

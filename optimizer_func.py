@@ -10,6 +10,7 @@ import plotter
 import os
 from scenario_var import scenario_var 
 from argparse import ArgumentParser
+from rssi_assoc import baseline_assoc
 
 # =======================
 # Optimizer Configuration
@@ -65,13 +66,14 @@ scn = scenario_var(); # Initializing the class variables
 Data = {}; # Dictionary that holds the data 
 num_iter = ((scn.num_users_max - scn.num_users_min)/scn.user_steps_siml); 
 
-# =========================================
-# Baseline Scenario: RSSI based association
-# =========================================
-
+# ==============================
+# Load Massive Machine Type Data
+# ==============================
 
 optim_data_mMTC = np.load(os.getcwd() + '/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']) +'.npz', allow_pickle = True); # Extracting the mMTC data 
-
+Rx_power_mMTC = optim_data_mMTC['arr_11']; # Received Power from Small cells for all the mMTC devices
+#RX_power_mc_mMTC = optim_data_mMTC['arr_12']; # Received Power from Macro cells for all the mMTC devices
+#RX_power_mMTC = np.hstack((Rx_power_sc_mMTC, RX_power_mc_mMTC)); # Stack all the received powers for the mMTC users
 
 for k in range(0,num_iter):
 	#k = 1
@@ -91,7 +93,10 @@ for k in range(0,num_iter):
 	Hops_SC = optim_data['arr_10']; # Number of hops to the IMS core from Small cells
 	BH_Capacity_SC = optim_data['arr_11']; # Backhaul capacity for Small cells
 	BH_Capacity_MC = scn.fib_BH_MC_capacity; # Backhaul capacity for Macro cells
-
+	RX_power = optim_data['arr_12']; # Small Cell Received Power 
+	#RX_power_mc = optim_data['arr_13']; # Macro Cell Received Power 
+	#RX_power = np.hstack((RX_power_mc,RX_power_sc)); # Stack all the received powers for the eMBB users
+	RX_power_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
 	# ==================================
 	# Print to Understand Matrix Formats
 
@@ -115,6 +120,7 @@ for k in range(0,num_iter):
 	iter = 0; # Application number tracking
 	for i in range(0,sinr_APs.shape[0]):
 		sinr_eMBB [iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],sinr_APs[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
+	 	RX_power_eMBB[iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],RX_power[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
 	 	iter = iter + np.sum(user_AP_assoc[i,1]); # Incrementing the iterator for the next user-application sets
 
 
@@ -147,6 +153,18 @@ for k in range(0,num_iter):
 
 	#print rate
 
+	# =================================
+	# Baseline Cell Selection Algorithm
+	# =================================
+
+	
+	#DR_eMBB_scbw, DR_eMBB_fscbw, DR_mMTC, DR_eMBB_sinr_scbw, DR_eMBB_sinr_fscbw, DR_mMTC_sinr = baseline_assoc(RX_power_eMBB, RX_power_mMTC, sinr_eMBB, sinr_mMTC, np, scn); # Baseline association function 
+	#np.savez_compressed(os.getcwd()+'/Data/Temp/Baseline'+ str(vars(args)['iter']) + str(k), DR_eMBB_scbw, DR_eMBB_fscbw, DR_mMTC, DR_eMBB_sinr_scbw, DR_eMBB_sinr_fscbw, DR_mMTC_sinr, allow_pickle = True); # Save these variables to be utilized by the optimizer
+
+	
+	DR_eMBB_scbw, DR_eMBB_fscbw, DR_eMBB_sinr_scbw, DR_eMBB_sinr_fscbw = baseline_assoc(RX_power_eMBB, 0, sinr_eMBB, 0, np, scn); # Baseline association function 
+	np.savez_compressed(os.getcwd()+'/Data/Process/Baseline'+ str(vars(args)['iter']) + str(k), DR_eMBB_scbw, DR_eMBB_fscbw, DR_eMBB_sinr_scbw, DR_eMBB_sinr_fscbw, allow_pickle = True); # Save these variables to be utilized by the optimizer
+	 
 	# =========
 	# Optimizer
 	# =========

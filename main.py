@@ -108,13 +108,13 @@ try:
 	for i in range(0,len(usr_locs.keys())):
 		print "Iteration #" + str(i)
 		print "====================="
-		sinr_sorted, locs_sc_ret, usr_lcs, idx_sc, idx_mc, sinr_pad, num_SCBS, num_MCBS, num_MCBS_tot, RX_sc, Rx_mc = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_locs['user_locations'+str(i)], dsc, np)
+		sinr_sorted, locs_sc_ret, usr_lcs, idx_sc, idx_mc, sinr_pad, num_SCBS, num_MCBS, num_MCBS_tot, RX_eMBB = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_locs['user_locations'+str(i)], dsc, np)
 		sinr = dsc.reorganizer(sinr_sorted, idx_sc, idx_mc, num_SCBS, num_MCBS_tot, sinr_pad, np, scn); # We reorganize the SINR matrix for the optimization framework
-		
+		RX = dsc.reorganizer(RX_eMBB, idx_sc, idx_mc, num_SCBS, num_MCBS_tot, float('nan'), np, scn); # We reorganize the RX Power matrix for the Baseline framework
 		# ================================
 		# Create Compressed Variable Files
 		
-		np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_'+ str(i) + str(vars(args)['iter']),sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS_tot, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC, RX_sc, Rx_mc, allow_pickle = True); # Save these variables to be utilized by the optimizer
+		np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_'+ str(i) + str(vars(args)['iter']),sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS_tot, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC, RX, allow_pickle = True); # Save these variables to be utilized by the optimizer
 		#np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var_1',sinr_sorted, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC); # Save these variables to be utilized by the optimizer
 
 		# ===========================
@@ -123,9 +123,10 @@ try:
 		#plotter.plotter('dashline',locs_sc_ret,sinr_sc_embb,5,10,1,45,0,0,1,'major','both', 'yes', 'SNR profile of Small Cell', np)
 		#plotter.plotter('heatmap',sinr,locs_sc_ret,5,10,1,45,0,0,1,'major','both', 'yes', 'SNR profile of Small Cell', np)
 
-	sinr_sorted_mMTC, locs_sc_ret_mMTC, usr_lcs_mMTC, idx_sc_mMTC, idx_mc_mMTC, sinr_pad_mMTC, num_SCBS_mMTC, num_MCBS_mMTC, num_MCBS_tot_mMTC = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), mMTC_locs['user_locations'], dsc, np)
+	sinr_sorted_mMTC, locs_sc_ret_mMTC, usr_lcs_mMTC, idx_sc_mMTC, idx_mc_mMTC, sinr_pad_mMTC, num_SCBS_mMTC, num_MCBS_mMTC, num_MCBS_tot_mMTC, RX_mMTC = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), mMTC_locs['user_locations'], dsc, np)
 	sinr_mMTC = dsc.reorganizer(sinr_sorted_mMTC, idx_sc_mMTC, idx_mc_mMTC, num_SCBS_mMTC, num_MCBS_tot_mMTC, sinr_pad_mMTC, np, scn); # We reorganize the SINR matrix for the optimization framework
-	np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']),sinr_mMTC, usr_lcs_mMTC, idx_sc_mMTC, sinr_pad_mMTC, num_SCBS_mMTC, num_MCBS_tot_mMTC, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC, allow_pickle = True); # Save these variables to be utilized by the optimizer
+	RX_mMTC_reorg = dsc.reorganizer(RX_mMTC, idx_sc_mMTC, idx_mc_mMTC, num_SCBS_mMTC, num_MCBS_tot_mMTC, float('nan'), np, scn); # We reorganize the RX Power matrix for the Baseline framework
+	np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']),sinr_mMTC, usr_lcs_mMTC, idx_sc_mMTC, sinr_pad_mMTC, num_SCBS_mMTC, num_MCBS_tot_mMTC, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC, RX_mMTC_reorg, allow_pickle = True); # Save these variables to be utilized by the optimizer
 	
 except KeyboardInterrupt:
 	sys.exit("Exiting this process with Iteration Number" + str(vars(args)['iter']))

@@ -324,7 +324,8 @@ def SA_MRT_LAT(MCMC_iter, chat_frequency):
 sys.path.append(os.getcwd()); # Add current working directory to python path
 os.chdir(os.getcwd()); # Change to the current working directory
 chat_frequency = 10; # Select the divider so as to obtain timely update messages
-num_processors = int(int(subprocess.check_output(['nproc']))/2); # Number of Processors to be utilized 
+#num_processors = int(int(subprocess.check_output(['nproc']))/2); # Number of Processors to be utilized 
+num_processors = 2
 scn = scenario_var();
 MCMC_iter = scn.MCMC_iter; # Number of Monte Carlo Iterations
 
@@ -338,12 +339,12 @@ if __name__ == '__main__':
 
 	if dat_gen_flag == 1:
 		file_indexer = 0; # For File Indexing
+		pool = Pool(processes = num_processors); # Creates a pool of 10 parallel processes to be done
 		for i in range(0, MCMC_iter/num_processors):
 			print "Entering Round " + str(i) + " of Processing"
 			print "------------------------------"
 			print ""
 			idx_range = np.arange(file_indexer, file_indexer + num_processors); # Data file Index numbers
-			pool = Pool(processes = num_processors); # Creates a pool of 10 parallel processes to be done
 			pool.map(parallel_executor,idx_range.tolist()); # Maps the function to parallel processes
 			file_indexer = file_indexer + num_processors; # Increase the Iterator number
 			print file_indexer

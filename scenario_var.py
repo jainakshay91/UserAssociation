@@ -17,7 +17,7 @@ class scenario_var:
 	#SCBS_per_MCBS = np.random.randint(3,10,size=1); # Create a set for number of small cells per macro BS
 	UE_density_eMBB = 10; #Number of eMBB devices per TRP
 	UE_density_URLLC = (4000/1e6); #Number of URLLC devices per sq. m
-	UE_density_mMTC = 24000; #Number of mMTC devices per Macro 
+	UE_density_mMTC = 24; #Number of mMTC devices per Macro 
 	#UE_density_eMBB = 24000; #Number of URLLC UEs per Macro BS
 	ant_gain_MCBS = 17; # dBi gain 
 	max_tnsmtpow_MCBS = 49; # dBm gain per band (in 20 MHz)
@@ -42,8 +42,9 @@ class scenario_var:
 	wl_link_delay = 1e-3; # 1 ms link delay for the wireless link 
 	wrd_link_delay = 0.5*1e-3; # 0.5 ms link delay for the wired link
 	eMBB_latency_req = 3*1e-3; # 3 ms link latency requirement for the eMBB applications
-	MCMC_iter = 16; # Number of Monte Carlo Iterations
+	MCMC_iter = 2; # Number of Monte Carlo Iterations
 	num_Subcarriers_MCBS = 1200; # LTE number of subcarriers
 	num_Subcarriers_SCBS = 3300; # 5G NR number of subcarriers 
-	usr_scbw = 1e8; # 100 MHz bandwidth per user 
-	
+	usr_scbw = 2e8; # 100 MHz bandwidth per user 
+	mMTC_bw = 180*1e3; # Device Bandwidth (Guard Band Operations considered)
+	mMTC_maxrate = 1e6; # Device data rate
