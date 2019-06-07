@@ -428,23 +428,62 @@ jfr_DC_MRT_LAT = jains_fairness(application_DR_DC_MRT_LAT, avg_idx);
 # Throughput Plot
 
 x_axis = np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml);
-y_min = np.amin([np.amin(Net_Throughput_avg), np.amin(Net_Throughput_DC_avg), np.amin(Net_Throughput_DC_MRT_avg), np.amin(Net_Throughput_DC_BHCAP_avg), np.amin(Net_Throughput_DC_BHCAP_LAT_avg), np.amin(Net_Throughput_DC_LAT_avg), np.amin(Net_Throughput_SA_MRT_avg), np.amin(Net_Throughput_SA_LAT_avg), np.amin(Net_Throughput_SA_BHCAP_avg), np.amin(Net_Throughput_SA_BHCAP_LAT_avg), np.amin(Net_Throughput_SA_MRT_LAT_avg), np.amin(Net_Throughput_DC_MRT_LAT_avg), np.amin(B_Dat_DR_avg), np.amin(B_Dat_DR_sn_avg)]);
-y_max = np.max([np.amax(Net_Throughput_avg), np.amax(Net_Throughput_DC_avg), np.amax(Net_Throughput_DC_MRT_avg), np.amax(Net_Throughput_DC_BHCAP_avg), np.amax(Net_Throughput_DC_BHCAP_LAT_avg), np.amax(Net_Throughput_DC_LAT_avg), np.amax(Net_Throughput_SA_MRT_avg), np.amax(Net_Throughput_SA_LAT_avg), np.amax(Net_Throughput_SA_BHCAP_avg), np.amax(Net_Throughput_SA_BHCAP_LAT_avg), np.amax(Net_Throughput_SA_MRT_LAT_avg), np.amax(Net_Throughput_DC_MRT_LAT_avg), np.amax(B_Dat_DR_avg), np.amax(B_Dat_DR_sn_avg)]);
+y_min_1 = np.amin([np.amin(Net_Throughput_avg),np.amin(Net_Throughput_DC_avg), np.amin(Net_Throughput_DC_MRT_avg), np.amin(Net_Throughput_DC_BHCAP_avg), np.amin(Net_Throughput_DC_BHCAP_LAT_avg), np.amin(Net_Throughput_DC_LAT_avg), np.amin(Net_Throughput_SA_MRT_avg), np.amin(Net_Throughput_SA_LAT_avg), np.amin(Net_Throughput_SA_BHCAP_avg), np.amin(Net_Throughput_SA_BHCAP_LAT_avg), np.amin(Net_Throughput_SA_MRT_LAT_avg), np.amin(Net_Throughput_DC_MRT_LAT_avg)]); #np.amin(B_Dat_DR_avg), , np.amin(B_Dat_DR_sn_avg)
+y_max_1 = np.max([np.amax(Net_Throughput_avg), np.amax(Net_Throughput_DC_avg), np.amax(Net_Throughput_DC_MRT_avg), np.amax(Net_Throughput_DC_BHCAP_avg), np.amax(Net_Throughput_DC_BHCAP_LAT_avg), np.amax(Net_Throughput_DC_LAT_avg), np.amax(Net_Throughput_SA_MRT_avg), np.amax(Net_Throughput_SA_LAT_avg), np.amax(Net_Throughput_SA_BHCAP_avg), np.amax(Net_Throughput_SA_BHCAP_LAT_avg), np.amax(Net_Throughput_SA_MRT_LAT_avg), np.amax(Net_Throughput_DC_MRT_LAT_avg)]); #np.amax(B_Dat_DR_avg),, np.amax(B_Dat_DR_sn_avg)
+y_min_2 = np.amin([np.amin(B_Dat_DR_avg)]);
+y_max_2 = np.max([np.amax(B_Dat_DR_avg)]);
 #plotter.plotter('dashline',np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml),Net_Throughput_avg,5,10,1,45,0,0,1,'major','both', 'yes', 'Total Network Throughput', np)
-plt.plot(x_axis, Net_Throughput_avg, 'r--*', x_axis, Net_Throughput_DC_avg, 'b--*' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'k--s', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm--d', x_axis , Net_Throughput_DC_LAT_avg, 'c--p',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--D', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:', x_axis, Net_Throughput_SA_MRT_LAT_avg, 'r-o', x_axis, Net_Throughput_DC_MRT_LAT_avg, 'k-o', x_axis, B_Dat_DR_avg, 'k--x', x_axis, B_Dat_DR_sn_avg, 'b--x');
-plt.xticks(np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml));
-plt.yticks(np.arange(y_min,y_max,5e10));
-plt.legend(['Single Association (SA)','Dual Connectivity (DC)', 'DC + Minimum Rate', 'DC + Constrained Backhaul (CB) [1% Bound Gap]', 'DC + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DC + CPL', 'SA + Minimum Rate', 'SA + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]','SA + Minimum Rate + CPL', 'DC + Minimum Rate + CPL', 'Baseline (RSSI)', 'Baseline(SINR)'], loc='upper left', bbox_to_anchor=(0., 0.5, 0.5, 0.5), prop={'size': 6})
-plt.grid(which= 'major',axis= 'both');
-plt.title('Network Wide Throughput')
+#plt.plot(x_axis, Net_Throughput_avg, 'r--*', x_axis, Net_Throughput_DC_avg, 'b--*' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'k--s', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm--d', x_axis , Net_Throughput_DC_LAT_avg, 'c--p',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--D', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:', x_axis, Net_Throughput_SA_MRT_LAT_avg, 'r-o', x_axis, Net_Throughput_DC_MRT_LAT_avg, 'k-o', x_axis, B_Dat_DR_sn_avg, 'b--x'); #x_axis, B_Dat_DR_avg, 'k--x',
+#plt.xticks(np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml));
+#plt.yticks(np.arange(y_min,y_max,5e10));
+#plt.legend(['Single Association (SA)','Dual Connectivity (DC)', 'DC + Minimum Rate', 'DC + Constrained Backhaul (CB) [1% Bound Gap]', 'DC + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DC + CPL', 'SA + Minimum Rate', 'SA + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]','SA + Minimum Rate + CPL', 'DC + Minimum Rate + CPL', 'Baseline(SINR)'], loc='upper left', bbox_to_anchor=(0., 0.5, 0.5, 0.5), prop={'size': 6}) #'Baseline (RSSI)',
+#plt.grid(which= 'major',axis= 'both');
+#plt.title('Network Wide Throughput')
+#plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
+#        orientation='landscape', papertype='letter', format='png',
+#        transparent=False, bbox_inches='tight', pad_inches=0.1,
+#        frameon=None, metadata=None)
+
+# ===> Setting up a Broken plot to depict Values with distinct ranges
+
+f, (ax, ax2) = plt.subplots(2, 1, sharex = True)
+
+# plot the same data on both axes
+ax2.plot(x_axis, Net_Throughput_avg, 'r--*', x_axis, Net_Throughput_DC_avg, 'b--*' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'k--s', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm--d', x_axis , Net_Throughput_DC_LAT_avg, 'c--p',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--D', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:', x_axis, Net_Throughput_SA_MRT_LAT_avg, 'r-^', x_axis, Net_Throughput_DC_MRT_LAT_avg, 'k-o')
+ax.plot(x_axis, B_Dat_DR_avg, 'k--x') #x_axis, B_Dat_DR_sn_avg, 'b--x', 
+
+ax2.set_ylim(y_min_1,y_max_1 + 0.5*1e10)
+#ax2.set_yticks((y_min_1,y_max_1,5e10))
+ax.set_ylim(y_max_1,y_max_2+1e12)
+#ax.set_yticks((y_max_1,y_max_2,1e11))
+
+ax.spines['bottom'].set_visible(False)
+ax2.spines['top'].set_visible(False)
+ax.xaxis.tick_top()
+ax.tick_params(labeltop='off')
+ax2.xaxis.tick_bottom()
+
+f.legend(['Baseline(SNR)','Single Association (SA)','Dual Connectivity (DC)', 'DC + Minimum Rate', 'DC + Constrained Backhaul (CB) [1% Bound Gap]', 'DC + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DC + CPL', 'SA + Minimum Rate', 'SA + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]','SA + Minimum Rate + CPL', 'DC + Minimum Rate + CPL'], loc='upper right', bbox_to_anchor=(0., 0.5, 0.83, 0.18), prop={'size': 5.5}) #'Baseline (RSSI)',
+
+d = .015  # how big to make the diagonal lines in axes coordinates
+# arguments to pass to plot, just so we don't keep repeating them
+kwargs = dict(transform=ax.transAxes, color='k', clip_on=False)
+ax.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
+ax.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
+
+kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
+ax2.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+ax2.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
+
+#plt.plot(x_axis, B_Dat_DR_avg, 'b-', x_axis, B_Dat_DR_sn_avg, 'r-')
+ax.grid(which= 'both',axis= 'both')
+ax2.grid(which= 'both',axis= 'both')
+f.suptitle('Total Network Throughput (User Bandwidth=200 MHz)')
 plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
         orientation='landscape', papertype='letter', format='png',
         transparent=False, bbox_inches='tight', pad_inches=0.1,
         frameon=None, metadata=None)
 
-
-#plt.plot(x_axis, B_Dat_DR_avg, 'b-', x_axis, B_Dat_DR_sn_avg, 'r-')
-#lt.show()
 # ================
 # Fairness BoxPlot
 
@@ -452,7 +491,7 @@ box_data = [jfr_SA, jfr_DC, jfr_DC_MRT, jfr_SA_MRT, jfr_SA_LAT, jfr_DC_LAT, jfr_
 fig, ax = plt.subplots()
 plt.title('Jain\'s Fairness Index Deviation')
 plt.boxplot(box_data)
-plt.xticks(range(1,13), ['SA', 'DC', 'DC+MRT', 'SA+MRT', 'SA+LAT', 'DC+LAT', 'DC+BHCAP', 'SA+BHCAP', 'SA+BHCAP+LAT', 'DC+BHCAP+LAT', 'DC+MRT+LAT', 'SA+MRT+LAT'], fontsize = 8, rotation = '45')
+plt.xticks(range(1,13), ['SA', 'DC', 'DC+MRT', 'SA+MRT', 'SA+LAT', 'DC+LAT', 'DC+BHCAP', 'SA+BHCAP', 'SA+BHCAP+LAT', 'DC+BHCAP+LAT', 'DC+MRT+LAT', 'SA+MRT+LAT'], fontsize = 8, rotation = '90')
 plt.savefig('Boxplot', dpi=1200, facecolor='w', edgecolor='w',
         orientation='landscape', papertype='letter', format='png',
         transparent=False, bbox_inches='tight', pad_inches=0.1,

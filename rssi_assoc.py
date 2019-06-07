@@ -10,17 +10,17 @@ import collections
 # Baseline Association Function
 # =============================
 
-def baseline_assoc(RX_eMBB, RX_mMTC, sinr_eMBB, sinr_mMTC, np, scn):
+def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, np, scn):
 
 	# ==================================
 	# Compute the Highest Received Power
 
 	#print RX_eMBB.shape
 	#print sinr_eMBB.shape
-	RX_eMBB = np.where(np.isnan(RX_eMBB) == True, -300 ,RX_eMBB); # Taking care of Nan values
+	SNR_eMBB = np.where(np.isnan(SNR_eMBB) == True, -300 ,SNR_eMBB); # Taking care of Nan values
 
-	rx_max_eMBB = np.flip(np.sort(RX_eMBB, axis = 1),axis=1); # Sorted Matrix for eMBB 
-	idx_max_eMBB = np.flip(np.argsort(RX_eMBB, axis = 1),axis=1); # Maximum received power for each eMBB application
+	SNR_max_eMBB = np.flip(np.sort(SNR_eMBB, axis = 1),axis=1); # Sorted Matrix for eMBB 
+	idx_max_eMBB = np.flip(np.argsort(SNR_eMBB, axis = 1),axis=1); # Maximum received power for each eMBB application
 	#idx_max_mMTC = np.argsort(RX_mMTC, axis = 1); # Maximum received power for each mMTC application 
 	#rx_max_mMTC = np.sort(RX_mMTC, axis = 1); # Sorted Matrix for mMTC
 	sinr_max_eMBB = np.empty((sinr_eMBB.shape[0],1))
@@ -41,8 +41,8 @@ def baseline_assoc(RX_eMBB, RX_mMTC, sinr_eMBB, sinr_mMTC, np, scn):
 	counter_eMBB = collections.Counter(idx_max_eMBB[:,0]); # Counts the frequency of occurence of each BS as being the strongest BS for eMBB type
 	#counter_mMTC = collections.Counter(idx_max_mMTC[:,0]); # Counts the frequency of occurence of each BS as being the strongest BS for mMTC type
 
-	Data_Rate_eMBB_scbw = scn.usr_scbw*np.log2(1+10**(rx_max_eMBB[:,0]/10)); # Data rate at each eMBB application when attaching to the AP with best RSSI
-	Data_Rate_eMBB_fscbw = scn.sc_bw*np.log2(1+10**(rx_max_eMBB[:,0]/10)); # Data rate with 1GHz BW for each eMBB application
+	Data_Rate_eMBB_scbw = scn.usr_scbw*np.log2(1+10**(SNR_max_eMBB[:,0]/10)); # Data rate at each eMBB application when attaching to the AP with best RSSI
+	Data_Rate_eMBB_fscbw = scn.sc_bw*np.log2(1+10**(SNR_max_eMBB[:,0]/10)); # Data rate with 1GHz BW for each eMBB application
 	#Data_Rate_mMTC = scn.mMTC_bw*np.log2(1+10**(rx_max_eMBB[:,0]/10)); # mMTC Data rate with standard data rate 
 
 	print Data_Rate_eMBB_scbw
