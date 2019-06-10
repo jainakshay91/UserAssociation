@@ -72,6 +72,8 @@ num_iter = ((scn.num_users_max - scn.num_users_min)/scn.user_steps_siml);
 
 optim_data_mMTC = np.load(os.getcwd() + '/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']) +'.npz', allow_pickle = True); # Extracting the mMTC data 
 Rx_power_mMTC = optim_data_mMTC['arr_11']; # Received Power from Small cells for all the mMTC devices
+sinr_APs_mMTC = optim_data_mMTC['arr_0']; # SINR data for the mMTC devices
+
 #RX_power_mc_mMTC = optim_data_mMTC['arr_12']; # Received Power from Macro cells for all the mMTC devices
 #RX_power_mMTC = np.hstack((Rx_power_sc_mMTC, RX_power_mc_mMTC)); # Stack all the received powers for the mMTC users
 
@@ -194,6 +196,14 @@ for k in range(0,num_iter):
 		for i in range(0,var_row_num):
 			DC[i,0] = X.sum(i,'*'); # Constraint Expression
 		
+		MC = m.addVars(var_row_num,1, name = "MC"); # Initializing the Constraint Variables with MC 
+		for i in range(0,var_row_num):
+			MC[i,0] = X.sum(i,np.arange(num_scbs,num_scbs+num_mcbs).tolist()); # Macro Cell Constraint Expression
+
+		SC = m.addVars(var_row_num,1, name = "SC"); # Initializing the Constraint Variable with SC
+		for i in range(0,var_row_num):
+			SC[i,0] = X.sum(i,np.arange(0,num_scbs).tolist()); # Small Cell Constraint Expression
+
 		# ======================================================= 
 		# Set up the Minimum Rate Constraint for the Applications
 
@@ -225,6 +235,12 @@ for k in range(0,num_iter):
 		for i in range(0, var_col_num):
 			AP_latency[i,0] = LinExpr(bh_paths,X.select(i,'*')); # Constraint Expression
 
+		# ==========================
+		# Set up the mMTC Constraint
+
+		#mMTC_BW = m.addVars()
+
+
 		# ======================
 		# Solve the MILP problem 
 
@@ -233,6 +249,7 @@ for k in range(0,num_iter):
 		# We add a Compulsory Resource allocation Constraint 
 
 		m.addConstrs((RB[i,0] <= scn.sc_bw for i in range(num_scbs)), name = 'c0'); # Small cells have their bandwidth distributed 
+		#m.addConstrs(())
 
 		if vars(args)['dual'] == 0:
 			print "==================="
@@ -250,8 +267,10 @@ for k in range(0,num_iter):
 			print "================="	
 			print "Dual Connectivity"
 			print "================="
-			m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
-			m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
+			#m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+			m.addConstrs((MC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+			m.addConstrs((SC[i,0] <= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
+			#m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
 			if vars(args)['bhaul'] == 1:
