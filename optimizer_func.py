@@ -231,10 +231,10 @@ for k in range(0,num_iter):
 		# ================================== 
 		# Set up the Path Latency constraint
 
-		AP_latency = m.addVars(var_row_num, 1, name="AP_latency"); # Initializing the Path Latency constraint
-		for i in range(0, var_col_num):
-			AP_latency[i,0] = LinExpr(bh_paths,X.select(i,'*')); # Constraint Expression
-
+		AP_latency = m.addVars(var_row_num, var_col_num, name="AP_latency"); # Initializing the Path Latency constraint
+		for i in range(0, var_row_num):
+			for j in  range(0, var_col_num):
+				AP_latency[i,j] = LinExpr(bh_paths[j],X.select(i,j)); # Constraint Expression
 		# ==========================
 		# Set up the mMTC Constraint
 
@@ -262,7 +262,7 @@ for k in range(0,num_iter):
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 			if vars(args)['latency'] == 1:
-				m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
+				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
 		elif vars(args)['dual'] == 1:	
 			print "================="	
 			print "Dual Connectivity"
@@ -277,7 +277,7 @@ for k in range(0,num_iter):
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 			if vars(args)['latency'] == 1:
-				m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
+				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
 		
 
 		#m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint 
