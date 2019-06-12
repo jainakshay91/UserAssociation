@@ -35,8 +35,8 @@ def small_cell(num, MCBS_locs, SCBS_intersite,SCBS_per_MCBS,MCBS_intersite,np,ds
         locs_SCBS_x = np.multiply(dist_from_MCBS,np.cos(angular_disp))
         locs_SCBS_y = np.multiply(dist_from_MCBS,np.sin(angular_disp))
        
-	   #locs_SCBS_x = np.random.uniform(MCBS_locs[num,0] - offset,MCBS_locs[num,0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
-	   #locs_SCBS_y = np.random.uniform(MCBS_locs[num,1] - offset,MCBS_locs[num,1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
+        #locs_SCBS_x = np.random.uniform(MCBS_locs[num,0] - offset,MCBS_locs[num,0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
+        #locs_SCBS_y = np.random.uniform(MCBS_locs[num,1] - offset,MCBS_locs[num,1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
         locs_SCBS = np.concatenate((locs_SCBS_x, locs_SCBS_y), axis=1); 
         if dsc.checker(locs_SCBS,SCBS_intersite,np)==1 and dsc.locs_checker(locs_SCBS, MCBS_locs,np, 'sc')==1:
             break
@@ -246,7 +246,8 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
 
     for i in range(0, RX_sc.shape[0]): # Small cell Received Power
         for j in range(0, RX_sc.shape[1]):
-            RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan'));
+            RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.sc_bw*10**(-3))), float('nan'));
+            # RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan'));
 
     for i in range(0, RX_mc.shape[0]): # Macro cell Received Power
         for j in range(0, RX_mc.shape[1]):
@@ -263,7 +264,8 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
     
     for i in range(0,PL_sc.shape[0]):
         for j in range(0,PL_sc.shape[1]):
-            sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
+            #sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
+            sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr
         # print sinr_sc[i,:] 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
         # (scn.transmit_power - 30 + scn.transmit_gain_sc + scn.receiver_gain - PL_sc[i,j] - 10*np.log10(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
         sinr_sc[i,:] = np.where(np.isnan(sinr_sc[i,:]), sinr_pad_value, sinr_sc[i,:]);

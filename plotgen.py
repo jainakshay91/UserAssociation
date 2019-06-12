@@ -487,11 +487,11 @@ plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
 # ================
 # Fairness BoxPlot
 
-box_data = [jfr_SA, jfr_DC, jfr_DC_MRT, jfr_SA_MRT, jfr_SA_LAT, jfr_DC_LAT, jfr_DC_BHCAP, jfr_SA_BHCAP, jfr_SA_BHCAP_LAT, jfr_DC_BHCAP_LAT, jfr_DC_MRT_LAT, jfr_SA_MRT_LAT] 
+box_data = [jfr_SA, jfr_DC, jfr_DC_MRT, jfr_SA_MRT, jfr_DC_LAT, jfr_SA_LAT, jfr_DC_BHCAP, jfr_SA_BHCAP, jfr_DC_BHCAP_LAT, jfr_SA_BHCAP_LAT, jfr_DC_MRT_LAT, jfr_SA_MRT_LAT] 
 fig, ax = plt.subplots()
 plt.title('Jain\'s Fairness Index Deviation')
 plt.boxplot(box_data)
-plt.xticks(range(1,13), ['SA', 'DC', 'DC+MRT', 'SA+MRT', 'SA+LAT', 'DC+LAT', 'DC+BHCAP', 'SA+BHCAP', 'SA+BHCAP+LAT', 'DC+BHCAP+LAT', 'DC+MRT+LAT', 'SA+MRT+LAT'], fontsize = 8, rotation = '90')
+plt.xticks(range(1,13), ['DC', 'SA', 'DC+MRT', 'SA+MRT', 'DC+LAT', 'SA+LAT', 'DC+BHCAP', 'SA+BHCAP', 'DC+BHCAP+LAT', 'SA+BHCAP+LAT', 'DC+MRT+LAT', 'SA+MRT+LAT'], fontsize = 8, rotation = '90')
 plt.savefig('Boxplot', dpi=1200, facecolor='w', edgecolor='w',
         orientation='landscape', papertype='letter', format='png',
         transparent=False, bbox_inches='tight', pad_inches=0.1,

@@ -45,13 +45,13 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, np, scn):
 	Data_Rate_eMBB_fscbw = scn.sc_bw*np.log2(1+10**(SNR_max_eMBB[:,0]/10)); # Data rate with 1GHz BW for each eMBB application
 	#Data_Rate_mMTC = scn.mMTC_bw*np.log2(1+10**(rx_max_eMBB[:,0]/10)); # mMTC Data rate with standard data rate 
 
-	print Data_Rate_eMBB_scbw
+	#print Data_Rate_eMBB_scbw
 
 	Data_rate_sinr_eMBB_scbw = scn.usr_scbw*np.log2(1+10**(sinr_max_eMBB/10)); # SINR based Data Rate
 	Data_rate_sinr_eMBB_fscbw = scn.sc_bw*np.log2(1+10**(sinr_max_eMBB/10)); # SINR based Data Rate for full bandwidth
 	#Data_rate_sinr_mMTC = scn.mMTC_bw*np.log2(1+10**(sinr_max_mMTC/10)); # SINR based Data Rate for mMTC
 
-	print Data_rate_sinr_eMBB_scbw
+	#print Data_rate_sinr_eMBB_scbw
 	
 	print "Generated the Baseline Data"
 
