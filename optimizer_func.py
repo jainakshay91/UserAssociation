@@ -96,10 +96,10 @@ for k in range(0,num_iter):
 	Hops_SC = optim_data['arr_10']; # Number of hops to the IMS core from Small cells
 	BH_Capacity_SC = optim_data['arr_11']; # Backhaul capacity for Small cells
 	BH_Capacity_MC = scn.fib_BH_MC_capacity; # Backhaul capacity for Macro cells
-	RX_power = optim_data['arr_12']; # Small Cell Received Power 
+	SNR_iter = optim_data['arr_12']; # Received SNR 
 	#RX_power_mc = optim_data['arr_13']; # Macro Cell Received Power 
 	#RX_power = np.hstack((RX_power_mc,RX_power_sc)); # Stack all the received powers for the eMBB users
-	RX_power_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
+	SNR_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SNR values
 	# ==================================
 	# Print to Understand Matrix Formats
 
@@ -119,11 +119,11 @@ for k in range(0,num_iter):
 	#print sinr_APs.shape
 
 
-	print "Creating the Application to Access Point SINR association matrix"
+	print "Creating the Application to Access Point SINR and SNR association matrix"
 	iter = 0; # Application number tracking
 	for i in range(0,sinr_APs.shape[0]):
 		sinr_eMBB [iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],sinr_APs[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
-	 	RX_power_eMBB[iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],RX_power[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
+	 	SNR_eMBB[iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],SNR_iter[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
 	 	iter = iter + np.sum(user_AP_assoc[i,1]); # Incrementing the iterator for the next user-application sets
 
 
@@ -172,8 +172,8 @@ for k in range(0,num_iter):
 	#np.savez_compressed(os.getcwd()+'/Data/Temp/Baseline'+ str(vars(args)['iter']) + str(k), DR_eMBB_scbw, DR_eMBB_fscbw, DR_mMTC, DR_eMBB_sinr_scbw, DR_eMBB_sinr_fscbw, DR_mMTC_sinr, allow_pickle = True); # Save these variables to be utilized by the optimizer
 
 	
-	DR_eMBB_scbw, DR_eMBB_fscbw, DR_eMBB_sinr_scbw, DR_eMBB_sinr_fscbw = baseline_assoc(RX_power_eMBB, 0, sinr_eMBB, 0, np, scn); # Baseline association function 
-	np.savez_compressed(os.getcwd()+'/Data/Process/Baseline'+ str(vars(args)['iter']) + str(k), DR_eMBB_scbw, DR_eMBB_fscbw, DR_eMBB_sinr_scbw, DR_eMBB_sinr_fscbw, allow_pickle = True); # Save these variables to be utilized by the optimizer
+	Tot_Data_Rate, Associated_users = baseline_assoc(SNR_eMBB, 0, sinr_eMBB, 0, BH_Capacity_SC, BH_Capacity_MC, num_scbs, num_mcbs, np, scn); # Baseline association function 
+	np.savez_compressed(os.getcwd()+'/Data/Process/Baseline'+ str(vars(args)['iter']) + str(k), Tot_Data_Rate, Associated_users, allow_pickle = True); # Save these variables to be utilized by the optimizer
 	 
 	# =========
 	# Optimizer
@@ -248,15 +248,16 @@ for k in range(0,num_iter):
 		# ================================== 
 		# Set up the Path Latency constraint
 
-		AP_latency = m.addVars(var_row_num + var_row_num_mMTC, 1, name="AP_latency"); # Initializing the Path Latency constraint
+		AP_latency = m.addVars(var_row_num + var_row_num_mMTC, var_col_num, name="AP_latency"); # Initializing the Path Latency constraint
 		for i in range(0, var_row_num + var_row_num_mMTC):
-			AP_latency[i,0] = LinExpr(bh_paths,X.select(i,'*')); # Constraint Expression
+			for j in  range(0, var_col_num):
+				AP_latency[i,j] = LinExpr(bh_paths[j],X.select(i,j)); # Constraint Expression
 
 		# ==========================
 		# Set up the mMTC Constraint
 
 		#mMTC_BW = m.addVars()
-		
+
 		print "Here"
 
 
@@ -281,8 +282,7 @@ for k in range(0,num_iter):
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 			if vars(args)['latency'] == 1:
-				m.addConstrs((AP_latency[i,0]/2 <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
-				m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num, var_row_num + var_row_num_mMTC)), name = 'c8'); # Path latency constraint 
+				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num + var_row_num_mMTC) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
 		elif vars(args)['dual'] == 1:	
 			print "================="	
 			print "Dual Connectivity"
@@ -297,8 +297,7 @@ for k in range(0,num_iter):
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 			if vars(args)['latency'] == 1:
-				m.addConstrs((AP_latency[i,0]/2 <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
-				m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num, var_row_num + var_row_num_mMTC)), name = 'c8'); # Path latency constraint 
+				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num + var_row_num_mMTC) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint
 		
 
 		#m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint 
@@ -338,10 +337,10 @@ for k in range(0,num_iter):
 			Data['Rates' + str(k)] = rate; # Data rate matrix  
 			Data['Status' + str(k)] = m.status; # Insert the status
 		else:
-			print "======="
-			print str(vars(args)['minRate']) 
-			print str(m.status)
-			print "======="
+			#print "======="
+			#print str(vars(args)['minRate']) 
+			#print str(m.status)
+			#print "======="
 			Data['Status' + str(k)] = m.status; # Add the status for detecting infeasible solution
 			continue
 	except GurobiError:
