@@ -19,7 +19,7 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 	#print RX_eMBB.shape
 	#print sinr_eMBB.shape
 	SNR_eMBB = np.where(np.isnan(SNR_eMBB) == True, -300 ,SNR_eMBB); # Taking care of Nan values
-
+	np.random.shuffle(SNR_eMBB); # Shuffle the matrix on the vertical axis 
 	SNR_max_eMBB = np.flip(np.sort(SNR_eMBB, axis = 1),axis=1); # Sorted Matrix for eMBB 
 	idx_max_eMBB = np.flip(np.argsort(SNR_eMBB, axis = 1),axis=1); # Maximum received power for each eMBB application
 	
@@ -105,7 +105,11 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 				break
 			else:
 				continue
-
+		print "Total Datarate:" 
+		print Tot_Datarate
+		print "================"
+		print "Accepted-Users:"
+		print Accepted_Users
 	#  access_bw >= scn.usr_scbw and ((bcap_sc >= scn.eMBB_minrate and idx_max_eMBB[i,j]<=num_SCBS) or (bcap_mc >= scn.eMBB_minrate and idx_max_eMBB[i,j]>num_SCBS)):
 				
 	print "Generated the Baseline Data"
