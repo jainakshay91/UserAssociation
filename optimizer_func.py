@@ -326,7 +326,7 @@ for k in range(0,num_iter):
 					break
 			#plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
 			print('Obj:', m.objVal)
-
+			print('Total Accepted Users:', sum(X_optimal))
 			# =========================
 			# Store Optimized Variables
 
