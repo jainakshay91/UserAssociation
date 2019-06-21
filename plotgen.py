@@ -71,19 +71,19 @@ application_DR_SA_BHCAP_LAT = [];
 application_DR_SA_MRT_LAT = [];
 application_DR_DC_MRT_LAT = [];
 
-AU_Base_DR = []
-AU_DR = []
-AU_DR_DC = [];
-AU_DR_DC_MRT = [];
-AU_DR_DC_BHCAP = [];
-AU_DR_DC_BHCAP_LAT = [];
-AU_DR_DC_LAT = [];
-AU_DR_SA_MRT = [];
-AU_DR_SA_LAT = [];
-AU_DR_SA_BHCAP = [];
-AU_DR_SA_BHCAP_LAT = [];
-AU_DR_SA_MRT_LAT = [];
-AU_DR_DC_MRT_LAT = [];
+AU_Base_DR = copy.copy(B_Dat_DR)
+AU_DR = copy.copy(Net_Throughput)
+AU_DR_DC = copy.copy(Net_Throughput_DC);
+AU_DR_DC_MRT = copy.copy(Net_Throughput_DC_MRT);
+AU_DR_DC_BHCAP = copy.copy(Net_Throughput_DC_BHCAP);
+AU_DR_DC_BHCAP_LAT = copy.copy(Net_Throughput_DC_BHCAP_LAT);
+AU_DR_DC_LAT = copy.copy(Net_Throughput_DC_LAT);
+AU_DR_SA_MRT = copy.copy(Net_Throughput_SA_MRT);
+AU_DR_SA_LAT = copy.copy(Net_Throughput_SA_LAT);
+AU_DR_SA_BHCAP = copy.copy(Net_Throughput_SA_BHCAP);
+AU_DR_SA_BHCAP_LAT = copy.copy(Net_Throughput_SA_BHCAP_LAT);
+AU_DR_SA_MRT_LAT = copy.copy(Net_Throughput_SA_MRT_LAT);
+AU_DR_DC_MRT_LAT = copy.copy(Net_Throughput_DC_MRT_LAT);
 
 avg_idx = []; # This is for calculating the average application throughput 
 
@@ -248,7 +248,7 @@ for i in range(0,MCMC_iter):
 			#iters_infeas_SA_BHCAP_LAT.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
 			iters_infeas_DC_MRT_LAT[k] = iters_infeas_DC_MRT_LAT[k] + 1; # Increment the number of infeasible solution
 	
-		B_Dat_DR[i,k],AU_Base_DR[i,k] = baseline_cal(i,k,simdata_path)
+		B_Dat_DR[i,k], AU_Base_DR[i,k] = baseline_cal(i,k,simdata_path)
 	
 	#print "=================="
 	#print Net_Throughput
@@ -287,73 +287,73 @@ for i in range(0,MCMC_iter):
 		if Data.item()['Status'+str(k)] == 2:
 			X_Optimal = Data.item()['X_optimal_data'+str(k)];
 			Rate = Data.item()['Rates'+str(k)];
-			AU_DR.append(user_count(X_Optimal))
+			AU_DR[i,k] = user_count(X_Optimal)
 		else:
 			pass
 		if Data_DC.item()['Status'+str(k)] == 2:
 			X_Optimal_DC = Data_DC.item()['X_optimal_data'+str(k)];
 			Rate_DC = Data_DC.item()['Rates'+str(k)];
-			AU_DR_DC.append(user_count(X_Optimal_DC))
+			AU_DR[i,k] = user_count(X_Optimal_DC)
 		else:
 			pass
 		if Data_DC_MRT.item()['Status'+str(k)] == 2:
 			X_Optimal_DC_MRT = Data_DC_MRT.item()['X_optimal_data'+str(k)];
 			Rate_DC_MRT = Data_DC_MRT.item()['Rates'+str(k)];
-			AU_DR_DC_MRT.append(user_count(X_Optimal_DC_MRT))
+			AU_DR_DC_MRT[i,k] = user_count(X_Optimal_DC_MRT)
 		else:
 			pass
 		if Data_DC_BHCAP.item()['Status'+str(k)] == 2:
 			X_Optimal_DC_BHCAP = Data_DC_BHCAP.item()['X_optimal_data'+str(k)];
 			Rate_DC_BHCAP = Data_DC_BHCAP.item()['Rates'+str(k)];
-			AU_DR_DC_BHCAP.append(user_count(X_Optimal_DC_BHCAP))
+			AU_DR_DC_BHCAP[i,k] = user_count(X_Optimal_DC_BHCAP)
 		else:
 			pass
 		if Data_DC_BHCAP_LAT.item()['Status'+str(k)] == 2:
 			X_Optimal_DC_BHCAP_LAT = Data_DC_BHCAP_LAT.item()['X_optimal_data'+str(k)];
 			Rate_DC_BHCAP_LAT = Data_DC_BHCAP_LAT.item()['Rates'+str(k)];
-			AU_DR_DC_BHCAP_LAT.append(user_count(X_Optimal_DC_BHCAP_LAT))
+			AU_DR_DC_BHCAP_LAT[i,k] = user_count(X_Optimal_DC_BHCAP_LAT)
 		else:
 			pass
 		if Data_DC_LAT.item()['Status'+str(k)] == 2:
 			X_Optimal_DC_LAT = Data_DC_LAT.item()['X_optimal_data'+str(k)];
 			Rate_DC_LAT = Data_DC_LAT.item()['Rates'+str(k)];
-			AU_DR_DC_LAT.append(user_count(X_Optimal_DC_LAT))
+			AU_DR_DC_LAT[i,k] = user_count(X_Optimal_DC_LAT)
 		else:
 			pass
 		if Data_SA_MRT.item()['Status'+str(k)] == 2:
 			X_Optimal_SA_MRT = Data_SA_MRT.item()['X_optimal_data'+str(k)];
 			Rate_SA_MRT = Data_SA_MRT.item()['Rates'+str(k)];
-			AU_DR_SA_MRT.append(user_count(X_Optimal_SA_MRT))
+			AU_DR_SA_MRT[i,k] = user_count(X_Optimal_SA_MRT)
 		else:
 			pass
 		if Data_SA_LAT.item()['Status'+str(k)] == 2:
 			X_Optimal_SA_LAT = Data_SA_LAT.item()['X_optimal_data'+str(k)];
 			Rate_SA_LAT = Data_SA_LAT.item()['Rates'+str(k)];
-			AU_DR_SA_LAT.append(user_count(X_Optimal_SA_LAT))
+			AU_DR_SA_LAT[i,k] = user_count(X_Optimal_SA_LAT)
 		else:
 			pass
 		if Data_SA_BHCAP.item()['Status'+str(k)] == 2:
 			X_Optimal_SA_BHCAP = Data_SA_BHCAP.item()['X_optimal_data'+str(k)];
 			Rate_SA_BHCAP = Data_SA_BHCAP.item()['Rates'+str(k)];
-			AU_DR_SA_BHCAP.append(user_count(X_Optimal_SA_BHCAP))
+			AU_DR_SA_BHCAP[i,k] = user_count(X_Optimal_SA_BHCAP)
 		else:
 			pass
 		if Data_SA_BHCAP_LAT.item()['Status'+str(k)] == 2:
 			X_Optimal_SA_BHCAP_LAT = Data_SA_BHCAP_LAT.item()['X_optimal_data'+str(k)];
 			Rate_SA_BHCAP_LAT = Data_SA_BHCAP_LAT.item()['Rates'+str(k)];
-			AU_DR_SA_BHCAP_LAT.append(user_count(X_Optimal_SA_BHCAP_LAT))
+			AU_DR_SA_BHCAP_LAT[i,k] = user_count(X_Optimal_SA_BHCAP_LAT)
 		else:
 			pass
 		if Data_SA_MRT_LAT.item()['Status'+str(k)] == 2:
 			X_Optimal_SA_MRT_LAT = Data_SA_MRT_LAT.item()['X_optimal_data'+str(k)];
 			Rate_SA_MRT_LAT = Data_SA_MRT_LAT.item()['Rates'+str(k)];
-			AU_DR_SA_MRT_LAT.append(user_count(X_Optimal_SA_MRT_LAT))
+			AU_DR_SA_MRT_LAT[i,k] = user_count(X_Optimal_SA_MRT_LAT)
 		else:
 			pass
 		if Data_DC_MRT_LAT.item()['Status'+str(k)] == 2:
 			X_Optimal_DC_MRT_LAT = Data_DC_MRT_LAT.item()['X_optimal_data'+str(k)];
 			Rate_DC_MRT_LAT = Data_DC_MRT_LAT.item()['Rates'+str(k)];
-			AU_DR_DC_MRT_LAT.append(user_count(X_Optimal_DC_MRT_LAT))
+			AU_DR_DC_MRT_LAT[i,k] = user_count(X_Optimal_DC_MRT_LAT)
 		else:
 			pass
 	
@@ -442,19 +442,19 @@ B_Dat_DR_avg = np.sum(B_Dat_DR, axis =0)/MCMC_iter; # Baseline with BW restricti
 # ====================
 # Satisfied User Count
 
-AU_Base_DR_avg = np.floor(np.sum(np.array(AU_Base_DR), axis = 0)/MCMC_iter); 
-AU_DR_avg = np.floor(np.sum(np.array(AU_DR), axis = 0)/MCMC_iter);
-AU_DR_DC_avg = np.floor(np.sum(np.array(AU_DR_DC), axis = 0)/MCMC_iter);
-AU_DR_DC_MRT_avg = np.floor(np.sum(np.array(AU_DR_DC_MRT), axis = 0)/MCMC_iter);
-AU_DR_DC_BHCAP_avg = np.floor(np.sum(np.array(AU_DR_DC_BHCAP), axis = 0)/MCMC_iter);
-AU_DR_DC_LAT_avg = np.floor(np.sum(np.array(AU_DR_DC_LAT), axis = 0)/MCMC_iter);
-AU_DR_DC_BHCAP_LAT_avg = np.floor(np.sum(np.array(AU_DR_DC_BHCAP_LAT), axis = 0)/MCMC_iter);
-AU_DR_SA_MRT_avg = np.floor(np.sum(np.array(AU_DR_SA_MRT), axis = 0)/MCMC_iter);
-AU_DR_SA_LAT_avg = np.floor(np.sum(np.array(AU_DR_SA_LAT), axis = 0)/MCMC_iter);
-AU_DR_SA_BHCAP_avg = np.floor(np.sum(np.array(AU_DR_SA_BHCAP), axis = 0)/MCMC_iter);
-AU_DR_SA_BHCAP_LAT_avg = np.floor(np.sum(np.array(AU_DR_SA_BHCAP_LAT), axis = 0)/MCMC_iter);
-AU_DR_SA_MRT_LAT_avg = np.floor(np.sum(np.array(AU_DR_SA_MRT), axis = 0)/MCMC_iter);
-AU_DR_DC_MRT_LAT_avg = np.floor(np.sum(np.array(AU_DR_DC_MRT_LAT), axis = 0)/MCMC_iter);
+AU_Base_DR_avg = np.floor(np.sum(AU_Base_DR, axis = 0)/MCMC_iter); 
+AU_DR_avg = np.floor(np.sum(AU_DR, axis = 0)/MCMC_iter);
+AU_DR_DC_avg = np.floor(np.sum(AU_DR_DC, axis = 0)/MCMC_iter);
+AU_DR_DC_MRT_avg = np.floor(np.sum(AU_DR_DC_MRT, axis = 0)/MCMC_iter);
+AU_DR_DC_BHCAP_avg = np.floor(np.sum(AU_DR_DC_BHCAP, axis = 0)/MCMC_iter);
+AU_DR_DC_LAT_avg = np.floor(np.sum(AU_DR_DC_LAT, axis = 0)/MCMC_iter);
+AU_DR_DC_BHCAP_LAT_avg = np.floor(np.sum(AU_DR_DC_BHCAP_LAT, axis = 0)/MCMC_iter);
+AU_DR_SA_MRT_avg = np.floor(np.sum(AU_DR_SA_MRT, axis = 0)/MCMC_iter);
+AU_DR_SA_LAT_avg = np.floor(np.sum(AU_DR_SA_LAT, axis = 0)/MCMC_iter);
+AU_DR_SA_BHCAP_avg = np.floor(np.sum(AU_DR_SA_BHCAP, axis = 0)/MCMC_iter);
+AU_DR_SA_BHCAP_LAT_avg = np.floor(np.sum(AU_DR_SA_BHCAP_LAT, axis = 0)/MCMC_iter);
+AU_DR_SA_MRT_LAT_avg = np.floor(np.sum(AU_DR_SA_MRT, axis = 0)/MCMC_iter);
+AU_DR_DC_MRT_LAT_avg = np.floor(np.sum(AU_DR_DC_MRT_LAT, axis = 0)/MCMC_iter);
 
 # ========================================
 # Jain's Fairness Index and t-student test
