@@ -71,6 +71,20 @@ application_DR_SA_BHCAP_LAT = [];
 application_DR_SA_MRT_LAT = [];
 application_DR_DC_MRT_LAT = [];
 
+AU_Base_DR = []
+AU_DR = []
+AU_DR_DC = [];
+AU_DR_DC_MRT = [];
+AU_DR_DC_BHCAP = [];
+AU_DR_DC_BHCAP_LAT = [];
+AU_DR_DC_LAT = [];
+AU_DR_SA_MRT = [];
+AU_DR_SA_LAT = [];
+AU_DR_SA_BHCAP = [];
+AU_DR_SA_BHCAP_LAT = [];
+AU_DR_SA_MRT_LAT = [];
+AU_DR_DC_MRT_LAT = [];
+
 avg_idx = []; # This is for calculating the average application throughput 
 
 
@@ -110,8 +124,17 @@ def zero_div(num, denom):
 def baseline_cal(i,k,simdata_path):
 	B_Dat = np.load(simdata_path + 'Baseline' + str(i) + str(k) + '.npz', allow_pickle = True)
 	B_Dat_DR = B_Dat['arr_0']
-	#B_DAT_user = np.sum()
-	return B_Dat_DR
+	B_DAT_user = B_Dat['arr_1']
+	return B_Dat_DR, B_DAT_user
+
+def user_count(Optim_mat):
+	Assoc_users = 0; # Initialize the number of associated users
+	for i in range(Optim_mat.shape[0]):
+		for j in range(Optim_mat.shape[1]):
+			if Optim_mat[i,j] == 1:
+				Assoc_users = Assoc_users + 1;
+				break;
+	return Assoc_users
 
 # ==============
 # Data Extractor
@@ -225,8 +248,8 @@ for i in range(0,MCMC_iter):
 			#iters_infeas_SA_BHCAP_LAT.append(str(i)+str(k)); # Inserting the iteration number for infeasible solution
 			iters_infeas_DC_MRT_LAT[k] = iters_infeas_DC_MRT_LAT[k] + 1; # Increment the number of infeasible solution
 	
-		B_Dat_DR[i,k] = baseline_cal(i,k,simdata_path)
-
+		B_Dat_DR[i,k],AU_Base_DR[i,k] = baseline_cal(i,k,simdata_path)
+	
 	#print "=================="
 	#print Net_Throughput
 	#print "=================="
@@ -260,67 +283,79 @@ for i in range(0,MCMC_iter):
 	Rate_SA_MRT_LAT = copy.copy(Rate);
 	Rate_DC_MRT_LAT = copy.copy(Rate);
 
-
-	if Data.item()['Status'+str(10)] == 2:
-		X_Optimal = Data.item()['X_optimal_data'+str(10)];
-		Rate = Data.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_DC.item()['Status'+str(10)] == 2:
-		X_Optimal_DC = Data_DC.item()['X_optimal_data'+str(10)];
-		Rate_DC = Data_DC.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_DC_MRT.item()['Status'+str(10)] == 2:
-		X_Optimal_DC_MRT = Data_DC_MRT.item()['X_optimal_data'+str(10)];
-		Rate_DC_MRT = Data_DC_MRT.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_DC_BHCAP.item()['Status'+str(10)] == 2:
-		X_Optimal_DC_BHCAP = Data_DC_BHCAP.item()['X_optimal_data'+str(10)];
-		Rate_DC_BHCAP = Data_DC_BHCAP.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_DC_BHCAP_LAT.item()['Status'+str(10)] == 2:
-		X_Optimal_DC_BHCAP_LAT = Data_DC_BHCAP_LAT.item()['X_optimal_data'+str(10)];
-		Rate_DC_BHCAP_LAT = Data_DC_BHCAP_LAT.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_DC_LAT.item()['Status'+str(10)] == 2:
-		X_Optimal_DC_LAT = Data_DC_LAT.item()['X_optimal_data'+str(10)];
-		Rate_DC_LAT = Data_DC_LAT.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_SA_MRT.item()['Status'+str(10)] == 2:
-		X_Optimal_SA_MRT = Data_SA_MRT.item()['X_optimal_data'+str(10)];
-		Rate_SA_MRT = Data_SA_MRT.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_SA_LAT.item()['Status'+str(10)] == 2:
-		X_Optimal_SA_LAT = Data_SA_LAT.item()['X_optimal_data'+str(10)];
-		Rate_SA_LAT = Data_SA_LAT.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_SA_BHCAP.item()['Status'+str(10)] == 2:
-		X_Optimal_SA_BHCAP = Data_SA_BHCAP.item()['X_optimal_data'+str(10)];
-		Rate_SA_BHCAP = Data_SA_BHCAP.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_SA_BHCAP_LAT.item()['Status'+str(10)] == 2:
-		X_Optimal_SA_BHCAP_LAT = Data_SA_BHCAP_LAT.item()['X_optimal_data'+str(10)];
-		Rate_SA_BHCAP_LAT = Data_SA_BHCAP_LAT.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_SA_MRT_LAT.item()['Status'+str(10)] == 2:
-		X_Optimal_SA_MRT_LAT = Data_SA_MRT_LAT.item()['X_optimal_data'+str(10)];
-		Rate_SA_MRT_LAT = Data_SA_MRT_LAT.item()['Rates'+str(10)];
-	else:
-		pass
-	if Data_DC_MRT_LAT.item()['Status'+str(10)] == 2:
-		X_Optimal_DC_MRT_LAT = Data_DC_MRT_LAT.item()['X_optimal_data'+str(10)];
-		Rate_DC_MRT_LAT = Data_DC_MRT_LAT.item()['Rates'+str(10)];
-	else:
-		pass
+	for k in range(0,num_iter):
+		if Data.item()['Status'+str(k)] == 2:
+			X_Optimal = Data.item()['X_optimal_data'+str(k)];
+			Rate = Data.item()['Rates'+str(k)];
+			AU_DR.append(user_count(X_Optimal))
+		else:
+			pass
+		if Data_DC.item()['Status'+str(k)] == 2:
+			X_Optimal_DC = Data_DC.item()['X_optimal_data'+str(k)];
+			Rate_DC = Data_DC.item()['Rates'+str(k)];
+			AU_DR_DC.append(user_count(X_Optimal_DC))
+		else:
+			pass
+		if Data_DC_MRT.item()['Status'+str(k)] == 2:
+			X_Optimal_DC_MRT = Data_DC_MRT.item()['X_optimal_data'+str(k)];
+			Rate_DC_MRT = Data_DC_MRT.item()['Rates'+str(k)];
+			AU_DR_DC_MRT.append(user_count(X_Optimal_DC_MRT))
+		else:
+			pass
+		if Data_DC_BHCAP.item()['Status'+str(k)] == 2:
+			X_Optimal_DC_BHCAP = Data_DC_BHCAP.item()['X_optimal_data'+str(k)];
+			Rate_DC_BHCAP = Data_DC_BHCAP.item()['Rates'+str(k)];
+			AU_DR_DC_BHCAP.append(user_count(X_Optimal_DC_BHCAP))
+		else:
+			pass
+		if Data_DC_BHCAP_LAT.item()['Status'+str(k)] == 2:
+			X_Optimal_DC_BHCAP_LAT = Data_DC_BHCAP_LAT.item()['X_optimal_data'+str(k)];
+			Rate_DC_BHCAP_LAT = Data_DC_BHCAP_LAT.item()['Rates'+str(k)];
+			AU_DR_DC_BHCAP_LAT.append(user_count(X_Optimal_DC_BHCAP_LAT))
+		else:
+			pass
+		if Data_DC_LAT.item()['Status'+str(k)] == 2:
+			X_Optimal_DC_LAT = Data_DC_LAT.item()['X_optimal_data'+str(k)];
+			Rate_DC_LAT = Data_DC_LAT.item()['Rates'+str(k)];
+			AU_DR_DC_LAT.append(user_count(X_Optimal_DC_LAT))
+		else:
+			pass
+		if Data_SA_MRT.item()['Status'+str(k)] == 2:
+			X_Optimal_SA_MRT = Data_SA_MRT.item()['X_optimal_data'+str(k)];
+			Rate_SA_MRT = Data_SA_MRT.item()['Rates'+str(k)];
+			AU_DR_SA_MRT.append(user_count(X_Optimal_SA_MRT))
+		else:
+			pass
+		if Data_SA_LAT.item()['Status'+str(k)] == 2:
+			X_Optimal_SA_LAT = Data_SA_LAT.item()['X_optimal_data'+str(k)];
+			Rate_SA_LAT = Data_SA_LAT.item()['Rates'+str(k)];
+			AU_DR_SA_LAT.append(user_count(X_Optimal_SA_LAT))
+		else:
+			pass
+		if Data_SA_BHCAP.item()['Status'+str(k)] == 2:
+			X_Optimal_SA_BHCAP = Data_SA_BHCAP.item()['X_optimal_data'+str(k)];
+			Rate_SA_BHCAP = Data_SA_BHCAP.item()['Rates'+str(k)];
+			AU_DR_SA_BHCAP.append(user_count(X_Optimal_SA_BHCAP))
+		else:
+			pass
+		if Data_SA_BHCAP_LAT.item()['Status'+str(k)] == 2:
+			X_Optimal_SA_BHCAP_LAT = Data_SA_BHCAP_LAT.item()['X_optimal_data'+str(k)];
+			Rate_SA_BHCAP_LAT = Data_SA_BHCAP_LAT.item()['Rates'+str(k)];
+			AU_DR_SA_BHCAP_LAT.append(user_count(X_Optimal_SA_BHCAP_LAT))
+		else:
+			pass
+		if Data_SA_MRT_LAT.item()['Status'+str(k)] == 2:
+			X_Optimal_SA_MRT_LAT = Data_SA_MRT_LAT.item()['X_optimal_data'+str(k)];
+			Rate_SA_MRT_LAT = Data_SA_MRT_LAT.item()['Rates'+str(k)];
+			AU_DR_SA_MRT_LAT.append(user_count(X_Optimal_SA_MRT_LAT))
+		else:
+			pass
+		if Data_DC_MRT_LAT.item()['Status'+str(k)] == 2:
+			X_Optimal_DC_MRT_LAT = Data_DC_MRT_LAT.item()['X_optimal_data'+str(k)];
+			Rate_DC_MRT_LAT = Data_DC_MRT_LAT.item()['Rates'+str(k)];
+			AU_DR_DC_MRT_LAT.append(user_count(X_Optimal_DC_MRT_LAT))
+		else:
+			pass
 	
 	
 	avg_idx.append(X_Optimal.shape[0])	
@@ -402,6 +437,25 @@ B_Dat_DR_avg = np.sum(B_Dat_DR, axis =0)/MCMC_iter; # Baseline with BW restricti
 #B_Dat_DR_sn_avg = np.sum(B_Dat_DR_sn, axis = 0)/MCMC_iter; # Baseline with SINR and BW restriction
 #B_Dat_DR_sn_fs_avg = np.sum(B_Dat_DR_sn_fs, axis = 0)/MCMC_iter; #Baseline with SINR and 1GHz BW
 #print iters_infeas_DC_MRT
+
+
+# ====================
+# Satisfied User Count
+
+AU_Base_DR_avg = np.floor(np.sum(np.array(AU_Base_DR), axis = 0)/MCMC_iter); 
+AU_DR_avg = np.floor(np.sum(np.array(AU_DR), axis = 0)/MCMC_iter);
+AU_DR_DC_avg = np.floor(np.sum(np.array(AU_DR_DC), axis = 0)/MCMC_iter);
+AU_DR_DC_MRT_avg = np.floor(np.sum(np.array(AU_DR_DC_MRT), axis = 0)/MCMC_iter);
+AU_DR_DC_BHCAP_avg = np.floor(np.sum(np.array(AU_DR_DC_BHCAP), axis = 0)/MCMC_iter);
+AU_DR_DC_LAT_avg = np.floor(np.sum(np.array(AU_DR_DC_LAT), axis = 0)/MCMC_iter);
+AU_DR_DC_BHCAP_LAT_avg = np.floor(np.sum(np.array(AU_DR_DC_BHCAP_LAT), axis = 0)/MCMC_iter);
+AU_DR_SA_MRT_avg = np.floor(np.sum(np.array(AU_DR_SA_MRT), axis = 0)/MCMC_iter);
+AU_DR_SA_LAT_avg = np.floor(np.sum(np.array(AU_DR_SA_LAT), axis = 0)/MCMC_iter);
+AU_DR_SA_BHCAP_avg = np.floor(np.sum(np.array(AU_DR_SA_BHCAP), axis = 0)/MCMC_iter);
+AU_DR_SA_BHCAP_LAT_avg = np.floor(np.sum(np.array(AU_DR_SA_BHCAP_LAT), axis = 0)/MCMC_iter);
+AU_DR_SA_MRT_LAT_avg = np.floor(np.sum(np.array(AU_DR_SA_MRT), axis = 0)/MCMC_iter);
+AU_DR_DC_MRT_LAT_avg = np.floor(np.sum(np.array(AU_DR_DC_MRT_LAT), axis = 0)/MCMC_iter);
+
 # ========================================
 # Jain's Fairness Index and t-student test
 
@@ -417,7 +471,7 @@ jfr_SA_BHCAP = jains_fairness(application_DR_SA_BHCAP, avg_idx);
 jfr_SA_BHCAP_LAT = jains_fairness(application_DR_SA_BHCAP_LAT, avg_idx);
 jfr_SA_MRT_LAT = jains_fairness(application_DR_SA_MRT_LAT, avg_idx);
 jfr_DC_MRT_LAT = jains_fairness(application_DR_DC_MRT_LAT, avg_idx);
-jfr_Baseline = jains_fairness(B_Dat_DR_avg, avg_idx);
+#jfr_Baseline = jains_fairness(B_Dat_DR_avg, avg_idx);
 
 
 
@@ -441,6 +495,38 @@ plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
         orientation='landscape', papertype='letter', format='png',
         transparent=False, bbox_inches='tight', pad_inches=0.1,
         frameon=None, metadata=None)
+
+
+# ===================
+# Accepted Users Plot 
+
+#ind = np.arange(1,14); # The x locations for the grouped plots
+#width = 0.20; # Width of the bars
+
+#fig, ax = plt.subplots()
+#rects1 = ax.bar(ind - 13*width/13, AU_Base_DR, width, label='Baseline')
+#                label='Women')
+
+# Add some text for labels, title and custom x-axis tick labels, etc.
+#ax.set_ylabel('Scores')
+#ax.set_title('Scores by group and gender')
+#ax.set_xticks(ind)
+#ax.set_xticklabels(('G1', 'G2', 'G3', 'G4', 'G5'))
+#ax.legend()
+
+print ('Baseline Accepted Users:', AU_Base_DR_avg)
+print ('SA Accepted Users:', AU_DR_avg)
+print ('DC Accepted Users:', AU_DR_DC_avg)
+print ('DC+MRT Accepted Users:', AU_DR_DC_MRT_avg)
+print ('DC+BHCAP Accepted Users:', AU_DR_DC_BHCAP_avg)
+print ('DC+LAT Accepted Users:', AU_DR_DC_LAT_avg)
+print ('DC+BHCAP+LAT Accepted Users:',AU_DR_DC_BHCAP_LAT_avg)
+print ('SA+MRT Accepted Users:',AU_DR_SA_MRT_avg)
+print ('SA+LAT Accepted Users:',AU_DR_SA_LAT_avg)
+print ('SA+BHCAP Accepted Users:',AU_DR_SA_BHCAP_avg)
+print ('SA+BHCAP+LAT Accepted Users:',AU_DR_SA_BHCAP_LAT_avg)
+print ('SA+MRT+LAT Accepted Users:',AU_DR_SA_MRT_LAT_avg)
+print ('DC+MRT+LAT Accepted Users:',AU_DR_DC_MRT_LAT_avg)
 
 # ===> Setting up a Broken plot to depict Values with distinct ranges
 
@@ -485,11 +571,11 @@ plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
 # ================
 # Fairness BoxPlot
 
-box_data = [jfr_SA, jfr_DC, jfr_DC_MRT, jfr_SA_MRT, jfr_DC_LAT, jfr_SA_LAT, jfr_DC_BHCAP, jfr_SA_BHCAP, jfr_DC_BHCAP_LAT, jfr_SA_BHCAP_LAT, jfr_DC_MRT_LAT, jfr_SA_MRT_LAT, jfr_Baseline] 
+box_data = [jfr_SA, jfr_DC, jfr_DC_MRT, jfr_SA_MRT, jfr_DC_LAT, jfr_SA_LAT, jfr_DC_BHCAP, jfr_SA_BHCAP, jfr_DC_BHCAP_LAT, jfr_SA_BHCAP_LAT, jfr_DC_MRT_LAT, jfr_SA_MRT_LAT] 
 fig, ax = plt.subplots()
 plt.title('Jain\'s Fairness Index Deviation')
 plt.boxplot(box_data)
-plt.xticks(range(1,14), ['DC', 'SA', 'DC+MRT', 'SA+MRT', 'DC+LAT', 'SA+LAT', 'DC+BHCAP', 'SA+BHCAP', 'DC+BHCAP+LAT', 'SA+BHCAP+LAT', 'DC+MRT+LAT', 'SA+MRT+LAT', 'Baseline'], fontsize = 8, rotation = '90')
+plt.xticks(range(1,13), ['DC', 'SA', 'DC+MRT', 'SA+MRT', 'DC+LAT', 'SA+LAT', 'DC+BHCAP', 'SA+BHCAP', 'DC+BHCAP+LAT', 'SA+BHCAP+LAT', 'DC+MRT+LAT', 'SA+MRT+LAT'], fontsize = 8, rotation = '90')
 plt.savefig('Boxplot', dpi=1200, facecolor='w', edgecolor='w',
         orientation='landscape', papertype='letter', format='png',
         transparent=False, bbox_inches='tight', pad_inches=0.1,
