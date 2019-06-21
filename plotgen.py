@@ -293,7 +293,7 @@ for i in range(0,MCMC_iter):
 		if Data_DC.item()['Status'+str(k)] == 2:
 			X_Optimal_DC = Data_DC.item()['X_optimal_data'+str(k)];
 			Rate_DC = Data_DC.item()['Rates'+str(k)];
-			AU_DR[i,k] = user_count(X_Optimal_DC)
+			AU_DR_DC[i,k] = user_count(X_Optimal_DC)
 		else:
 			pass
 		if Data_DC_MRT.item()['Status'+str(k)] == 2:
