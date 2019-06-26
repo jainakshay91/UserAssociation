@@ -100,17 +100,17 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 			counter = 0;
 			for i in range(sinr_eMBB.shape[0]):
 				if idx_max_eMBB[i,0] == j:
-					if bw_per_user*np.log2(1+10**(assoc_vec[i,0]/10)) >= scn.eMBB_minrate:
-						if j < num_SCBS and bcap_sc > bw_per_user*np.log2(1+10**(assoc_vec[i,0]/10)):
-							Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i,0]/10)); # Update the Total network throughput
+					if bw_per_user*np.log2(1+10**(assoc_vec[i]/10)) >= scn.eMBB_minrate:
+						if j < num_SCBS and bcap_sc > bw_per_user*np.log2(1+10**(assoc_vec[i]/10)):
+							Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
 							access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
-							bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i,0]/10)); # Update the available bhaul capacity
+							bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
 							Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
 							counter = counter + 1;
-						elif j >= num_SCBS and bcap_mc > bw_per_user*np.log2(1+10**(assoc_vec[i,0]/10)):
-							Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i,0]/10)); # Update the Total network throughput
+						elif j >= num_SCBS and bcap_mc > bw_per_user*np.log2(1+10**(assoc_vec[i]/10)):
+							Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
 							access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
-							bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i,0]/10)); # Update the available bhaul capacity
+							bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
 							Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
 							counter = counter + 1;
 						continue
