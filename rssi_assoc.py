@@ -85,7 +85,7 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 	Tot_Datarate = 0; # Total Data Rate 
 	Accepted_Users = 0; # Number of Accepted Users
 	best_AP_col = 0; # Best Access Point column number
-	next_best_AP_counter = np.ones(sinr_eMBB.shape[0]); # Increment counter for the next best AP for all the apps
+	next_best_AP_counter = np.ones(sinr_eMBB.shape[0], dtype = int); # Increment counter for the next best AP for all the apps
 
 	assoc_vec = sinr_max_eMBB[:,best_AP_col]; # SINR on a UE from the given cells to which we initially associate them 
 	assoc_vec_idx = np.bincount(idx_max_eMBB[:,best_AP_col]); # The number of UEs attached to each of the APs 
