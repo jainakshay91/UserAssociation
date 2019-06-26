@@ -65,14 +65,14 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 
 	#print Data_Rate_eMBB_scbw
 
-	Data_rate_sinr_eMBB_scbw= np.empty((sinr_max_eMBB.shape[0], sinr_max_eMBB.shape[1])); # Initialize the Data Rate matrix
+	# Data_rate_sinr_eMBB_scbw= np.empty((sinr_max_eMBB.shape[0], sinr_max_eMBB.shape[1])); # Initialize the Data Rate matrix
 
-	for i in range(sinr_max_eMBB.shape[0]):
-		for j in range(sinr_max_eMBB.shape[1]):
-			if j <= num_SCBS:
-				Data_rate_sinr_eMBB_scbw[i,j] = scn.usr_scbw*np.log2(1+10**(sinr_max_eMBB[i,j]/10)); # SINR based Data Rate
-			else:
-				Data_rate_sinr_eMBB_scbw[i,j] = scn.mc_bw*np.log2(1+10**(sinr_max_eMBB[i,j]/10)); # SINR based Data Rate
+	# for i in range(sinr_max_eMBB.shape[0]):
+	#	for j in range(sinr_max_eMBB.shape[1]):
+	#		if j <= num_SCBS:
+	#			Data_rate_sinr_eMBB_scbw[i,j] = scn.usr_scbw*np.log2(1+10**(sinr_max_eMBB[i,j]/10)); # SINR based Data Rate
+	#		else:
+	#			Data_rate_sinr_eMBB_scbw[i,j] = scn.mc_bw*np.log2(1+10**(sinr_max_eMBB[i,j]/10)); # SINR based Data Rate
 
 	#Data_rate_sinr_eMBB_fscbw = scn.sc_bw*np.log2(1+10**(sinr_max_eMBB/10)); # SINR based Data Rate for full bandwidth
 	#Data_rate_sinr_mMTC = scn.mMTC_bw*np.log2(1+10**(sinr_max_mMTC/10)); # SINR based Data Rate for mMTC
@@ -85,26 +85,65 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 	Tot_Datarate = 0; # Total Data Rate 
 	Accepted_Users = 0; # Number of Accepted Users
 
-	for i in range(sinr_eMBB.shape[0]):
-		for j in range(sinr_eMBB.shape[1]):
-			if Data_rate_sinr_eMBB_scbw[i,j] >= scn.eMBB_minrate:
-				if idx_max_eMBB[i,j] <= num_SCBS: # If its a Small Cell
-					if access_bw[idx_max_eMBB[i,j],0] >= scn.usr_scbw and bcap_sc[idx_max_eMBB[i,j],0] >= scn.eMBB_minrate:
-						Tot_Datarate = Tot_Datarate + Data_rate_sinr_eMBB_scbw[i,j]; # Update the Total network throughput
-						access_bw[idx_max_eMBB[i,j],0] = access_bw[idx_max_eMBB[i,j],0] - scn.usr_scbw; # Update the available access bw 
-						bcap_sc[idx_max_eMBB[i,j],0] = bcap_sc[idx_max_eMBB[i,j],0] - Data_rate_sinr_eMBB_scbw[i,j]; # Update the available bhaul capacity
-						Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
-				  	else:
-				  		pass
-				elif idx_max_eMBB[i,j] > num_SCBS: # If its a macro cell
-					if access_bw[idx_max_eMBB[i,j],0] >= scn.mc_bw and bcap_mc[idx_max_eMBB[i,j] - num_SCBS,0] >= scn.eMBB_minrate:
-						Tot_Datarate = Tot_Datarate + Data_rate_sinr_eMBB_scbw[i,j]; # Update the Total network throughput
-						access_bw[idx_max_eMBB[i,j],0] = access_bw[idx_max_eMBB[i,j],0] - scn.mc_bw; # Update the Available access bw
-						bcap_mc[idx_max_eMBB[i,j] - num_SCBS,0] = bcap_mc[idx_max_eMBB[i,j] - num_SCBS,0] - Data_rate_sinr_eMBB_scbw[i,j];  
-						Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system 
-				break
-			else:
-				continue
+	assoc_vec = sinr_max_eMBB[:,0]; # SINR on a UE from the given cells to which we initially associate them 
+	assoc_vec_idx = np.bincount(idx_max_eMBB[:,0]); # The number of UEs attached to each of the APs 
+
+	prohib_idx = []; # List to hold the prohibited indexes given their requirements are not satisfied
+
+	# ===> Check the resources now 
+
+	for j in range(sinr_eMBB.shape[1]):
+		if assoc_vec_idx[j] > 0:			
+			bw_per_user = access_bw[j]/assoc_vec_idx[j]; 
+			counter = 0;
+			for i in range(sinr_eMBB.shape[0]):
+				if ((idx_max_eMBB[i,0] == j) and (i not in prohib_idx)):
+					if bw_per_user*np.log2(1+10**(assoc_vec[i]/10)) >= scn.eMBB_minrate:
+						if j < num_SCBS and bcap_sc > bw_per_user*np.log2(1+10**(assoc_vec[i]/10)):
+							Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
+							access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
+							bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
+							Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
+							counter = counter + 1;
+						elif j >= num_SCBS and bcap_mc > bw_per_user*np.log2(1+10**(assoc_vec[i]/10)):
+							Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
+							access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
+							bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
+							Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
+							counter = counter + 1;
+						continue
+					else:
+						prohib_idx.append(i);
+						Accepted_Users = Accepted_Users - counter; 
+						counter = 0;
+						j = j - 1;
+						break
+				else:
+					break
+			prohib_idx = []
+		else:
+			continue
+			
+	#for i in range(sinr_eMBB.shape[0]):
+	#	for j in range(sinr_eMBB.shape[1]):
+	#		if Data_rate_sinr_eMBB_scbw[i,j] >= scn.eMBB_minrate:
+	#			if idx_max_eMBB[i,j] <= num_SCBS: # If its a Small Cell
+	#				if access_bw[idx_max_eMBB[i,j],0] >= scn.usr_scbw and bcap_sc[idx_max_eMBB[i,j],0] >= scn.eMBB_minrate:
+	#					Tot_Datarate = Tot_Datarate + Data_rate_sinr_eMBB_scbw[i,j]; # Update the Total network throughput
+	#					access_bw[idx_max_eMBB[i,j],0] = access_bw[idx_max_eMBB[i,j],0] - scn.usr_scbw; # Update the available access bw 
+	#					bcap_sc[idx_max_eMBB[i,j],0] = bcap_sc[idx_max_eMBB[i,j],0] - Data_rate_sinr_eMBB_scbw[i,j]; # Update the available bhaul capacity
+	#					Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
+	#			  	else:
+	#			  		pass
+	#			elif idx_max_eMBB[i,j] > num_SCBS: # If its a macro cell
+	#				if access_bw[idx_max_eMBB[i,j],0] >= scn.mc_bw and bcap_mc[idx_max_eMBB[i,j] - num_SCBS,0] >= scn.eMBB_minrate:
+	#					Tot_Datarate = Tot_Datarate + Data_rate_sinr_eMBB_scbw[i,j]; # Update the Total network throughput
+	#					access_bw[idx_max_eMBB[i,j],0] = access_bw[idx_max_eMBB[i,j],0] - scn.mc_bw; # Update the Available access bw
+	#					bcap_mc[idx_max_eMBB[i,j] - num_SCBS,0] = bcap_mc[idx_max_eMBB[i,j] - num_SCBS,0] - Data_rate_sinr_eMBB_scbw[i,j];  
+	#					Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system 
+	#			break
+	#		else:
+	#			continue
 		print "Total Datarate:" 
 		print Tot_Datarate
 		print "================"
