@@ -257,33 +257,33 @@ for i in range(0,MCMC_iter):
 	# ================
 	# User Throughputs
 
-	X_Optimal = np.empty((Data.item()['X_optimal_data0'].shape[0], Data.item()['X_optimal_data0'].shape[1]));
-	X_Optimal_DC = copy.copy(X_Optimal);
-	X_Optimal_DC_MRT = copy.copy(X_Optimal);
-	X_Optimal_DC_BHCAP = copy.copy(X_Optimal);
-	X_Optimal_DC_BHCAP_LAT = copy.copy(X_Optimal);
-	X_Optimal_DC_LAT = copy.copy(X_Optimal);
-	X_Optimal_SA_MRT = copy.copy(X_Optimal);
-	X_Optimal_SA_LAT = copy.copy(X_Optimal);
-	X_Optimal_SA_BHCAP = copy.copy(X_Optimal);
-	X_Optimal_SA_BHCAP_LAT = copy.copy(X_Optimal);
-	X_Optimal_SA_MRT_LAT = copy.copy(X_Optimal);
-	X_Optimal_DC_MRT_LAT = copy.copy(X_Optimal);
-
-	Rate = np.empty((Data.item()['X_optimal_data0'].shape[0], Data.item()['X_optimal_data0'].shape[1]));
-	Rate_DC = copy.copy(Rate);
-	Rate_DC_MRT = copy.copy(Rate);
-	Rate_DC_BHCAP = copy.copy(Rate);
-	Rate_DC_BHCAP_LAT = copy.copy(Rate);
-	Rate_DC_LAT = copy.copy(Rate);
-	Rate_SA_MRT = copy.copy(Rate);
-	Rate_SA_LAT = copy.copy(Rate);
-	Rate_SA_BHCAP = copy.copy(Rate);
-	Rate_SA_BHCAP_LAT = copy.copy(Rate);
-	Rate_SA_MRT_LAT = copy.copy(Rate);
-	Rate_DC_MRT_LAT = copy.copy(Rate);
-
 	for k in range(0,num_iter):
+		X_Optimal = np.empty((Data.item()['Apps'+str(k)], Data.item()['APs'+str(k)]));
+		X_Optimal_DC = copy.copy(X_Optimal);
+		X_Optimal_DC_MRT = copy.copy(X_Optimal);
+		X_Optimal_DC_BHCAP = copy.copy(X_Optimal);
+		X_Optimal_DC_BHCAP_LAT = copy.copy(X_Optimal);
+		X_Optimal_DC_LAT = copy.copy(X_Optimal);
+		X_Optimal_SA_MRT = copy.copy(X_Optimal);
+		X_Optimal_SA_LAT = copy.copy(X_Optimal);
+		X_Optimal_SA_BHCAP = copy.copy(X_Optimal);
+		X_Optimal_SA_BHCAP_LAT = copy.copy(X_Optimal);
+		X_Optimal_SA_MRT_LAT = copy.copy(X_Optimal);
+		X_Optimal_DC_MRT_LAT = copy.copy(X_Optimal);
+
+		Rate = np.empty((Data.item()['Apps'+str(k)], Data.item()['APs'+str(k)]));
+		Rate_DC = copy.copy(Rate);
+		Rate_DC_MRT = copy.copy(Rate);
+		Rate_DC_BHCAP = copy.copy(Rate);
+		Rate_DC_BHCAP_LAT = copy.copy(Rate);
+		Rate_DC_LAT = copy.copy(Rate);
+		Rate_SA_MRT = copy.copy(Rate);
+		Rate_SA_LAT = copy.copy(Rate);
+		Rate_SA_BHCAP = copy.copy(Rate);
+		Rate_SA_BHCAP_LAT = copy.copy(Rate);
+		Rate_SA_MRT_LAT = copy.copy(Rate);
+		Rate_DC_MRT_LAT = copy.copy(Rate);
+		
 		if Data.item()['Status'+str(k)] == 2:
 			X_Optimal = Data.item()['X_optimal_data'+str(k)];
 			Rate = Data.item()['Rates'+str(k)];

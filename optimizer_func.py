@@ -337,6 +337,8 @@ for k in range(0,num_iter):
 			Data['Net_Throughput' + str(k)] = m.objVal; # Network wide throughput
 			Data['Rates' + str(k)] = rate; # Data rate matrix  
 			Data['Status' + str(k)] = m.status; # Insert the status
+			Data['Apps'+str(k)] = var_row_num; # Number of Applications
+			Data['APs'+str(k)] = var_col_num; # Number of Base Stations
 		else:
 			#print "======="
 			#print str(vars(args)['minRate']) 
