@@ -89,30 +89,35 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 
 	assoc_vec = sinr_max_eMBB[:,best_AP_col]; # SINR on a UE from the given cells to which we initially associate them 
 	assoc_vec_idx = np.bincount(idx_max_eMBB[:,best_AP_col]); # The number of UEs attached to each of the APs 
-
+	#print assoc_vec_idx
+	#print assoc_vec_idx.shape
 	#prohib_idx = []; # List to hold the prohibited indexes given their requirements are not satisfied
 
 	# ===> Check the resources now 
 
 	for j in range(sinr_eMBB.shape[1]):
+		#print ("j =",j) 
 		if assoc_vec_idx[j] > 0:			
 			bw_per_user = access_bw[j]/assoc_vec_idx[j]; 
 			counter = 0;
 			for i in range(sinr_eMBB.shape[0]):
+				#print ("i =", i) 
 				if idx_max_eMBB[i,0] == j:
 					if bw_per_user*np.log2(1+10**(assoc_vec[i]/10)) >= scn.eMBB_minrate:
-						if (j < num_SCBS) & (bcap_sc[j,0] > bw_per_user*np.log2(1+10**(assoc_vec[i]/10))):
-							Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
-							access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
-							bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
-							Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
-							counter = counter + 1;
-						elif (j >= num_SCBS) & (bcap_mc[j,0] > bw_per_user*np.log2(1+10**(assoc_vec[i]/10))):
-							Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
-							access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
-							bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
-							Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
-							counter = counter + 1;
+						if (j < num_SCBS):
+							if (bcap_sc[j,0] > bw_per_user*np.log2(1+10**(assoc_vec[i]/10))):
+								Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
+								access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
+								bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
+								Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
+								counter = counter + 1;
+						elif j >= num_SCBS:
+							if (bcap_mc[j - num_SCBS,0] > bw_per_user*np.log2(1+10**(assoc_vec[i]/10))):
+								Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
+								access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
+								bcap_mc[j - num_SCBS,0] = bcap_mc[j - num_SCBS,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
+								Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
+								counter = counter + 1;
 						continue
 					else:
 						idx_max_eMBB[i,best_AP_col] = idx_max_eMBB[i, best_AP_col + next_best_AP_counter[i]]; # Shift to the next best AP
@@ -122,8 +127,8 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 						j = j - 1;
 						break
 				else:
-					break
-			prohib_idx = []
+					continue
+			
 		else:
 			continue
 			
@@ -147,11 +152,11 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 	#			break
 	#		else:
 	#			continue
-		print "Total Datarate:" 
-		print Tot_Datarate
-		print "================"
-		print "Accepted-Users:"
-		print Accepted_Users
+		#print "Total Datarate:" 
+		#print Tot_Datarate
+		#print "================"
+		#print "Accepted-Users:"
+		#print Accepted_Users
 	#  access_bw >= scn.usr_scbw and ((bcap_sc >= scn.eMBB_minrate and idx_max_eMBB[i,j]<=num_SCBS) or (bcap_mc >= scn.eMBB_minrate and idx_max_eMBB[i,j]>num_SCBS)):
 				
 	print "Generated the Baseline Data"

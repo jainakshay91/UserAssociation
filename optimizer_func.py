@@ -134,8 +134,8 @@ for k in range(0,num_iter):
 
 	for i in range(0, sinr_eMBB.shape[1]):
 		if i <= num_scbs:
-			rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, scn.sc_bw*np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for SC
-			#rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, scn.usr_scbw*np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for SC
+			#rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, scn.sc_bw*np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for SC
+			rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, scn.usr_scbw*np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for SC
 
 			#rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for SC				
 		else:
@@ -258,7 +258,7 @@ for k in range(0,num_iter):
 
 		#mMTC_BW = m.addVars()
 
-		print "Here"
+		#print "Here"
 
 
 		# ======================
@@ -268,7 +268,8 @@ for k in range(0,num_iter):
 		
 		# We add a Compulsory Resource allocation Constraint 
 
-		#m.addConstrs((RB[i,0] <= scn.sc_bw for i in range(num_scbs)), name = 'c0'); # Small cells have their bandwidth distributed 
+		m.addConstrs((RB[i,0] <= scn.sc_bw for i in range(num_scbs)), name = 'c0'); # Small cells have their bandwidth distributed 
+		m.addConstrs((RB[i,0] <= scn.eNB_bw for i in range(num_scbs, num_scbs + num_mcbs)), name = 'c10'); # Macro cells have their bandwidth distributed 
 		#m.addConstrs((max_RATE[i,0] <= scn.mMTC_maxrate for i in range(var_row_num_mMTC)), name = 'c9'); # mMTC maximum date rate per instance constraint
 
 		if vars(args)['dual'] == 0:
@@ -326,7 +327,7 @@ for k in range(0,num_iter):
 					break
 			#plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
 			print('Obj:', m.objVal)
-			print('Total Accepted Users:', sum(X_optimal))
+			
 			# =========================
 			# Store Optimized Variables
 
