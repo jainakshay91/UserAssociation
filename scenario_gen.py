@@ -7,6 +7,7 @@
 #import dist_check
 import pathloss
 import copy
+import csv
 #from multiprocessing import Process
 # ===================================================
 # Load/Generate the Macro Cell base station locations
@@ -35,8 +36,8 @@ def small_cell(num, MCBS_locs, SCBS_intersite,SCBS_per_MCBS,MCBS_intersite,np,ds
         locs_SCBS_x = np.multiply(dist_from_MCBS,np.cos(angular_disp))
         locs_SCBS_y = np.multiply(dist_from_MCBS,np.sin(angular_disp))
        
-	   #locs_SCBS_x = np.random.uniform(MCBS_locs[num,0] - offset,MCBS_locs[num,0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
-	   #locs_SCBS_y = np.random.uniform(MCBS_locs[num,1] - offset,MCBS_locs[num,1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
+	#locs_SCBS_x = np.random.uniform(MCBS_locs[num,0] - offset,MCBS_locs[num,0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
+	#locs_SCBS_y = np.random.uniform(MCBS_locs[num,1] - offset,MCBS_locs[num,1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
         locs_SCBS = np.concatenate((locs_SCBS_x, locs_SCBS_y), axis=1); 
         if dsc.checker(locs_SCBS,SCBS_intersite,np)==1 and dsc.locs_checker(locs_SCBS, MCBS_locs,np, 'sc')==1:
             break
@@ -70,8 +71,13 @@ def user_dump(scn, SCBS_per_MCBS, num_MCBS, AP_locs, np, dsc):
                i = i - 1; # We go back and start the for loop from the current instance
                continue
             assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_users_scenario[i], scn.max_num_appl_UE)); # Generate User-App Association 
-        return usr_locs, assoc_usapp
-        #usr_locs_eMBB = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_eMBB,2)); # We obtain a set of eMBB locations
+        with open("ActualUsers.csv",'wb') as f:
+		w = csv.DictWriter(f,assoc_usapp.keys())
+		w.writeheader()
+		w.writerow(assoc_usapp)
+	return usr_locs, assoc_usapp
+        
+	#usr_locs_eMBB = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_eMBB,2)); # We obtain a set of eMBB locations
     #usr_locs_URLLC = np.random.uniform(0,np.sqrt(scn.simulation_area),(int(tot_dev_URLLC),2)); # We obtain a set of URLLC locations
     #usr_locs_mMTC = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_mMTC,2)); # We obtain a set of mMTC locations
     #return usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC; # Return the locations of these applications/users with these applications
@@ -109,7 +115,6 @@ def backhaul_dump(scn, SCBS_per_MCBS, MCBS_locs, assoc_mat, np):
     mat_wrdbh_sc = (assoc_mat > scn.wl_bh_bp)*1; # Wired backhaul enabled small cells
     MC_hops = np.random.randint(scn.min_num_hops, scn.max_num_hops,size = MCBS_locs.shape[0]); # The macro cells always have wired backhaul (Local breakouts can be added later)
     SC_hops = ((assoc_mat > 0)*1)*np.transpose(MC_hops) + 1; # The number of hops for each small cells to the IMS core
-
     return mat_wlbh_sc, mat_wrdbh_sc, MC_hops, SC_hops # Return the hops and wired/wireless backhaul configuration 
 
 # ===============================

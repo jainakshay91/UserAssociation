@@ -19,6 +19,8 @@ import logging as lg
 # =====================================
 
 def path_checker():
+	#print "here"
+	#print os.getcwd()
 	flag = -1; # Initialize the flag variable 
 	path = os.getcwd() + '/Data'; # This is the path we have to check for
 	subpath = os.getcwd() + '/Data/Temp'; # This is the subdirectory to store data  
@@ -29,6 +31,7 @@ def path_checker():
 			flag = 1; # Generate the Data if the Subpath does not exist
 	else:
 		flag = 1; # Generate the Data if the Path does not exist 
+	#print flag
 	return flag 
 
 # ==================================
@@ -324,8 +327,8 @@ def SA_MRT_LAT(MCMC_iter, chat_frequency):
 sys.path.append(os.getcwd()); # Add current working directory to python path
 os.chdir(os.getcwd()); # Change to the current working directory
 chat_frequency = 10; # Select the divider so as to obtain timely update messages
-#num_processors = int(int(subprocess.check_output(['nproc']))/2); # Number of Processors to be utilized 
-num_processors = 2
+num_processors = int(int(subprocess.check_output(['nproc']))/2)*2; # Number of Processors to be utilized 
+#num_processors = 2
 scn = scenario_var();
 MCMC_iter = scn.MCMC_iter; # Number of Monte Carlo Iterations
 
@@ -338,6 +341,7 @@ if __name__ == '__main__':
 	dat_gen_flag = path_checker(); # Get the Data generation flag value
 
 	if dat_gen_flag == 1:
+		#print "In the Generator"
 		file_indexer = 0; # For File Indexing
 		pool = Pool(processes = num_processors); # Creates a pool of 10 parallel processes to be done
 		for i in range(0, MCMC_iter/num_processors):
