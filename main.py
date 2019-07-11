@@ -73,7 +73,8 @@ try:
 	l_idx = 0; # lower index for the association matrix 
 	u_idx = SCBS_per_MCBS[0]; # upper index for the association matrix
 	for i in range(0,macro_cell_locations.shape[0]):
-	    small_cell_locations = scenario_gen.small_cell(i, macro_cell_locations, scn.SCBS_intersite, SCBS_per_MCBS[i], scn.MCBS_intersite, np, dsc); #Get the small cell locations for each macro cell domain 
+	    small_cell_locations = scenario_gen.small_cell(i, macro_cell_locations[i,:], scn.SCBS_intersite, SCBS_per_MCBS[i], scn.MCBS_intersite, np, dsc); #Get the small cell locations for each macro cell domain 
+	    print small_cell_locations
 	    locs_SCBS[l_idx:u_idx,:] = small_cell_locations; # Store the small cell locations in the list of numpy arrays
 	    SCBS_MCBS_assoc[l_idx:u_idx,i] = dsc.dist_calc(small_cell_locations,macro_cell_locations[i], 0, 0, '2d', np); # Insert ones in these indexes for the association matrix
 	    #print SCBS_MCBS_assoc[l_idx:u_idx,i]
