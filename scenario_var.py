@@ -27,7 +27,7 @@ class scenario_var:
 	mMTC_tnsmt_power = 20; # This value is in dBm
 	other_losses = 20; # This is in dB (due to cable losses, penetration, reflection, etc. )
 	sc_bw = 1e9; # 1 GHz bandwidth for the small cells
-	mc_bw = 20*1e6; # 20 MHz bandwidth for the UE on LTE macro cells
+	mc_bw = 10*1e6; # 20 MHz bandwidth for the UE on LTE macro cells
 	N = -174; # This is the noise spectral density in dbm/Hz
 	min_num_hops = 1; # If a local breakout exists
 	max_num_hops = 4; # Maximum hops to the IMS core
@@ -43,10 +43,12 @@ class scenario_var:
 	wl_link_delay = 1*1e-3; # 1 ms link delay for the wireless link [Mona Jaber Paper] 
 	wrd_link_delay = 1*1e-3; # 1-7 ms link delay for the wired link [Mona Jaber Paper]
 	eMBB_latency_req = 4*1e-3; # 3 ms link latency requirement for the eMBB applications
-	MCMC_iter = 100; # Number of Monte Carlo Iterations
+	MCMC_iter = 2; # Number of Monte Carlo Iterations
 	num_Subcarriers_MCBS = 1200; # LTE number of subcarriers
 	num_Subcarriers_SCBS = 3300; # 5G NR number of subcarriers 
 	usr_scbw = 2*1e8; # 100 MHz bandwidth per user 
 	mMTC_bw = 180*1e3; # Device Bandwidth (Guard Band Operations considered)
 	mMTC_maxrate = 1e6; # Device data rate
 	eNB_bw = 80*1e6; # Bandwidth for the Macro Cells (Qualcomm Media Release)
+	BW_SC = [50, 100, 200]; # Small cell bandwidth values (All values are in MHz)
+	BW_MC = [1.5, 3, 5, 10, 20]; # Macro cell bandwidth values (All values are in MHz)
