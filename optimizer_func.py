@@ -209,10 +209,10 @@ for k in range(0,num_iter):
 						#print obj_func
 						for k in range(3):
 							#print j 
-							obj_func = obj_func + (G_SC[i,j,k]*rate[i,j]); # Small cell contribution  
+							obj_func = obj_func + (G_SC[i,j,k]*scn.BW_SC[k]*rate[i,j]); # Small cell contribution  
 					elif j >= num_scbs:
 						for f in range(5):
-							obj_func = obj_func + (G_MC[i,j - num_scbs,f]*rate[i,j]); # Macro cell contribution
+							obj_func = obj_func + (G_MC[i,j - num_scbs,f]*scn.BW_MC[k]*rate[i,j]); # Macro cell contribution
 					#print obj_func
 
 		#print obj_func
@@ -294,6 +294,22 @@ for k in range(0,num_iter):
 			for j in  range(0, var_col_num):
 				AP_latency[i,j] = LinExpr(bh_paths[j],X.select(i,j)); # Constraint Expression
 		
+
+		# ============================
+		# Unity Assignment Constraints
+
+		U_SC = m.addVars(var_row_num, int(num_scbs), name="USC");
+		for i in range(var_row_num):
+			for j in range(num_scbs):
+				U_SC[i,j] = LinExpr([1]*3,G_SC.select(i,j,'*'))
+
+		U_MC = m.addVars(var_row_num, int(num_mcbs), name="UMC")
+		for i in range(var_row_num):
+			for j in range(num_mcbs):
+				U_MC[i,j] = LinExpr([1]*5,G_MC.select(i,j,'*'))
+
+
+
 		# ==========================
 		# Set up the mMTC Constraint
 
@@ -315,7 +331,8 @@ for k in range(0,num_iter):
 		m.addConstrs((G_MC[i,j - num_scbs,k] <= BW_MC[i,k] for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l1'); # Linearization constraint 4
 		m.addConstrs((G_MC[i,j - num_scbs,k] <= X[i,j] for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l2'); # Linearization constraint 5
 		m.addConstrs((G_MC[i,j - num_scbs,k] >= (BW_MC[i,k] + X[i,j] -1) for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l3'); # Linearization constraint 6
-
+		m.addConstrs((U_SC[i,j] <= 1 for i in range(var_row_num) for j in range(num_scbs)))
+		m.addConstrs((U_MC[i,j] <= 1 for i in range(var_row_num) for j in range(num_mcbs)))
 
 		if vars(args)['dual'] == 0:
 			print "==================="
@@ -367,11 +384,39 @@ for k in range(0,num_iter):
 			X_optimal = []; # Initializing the Variable to store the optimal solution
 
 			for v in m.getVars():
+				#print ('%s %g' % (v.varName, v.X))
 				X_optimal.append(v.x); 
+				#print X_optimal
 				if len(X_optimal) >= var_row_num*var_col_num:
 					break
-			#plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
+			plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
 			print('Obj:', m.objVal)
+			
+			G_plt = []
+			M_plt = []
+
+			for v in m.getVars():
+				if "bwsc" in v.varName:
+					G_plt.append(v.x)
+				if "bwmc" in v.varName:
+					M_plt.append(v.x)
+			
+
+			#fin_rate = np.zeros((var_row_num,1))
+			#for i in range(var_row_num):
+			#	for j in range(var_col_num):
+			#		if j < num_scbs:
+			#			fin_rate[i] = fin_rate[i] + X[i,j]*scn.BW_SC[np.where(G_plt[i,:] == 1)]*rate[i,j]
+			#		elif j >= num_scbs:
+			#			fin_rate[i] = fin_rate[i] + X[i,j]*scn.BW_MC[np.where(M_plt[i,:] == 1)]*rate[i,j]
+
+			plotter.optimizer_plotter(np.asarray(G_plt).reshape((var_row_num,3)))
+			plotter.optimizer_plotter(np.asarray(M_plt).reshape((var_row_num,5)))
+			#plotter.optimizer_plotter(fin_rate)
+						
+
+			
+
 
 			# =========================
 			# Store Optimized Variables

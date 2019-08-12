@@ -45,10 +45,17 @@ def plotter(typ_plt, x_val, y_val, tick_space_x, tick_space_y, rtn_flag_x, rtn_a
 # ====================================
 
 def optimizer_plotter(data_plt):
+	f = plt.figure(1)
 	ax = sns.heatmap(data_plt); 
-	ax.set_title("Association heatmap")
-	ax.set_xlabel("Access Points")
-	ax.set_ylabel("Applications")
+	
+	#g = plt.figure(2)
+	#ax1 = sns.heatmap(data_plt[:,:,1]);
+
+	#h = plt.figure(3)
+	#ax2 = sns.heatmap(data_plt[:,:,2]);   
+	#ax.set_title("Association heatmap")
+	#ax.set_xlabel("Access Points")
+	#ax.set_ylabel("Frequency Allocated")
 	plt.show()	
 
 
