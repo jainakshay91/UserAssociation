@@ -11,6 +11,7 @@ import os
 from scenario_var import scenario_var 
 from argparse import ArgumentParser
 from rssi_assoc import baseline_assoc
+import time
 
 # =======================
 # Optimizer Configuration
@@ -240,10 +241,10 @@ for k in range(0,num_iter):
 			for j in range(0, var_col_num):
 				if j < num_scbs:
 					for k in range(3):
-						min_RATE[i,0] = min_RATE[i,0] + rate[i,j]*G_SC[i,j,k]; # Constraint expression
+						min_RATE[i,0] = min_RATE[i,0] + rate[i,j]*scn.BW_SC[k]*G_SC[i,j,k]; # Constraint expression
 				elif j >= num_scbs:
 					for k in range(5):
-						min_RATE[i,0] = min_RATE[i,0] + rate[i,j]*G_MC[i,j - num_scbs,k]; # Constraint expression
+						min_RATE[i,0] = min_RATE[i,0] + rate[i,j]*scn.BW_MC[k]*G_MC[i,j - num_scbs,k]; # Constraint expression
 
 		# ===> Set up the Resource Allocation Constraint for an AP
 
@@ -338,7 +339,12 @@ for k in range(0,num_iter):
 			print "==================="
 			print "Single Connectivity"
 			print "==================="
+			#m.addConstrs((U_SC[i,j] == 0 for i in range(var_row_num) for j in range(num_scbs)))
+			#m.addConstrs((U_MC[i,j] == 1 for i in range(var_row_num) for j in range(num_mcbs)))
 			m.addConstrs((DC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
+			#m.addConstrs((MC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
+			#m.addConstrs((SC[i,0] == 0 for i in range(var_row_num)), name ='c14'); # Adding the Single Connectivity constraint 
+			
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
 			if vars(args)['bhaul'] == 1:
@@ -351,8 +357,11 @@ for k in range(0,num_iter):
 			print "Dual Connectivity"
 			print "================="
 			#m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+			#m.addConstrs((U_SC[i,j] <= 1 for i in range(var_row_num) for j in range(num_scbs)))
+			#m.addConstrs((U_MC[i,j] == 1 for i in range(var_row_num) for j in range(num_mcbs)))
 			m.addConstrs((MC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
 			m.addConstrs((SC[i,0] <= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
+			
 			#m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
@@ -389,18 +398,26 @@ for k in range(0,num_iter):
 				#print X_optimal
 				if len(X_optimal) >= var_row_num*var_col_num:
 					break
-			plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
+			#plotter.optimizer_plotter(np.asarray(X_optimal).reshape((var_row_num,var_col_num)));
 			print('Obj:', m.objVal)
 			
 			G_plt = []
 			M_plt = []
+			SCbw = []
+			MCbw = []
 
 			for v in m.getVars():
-				if "bwsc" in v.varName:
+				if "GSC" in v.varName:
 					G_plt.append(v.x)
-				if "bwmc" in v.varName:
+				if "GMC" in v.varName:
 					M_plt.append(v.x)
-			
+			#	if "bwmc" in v.varName:
+			#		MCbw.append(v.x)
+			#	if "bwsc" in v.varName:
+			#		SCbw.append(v.x)
+
+			# =============================
+			# Visualization and Computation			
 
 			#fin_rate = np.zeros((var_row_num,1))
 			#for i in range(var_row_num):
@@ -410,13 +427,41 @@ for k in range(0,num_iter):
 			#		elif j >= num_scbs:
 			#			fin_rate[i] = fin_rate[i] + X[i,j]*scn.BW_MC[np.where(M_plt[i,:] == 1)]*rate[i,j]
 
-			plotter.optimizer_plotter(np.asarray(G_plt).reshape((var_row_num,3)))
-			plotter.optimizer_plotter(np.asarray(M_plt).reshape((var_row_num,5)))
+			#plotter.optimizer_plotter(np.asarray(G_plt).reshape((var_row_num,3)))
+			#plotter.optimizer_plotter(np.asarray(M_plt).reshape((var_row_num,5)))
 			#plotter.optimizer_plotter(fin_rate)
-						
-
+			#print np.sum(G_plt)			
+			#print np.sum(M_plt)
+			G_plt_idx = np.asarray(G_plt).reshape((var_row_num,num_scbs,3))
+			M_plt_idx = np.asarray(M_plt).reshape((var_row_num,num_mcbs,5))
+			new_rate = np.empty((rate.shape[0], rate.shape[1])); # The actual rate matrix
 			
+			#test = G_plt_idx[1,1,:]*scn.BW_SC
+			GSC_compute = np.empty((var_row_num, num_scbs)); # This holds the bandwidth contribution from each small cell
+			GMC_compute = np.empty((var_row_num, num_mcbs)); # This holds the bandwidth contribution from each macro cell
 
+			for i in range(var_row_num):
+				for j in range(num_scbs):
+					GSC_compute[i,j] = sum(G_plt_idx[i,j,:]*np.asarray(scn.BW_SC[:]))
+
+			for i in range(var_row_num):
+				for j in range(num_mcbs):
+					GMC_compute[i,j] = sum(M_plt_idx[i,j,:]*np.asarray(scn.BW_MC[:]))
+
+			G_total_compute = np.concatenate((GSC_compute, GMC_compute), axis = 1) # Bandwidth Contribution matrix
+			new_rate = rate*G_total_compute; # New rate matrix
+
+			#		new_rate[i,j] = (np.sum(G_plt_idx[i,j,:]*np.asarray(scn.BW_SC),axis = 0) + np.sum(M_plt_idx[i,j,:]*np.asarray(scn.BW_MC),axis = 0))*rate[i,j]			
+	
+			G_sum = np.sum(G_plt_idx[:,:,0] + G_plt_idx[:,:,1] + G_plt_idx[:,:,2], axis = 1)
+			M_sum = np.sum(M_plt_idx[:,:,0] + M_plt_idx[:,:,1] + M_plt_idx[:,:,2] + M_plt_idx[:,:,3] + M_plt_idx[:,:,4], axis = 1)
+			#print G_sum.shape
+			#print M_sum.shape
+			#print ("SC:", G_sum)
+			#print ("MC:", M_sum)
+			#plotter.optimizer_plotter(new_rate)
+			#plotter.optimizer_plotter(M_plt_idx[:,:,0] + M_plt_idx[:,:,1] + M_plt_idx[:,:,2] + M_plt_idx[:,:,3] + M_plt_idx[:,:,4])
+			#plotter.optimizer_plotter(G_plt_idx[:,:,0] + G_plt_idx[:,:,1] + G_plt_idx[:,:,2])	
 
 			# =========================
 			# Store Optimized Variables
@@ -425,10 +470,11 @@ for k in range(0,num_iter):
 
 			Data['X_optimal_data' + str(k)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
 			Data['Net_Throughput' + str(k)] = m.objVal; # Network wide throughput
-			Data['Rates' + str(k)] = rate; # Data rate matrix  
+			Data['Rates' + str(k)] = new_rate; # Data rate matrix  
 			Data['Status' + str(k)] = m.status; # Insert the status
 			Data['Apps'+str(k)] = var_row_num;
 			Data['APs'+str(k)] = var_col_num;
+			
 		else:
 			Data['Status' + str(k)] = m.status; # Add the status for detecting infeasible solution
 			#print ("Status_Flags:" + str(k), str(m.status))
