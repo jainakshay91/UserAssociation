@@ -20,7 +20,7 @@ def macro_cell(simulation_area,MCBS_intersite,np,dsc):
     
     offset = MCBS_intersite/2; # Offset param
     locs_interim = np.arange(offset, np.sqrt(simulation_area).astype(int), MCBS_intersite); # Range of numbers from 0 to the end of the grid area, with intersite distance spacing 
-    print locs_interim
+    #print locs_interim
     locs_MCBS = dsc.gridder(locs_interim,MCBS_intersite,np); # Calling a permutation function that generates the grid
     return locs_MCBS
 
@@ -113,6 +113,7 @@ def backhaul_dump(scn, SCBS_per_MCBS, MCBS_locs, assoc_mat, np):
     # We create the wired and wireless backhaul matrix (Restricting it to just one backhaul link currently)
 
     mat_wlbh_sc = np.where(assoc_mat != 0, (assoc_mat <= scn.wl_bh_bp)*1, 0); # Wireless backhaul enabled small cells
+    #print mat_wlbh_sc
     mat_wrdbh_sc = (assoc_mat > scn.wl_bh_bp)*1; # Wired backhaul enabled small cells
     MC_hops = np.random.randint(scn.min_num_hops, scn.max_num_hops,size = MCBS_locs.shape[0]); # The macro cells always have wired backhaul (Local breakouts can be added later)
     SC_hops = ((assoc_mat > 0)*1)*np.transpose(MC_hops) + 1; # The number of hops for each small cells to the IMS core
@@ -355,20 +356,29 @@ def backhaul_tput(assoc_mat, SCBS_per_MCBS, wl_mat, np, scn, dsc):
     # ==========================================================
     # We compute the throughput for the backhaul link of each SC
 
+    #print wl_mat
     PL_SC_MC = np.empty((wl_mat.shape[0],1)); # Initialize the Pathloss matrix
     tput_SC = copy.copy(PL_SC_MC); # Initialize the Throughput matrix
     dist_SC_MC = copy.copy(PL_SC_MC); # Initialize the 3D distance matrix
-    
+    #print ("Matrix Shape:",dist_SC_MC.shape)
+    #print ("Association Matrix:", assoc_mat.shape)
+    #print assoc_mat
+
     # ===> Computing the 3D distance 
     for k in range(0,assoc_mat.shape[0]):
-        dist_SC_MC[k] = np.sqrt(assoc_mat[k,next((i for i, x in enumerate(assoc_mat[k,:].tolist()) if x), None)]**2 + (scn.bs_ht_mc-scn.bs_ht_sc)**2); # The 3D distance from the MC for a given SC
+        print ("K:",k) 
+        print ("Wireless Matrix:", wl_mat[k,:])
+        print ("Association Matrix Values:", assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)])
+        print ("Distance:", np.sqrt(assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)]**2 + (scn.bs_ht_mc-scn.bs_ht_sc)**2))
+        if next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None) != None:
+            dist_SC_MC[k] = np.sqrt(assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)]**2 + (scn.bs_ht_mc-scn.bs_ht_sc)**2); # The 3D distance from the MC for a given SC
 
     # ===> Computing the Pathloss for the Small Cells to the Macro cells
 
     for l in range(0, tput_SC.shape[0]):
         if next((i for i, x in enumerate(wl_mat[l,:].tolist()) if x), None) != None:
             #print assoc_mat[l,next((i for i, x in enumerate(assoc_mat[l,:].tolist()) if x), None)]
-            PL_SC_MC[l] = pathloss.pathloss_CI(scn, assoc_mat[l,next((i for i, x in enumerate(assoc_mat[l,:].tolist()) if x), None)], np, dist_SC_MC[l], dsc, 2); # Calculating the pathloss for Small cells to Macro Cells
+            PL_SC_MC[l] = pathloss.pathloss_CI(scn, assoc_mat[l,next((i for i, x in enumerate(wl_mat[l,:].tolist()) if x), None)], np, dist_SC_MC[l], dsc, 2); # Calculating the pathloss for Small cells to Macro Cells
         else:
             PL_SC_MC[l] = 0; # This is the Fiber based backhaul
             tput_SC[l] = scn.fib_BH_capacity; # Fiber backhaul capacity
