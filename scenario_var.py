@@ -43,7 +43,7 @@ class scenario_var:
 	wl_link_delay = 1*1e-3; # 1 ms link delay for the wireless link [Mona Jaber Paper] 
 	wrd_link_delay = 1*1e-3; # 1-7 ms link delay for the wired link [Mona Jaber Paper]
 	eMBB_latency_req = 4*1e-3; # 3 ms link latency requirement for the eMBB applications
-	MCMC_iter = 2; # Number of Monte Carlo Iterations
+	MCMC_iter = 50; # Number of Monte Carlo Iterations
 	num_Subcarriers_MCBS = 1200; # LTE number of subcarriers
 	num_Subcarriers_SCBS = 3300; # 5G NR number of subcarriers 
 	usr_scbw = 2*1e8; # 100 MHz bandwidth per user 
