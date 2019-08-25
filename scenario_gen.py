@@ -366,10 +366,10 @@ def backhaul_tput(assoc_mat, SCBS_per_MCBS, wl_mat, np, scn, dsc):
 
     # ===> Computing the 3D distance 
     for k in range(0,assoc_mat.shape[0]):
-        print ("K:",k) 
-        print ("Wireless Matrix:", wl_mat[k,:])
-        print ("Association Matrix Values:", assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)])
-        print ("Distance:", np.sqrt(assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)]**2 + (scn.bs_ht_mc-scn.bs_ht_sc)**2))
+        #print ("K:",k) 
+        #print ("Wireless Matrix:", wl_mat[k,:])
+        #print ("Association Matrix Values:", assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)])
+        #print ("Distance:", np.sqrt(assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)]**2 + (scn.bs_ht_mc-scn.bs_ht_sc)**2))
         if next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None) != None:
             dist_SC_MC[k] = np.sqrt(assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)]**2 + (scn.bs_ht_mc-scn.bs_ht_sc)**2); # The 3D distance from the MC for a given SC
 
