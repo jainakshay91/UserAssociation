@@ -78,14 +78,14 @@ sinr_APs_mMTC = optim_data_mMTC['arr_0']; # SINR data for the mMTC devices
 #RX_power_mc_mMTC = optim_data_mMTC['arr_12']; # Received Power from Macro cells for all the mMTC devices
 #RX_power_mMTC = np.hstack((Rx_power_sc_mMTC, RX_power_mc_mMTC)); # Stack all the received powers for the mMTC users
 
-for k in range(0,num_iter):
+for N in range(0,num_iter):
 	#k = 1
 	print "=============================================="
-	print "Dataset # " + str(k) + ": Collecting the Stored Variables"
+	print "Dataset # " + str(N) + ": Collecting the Stored Variables"
 
-	optim_data = np.load(os.getcwd() + '/Data/Temp/optim_var_'+ str(k) + str(vars(args)['iter']) +'.npz', allow_pickle = True)
+	optim_data = np.load(os.getcwd() + '/Data/Temp/optim_var_'+ str(N) + str(vars(args)['iter']) +'.npz', allow_pickle = True)
 	sinr_APs = optim_data['arr_0']; # Load the SINR data to be used for the optimization
-	user_AP_assoc = optim_data['arr_1'].item()['user_app' + str(k)]; # Load the User-Applications Association data to be used for the optimization
+	user_AP_assoc = optim_data['arr_1'].item()['user_app' + str(N)]; # Load the User-Applications Association data to be used for the optimization
 	sinr_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
 	sinr_pad_val = optim_data['arr_4']; # In the small cell calculation we use an sinr pad value for ease of computation
 	num_scbs = optim_data['arr_5']; # Number of Small cells
@@ -180,10 +180,10 @@ for k in range(0,num_iter):
 
 	
 	Tot_Data_Rate, Associated_users = baseline_assoc(SNR_eMBB, 0, sinr_eMBB, 0, BH_Capacity_SC, BH_Capacity_MC, num_scbs, num_mcbs, np, scn, 0); # Baseline association function 
-	np.savez_compressed(os.getcwd()+'/Data/Process/Baseline'+ str(vars(args)['iter']) + str(k), Tot_Data_Rate, Associated_users, allow_pickle = True); # Save these variables to be utilized by the optimizer
+	np.savez_compressed(os.getcwd()+'/Data/Process/Baseline'+ str(vars(args)['iter']) + str(N), Tot_Data_Rate, Associated_users, allow_pickle = True); # Save these variables to be utilized by the optimizer
 	
 	Tot_Data_Rate_min, Associated_users_min = baseline_assoc(SNR_eMBB, 0, sinr_eMBB, 0, BH_Capacity_SC, BH_Capacity_MC, num_scbs, num_mcbs, np, scn, 1); # Baseline association function with minimum rate
-	np.savez_compressed(os.getcwd()+'/Data/Process/Baseline_minrate'+str(vars(args)['iter'])+str(k), Tot_Data_Rate_min, Associated_users_min, allow_pickle = True); # Save these variables to plot the baseline with min rate also  
+	np.savez_compressed(os.getcwd()+'/Data/Process/Baseline_minrate'+str(vars(args)['iter'])+str(N), Tot_Data_Rate_min, Associated_users_min, allow_pickle = True); # Save these variables to plot the baseline with min rate also  
 	
 	# =========
 	# Optimizer
@@ -459,7 +459,8 @@ for k in range(0,num_iter):
 			#print M_sum.shape
 			#print ("SC:", G_sum)
 			#print ("MC:", M_sum)
-			#plotter.optimizer_plotter(new_rate)
+			if N == (num_iter-1):
+				plotter.optimizer_plotter(new_rate) # We get the plot for the rates with maximum number of users
 			#plotter.optimizer_plotter(M_plt_idx[:,:,0] + M_plt_idx[:,:,1] + M_plt_idx[:,:,2] + M_plt_idx[:,:,3] + M_plt_idx[:,:,4])
 			#plotter.optimizer_plotter(G_plt_idx[:,:,0] + G_plt_idx[:,:,1] + G_plt_idx[:,:,2])	
 
@@ -468,18 +469,18 @@ for k in range(0,num_iter):
 
 			print "Saving Data"
 
-			Data['X_optimal_data' + str(k)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
-			Data['Net_Throughput' + str(k)] = m.objVal; # Network wide throughput
-			Data['Rates' + str(k)] = new_rate; # Data rate matrix  
-			Data['Status' + str(k)] = m.status; # Insert the status
-			Data['Apps'+str(k)] = var_row_num;
-			Data['APs'+str(k)] = var_col_num;
+			Data['X_optimal_data' + str(N)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
+			Data['Net_Throughput' + str(N)] = m.objVal; # Network wide throughput
+			Data['Rates' + str(N)] = new_rate; # Data rate matrix  
+			Data['Status' + str(N)] = m.status; # Insert the status
+			Data['Apps'+str(N)] = var_row_num;
+			Data['APs'+str(N)] = var_col_num;
 			
 		else:
-			Data['Status' + str(k)] = m.status; # Add the status for detecting infeasible solution
+			Data['Status' + str(N)] = m.status; # Add the status for detecting infeasible solution
 			#print ("Status_Flags:" + str(k), str(m.status))
-			Data['Apps' + str(k)] = var_row_num;
-			Data['APs' + str(k)] = var_col_num;
+			Data['Apps' + str(N)] = var_row_num;
+			Data['APs' + str(N)] = var_col_num;
 			continue
 	except GurobiError:
 		print('Error Reported')
