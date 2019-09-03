@@ -551,10 +551,10 @@ jfr_DC_MRT_LAT = jains_fairness(application_DR_DC_MRT_LAT, avg_idx);
 # Throughput Plot
 
 x_axis = np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml);
-#y_min_1 = np.amin([np.amin(Net_Throughput_avg),np.amin(Net_Throughput_DC_avg), np.amin(Net_Throughput_DC_MRT_avg), np.amin(Net_Throughput_DC_BHCAP_avg), np.amin(Net_Throughput_DC_BHCAP_LAT_avg), np.amin(Net_Throughput_DC_LAT_avg), np.amin(Net_Throughput_SA_MRT_avg), np.amin(Net_Throughput_SA_LAT_avg), np.amin(Net_Throughput_SA_BHCAP_avg), np.amin(Net_Throughput_SA_BHCAP_LAT_avg), np.amin(Net_Throughput_SA_MRT_LAT_avg), np.amin(B_Dat_DR_avg), np.amin(Net_Throughput_DC_MRT_LAT_avg)]); #np.amin(B_Dat_DR_avg), , np.amin(B_Dat_DR_sn_avg)
-#y_max_1 = np.max([np.amax(Net_Throughput_avg), np.amax(Net_Throughput_DC_avg), np.amax(Net_Throughput_DC_MRT_avg), np.amax(Net_Throughput_DC_BHCAP_avg), np.amax(Net_Throughput_DC_BHCAP_LAT_avg), np.amax(Net_Throughput_DC_LAT_avg), np.amax(Net_Throughput_SA_MRT_avg), np.amax(Net_Throughput_SA_LAT_avg), np.amax(Net_Throughput_SA_BHCAP_avg), np.amax(Net_Throughput_SA_BHCAP_LAT_avg), np.amax(Net_Throughput_SA_MRT_LAT_avg), np.amax(B_Dat_DR_avg), np.amax(Net_Throughput_DC_MRT_LAT_avg)]); #np.amax(B_Dat_DR_avg),, np.amax(B_Dat_DR_sn_avg)
-#y_min_2 = np.amin([np.amin(B_Dat_DR_avg)]);
-#y_max_2 = np.max([np.amax(B_Dat_DR_avg)]);
+y_min_1 = np.amin([np.amin(Net_Throughput_avg),np.amin(Net_Throughput_DC_avg), np.amin(Net_Throughput_DC_MRT_avg), np.amin(Net_Throughput_DC_BHCAP_avg), np.amin(Net_Throughput_DC_BHCAP_LAT_avg), np.amin(Net_Throughput_DC_LAT_avg), np.amin(Net_Throughput_SA_MRT_avg), np.amin(Net_Throughput_SA_LAT_avg), np.amin(Net_Throughput_SA_BHCAP_avg), np.amin(Net_Throughput_SA_BHCAP_LAT_avg), np.amin(Net_Throughput_SA_MRT_LAT_avg), np.amin(B_Dat_DR_avg), np.amin(Net_Throughput_DC_MRT_LAT_avg)]); #np.amin(B_Dat_DR_avg), , np.amin(B_Dat_DR_sn_avg)
+y_max_1 = np.max([np.amax(Net_Throughput_avg), np.amax(Net_Throughput_DC_avg), np.amax(Net_Throughput_DC_MRT_avg), np.amax(Net_Throughput_DC_BHCAP_avg), np.amax(Net_Throughput_DC_BHCAP_LAT_avg), np.amax(Net_Throughput_DC_LAT_avg), np.amax(Net_Throughput_SA_MRT_avg), np.amax(Net_Throughput_SA_LAT_avg), np.amax(Net_Throughput_SA_BHCAP_avg), np.amax(Net_Throughput_SA_BHCAP_LAT_avg), np.amax(Net_Throughput_SA_MRT_LAT_avg), np.amax(B_Dat_DR_avg), np.amax(Net_Throughput_DC_MRT_LAT_avg)]); #np.amax(B_Dat_DR_avg),, np.amax(B_Dat_DR_sn_avg)
+y_min_2 = np.amin([np.amin(B_Dat_DR_avg)]);
+y_max_2 = np.max([np.amax(B_Dat_DR_avg)]);
 #plotter.plotter('dashline',np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml),Net_Throughput_avg,5,10,1,45,0,0,1,'major','both', 'yes', 'Total Network Throughput', np)
 #print Net_Throughput_SA_LAT_avg
 plt.semilogy(x_axis, Net_Throughput_avg, 'r--*', x_axis, Net_Throughput_DC_avg, 'b--*' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'k--s', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm--d', x_axis , Net_Throughput_DC_LAT_avg, 'c--p',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--D', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:', x_axis, Net_Throughput_SA_MRT_LAT_avg, 'r-o', x_axis, Net_Throughput_DC_MRT_LAT_avg, 'k-o', x_axis, B_Dat_DR_avg, 'm--p'); #x_axis, B_Dat_DR_avg, 'k--x',
@@ -603,43 +603,43 @@ print ('DC+MRT+LAT Accepted Users:',AU_DR_DC_MRT_LAT_avg)
 
 # ===> Setting up a Broken plot to depict Values with distinct ranges
 
-#f, (ax, ax2) = plt.subplots(2, 1, sharex = True)
+f, (ax, ax2) = plt.subplots(2, 1, sharex = True)
 
 # plot the same data on both axes
-#ax.plot(x_axis, Net_Throughput_avg, 'r--*', x_axis, Net_Throughput_DC_avg, 'b--*' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'k--s', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm--d', x_axis , Net_Throughput_DC_LAT_avg, 'c--p',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--D', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:', x_axis, Net_Throughput_SA_MRT_LAT_avg, 'r-^', x_axis, Net_Throughput_DC_MRT_LAT_avg, 'k-o')
-#ax2.plot(x_axis, B_Dat_DR_avg, 'k--x') #x_axis, B_Dat_DR_sn_avg, 'b--x', 
+ax.plot(x_axis, Net_Throughput_avg, 'r-o', x_axis, Net_Throughput_DC_avg, 'b-o' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'm--', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm-.', x_axis , Net_Throughput_DC_LAT_avg, 'c--x',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--x', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:', x_axis, Net_Throughput_SA_MRT_LAT_avg, 'g:', x_axis, Net_Throughput_DC_MRT_LAT_avg, 'k:')
+ax2.plot(x_axis, B_Dat_DR_avg, 'k--x') #x_axis, B_Dat_DR_sn_avg, 'b--x', 
 
-#ax2.set_ylim(y_min_2,y_max_2 + 0.5*1e8)
-#ax2.set_yticks((y_min_2,y_max_2))
-#ax.set_ylim(y_min_1,y_max_1+1e10)
-#ax.set_yticks((y_min_1,y_max_1,1e10))
+ax2.set_ylim(0,1.5*y_max_2)
+#ax2.set_yticks((0,1.5*y_max_2,0.5*1e8))
+ax.set_ylim(0.9*y_min_1,1.1*y_max_1)
+#ax.set_yticks((0.9*y_min_1,1.1*y_max_1,2*1e10))
 
-#ax.spines['bottom'].set_visible(False)
-#ax2.spines['top'].set_visible(False)
-#ax.xaxis.tick_top()
-#ax.tick_params(labeltop='off')
-#ax2.xaxis.tick_bottom()
+ax.spines['bottom'].set_visible(False)
+ax2.spines['top'].set_visible(False)
+ax.xaxis.tick_top()
+ax.tick_params(labeltop='off')
+ax2.xaxis.tick_bottom()
 
-#f.legend(['Single Association (SA)','Dual Connectivity (DC)', 'DC + Minimum Rate', 'DC + Constrained Backhaul (CB) [1% Bound Gap]', 'DC + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DC + CPL', 'SA + Minimum Rate', 'SA + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]','SA + Minimum Rate + CPL', 'DC + Minimum Rate + CPL', 'Baseline(SINR)'], loc='upper right', bbox_to_anchor=(0., 0.5, 0.83, 0.18), prop={'size': 5.5}) #'Baseline (RSSI)',
+f.legend(['Single Association (SA)','Dual Connectivity (DC)', 'DC + Minimum Rate', 'DC + Constrained Backhaul (CB) [1% Bound Gap]', 'DC + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DC + CPL', 'SA + Minimum Rate', 'SA + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]','SA + Minimum Rate + CPL', 'DC + Minimum Rate + CPL', 'Baseline(SINR)'], loc='upper right', bbox_to_anchor=(0., 0.5, 0.83, 0.18), prop={'size': 5.5}) #'Baseline (RSSI)',
 
-#d = .015  # how big to make the diagonal lines in axes coordinates
+d = .015  # how big to make the diagonal lines in axes coordinates
 # arguments to pass to plot, just so we don't keep repeating them
-#kwargs = dict(transform=ax.transAxes, color='k', clip_on=False)
-#ax.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
-#ax.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
+kwargs = dict(transform=ax.transAxes, color='k', clip_on=False)
+ax.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
+ax.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
 
-#kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
-#ax2.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-#ax2.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
+kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
+ax2.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+ax2.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
 
 #plt.plot(x_axis, B_Dat_DR_avg, 'b-', x_axis, B_Dat_DR_sn_avg, 'r-')
-#ax.grid(which= 'both',axis= 'both')
-#ax2.grid(which= 'both',axis= 'both')
-#f.suptitle('Total Network Throughput (User Bandwidth=200 MHz)')
-#plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
-#        orientation='landscape', papertype='letter', format='png',
-#        transparent=False, bbox_inches='tight', pad_inches=0.1,
-#        frameon=None, metadata=None)
+ax.grid(which= 'both',axis= 'both')
+ax2.grid(which= 'both',axis= 'both')
+f.suptitle('Total Network Throughput (Split Plot)')
+plt.savefig('NetThrough_Split', dpi=1200, facecolor='w', edgecolor='w',
+        orientation='landscape', papertype='letter', format='png',
+        transparent=False, bbox_inches='tight', pad_inches=0.1,
+        frameon=None, metadata=None)
 
 # ================
 # Fairness BoxPlot
