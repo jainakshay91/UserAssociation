@@ -44,7 +44,7 @@ def locs_checker(locs, other_locs, np, indix):
         flag = [None]*locs.shape[0]; #Empty array for the flag list
         for i in range(locs.shape[0]):
             for j in range(other_locs.shape[0]):
-                if locs[i,0] == other_locs[j,0] and locs[i,1] == other_locs[j,1]:
+                if locs[i,0] == other_locs[0] and locs[i,1] == other_locs[1]:
                     flag[i] = False # If the location matches any of the previous generated locations then regenerate the location
                 else:
                     flag[i] = True # If not, then pass

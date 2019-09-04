@@ -10,7 +10,7 @@ import collections
 # Baseline Association Function
 # =============================
 
-def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC, num_SCBS, num_MCBS, np, scn):
+def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC, num_SCBS, num_MCBS, np, scn, flag):
 
 
 	# ==================================
@@ -23,18 +23,21 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 	SNR_max_eMBB = np.flip(np.sort(SNR_eMBB, axis = 1),axis=1); # Sorted Matrix for eMBB 
 	idx_max_eMBB = np.flip(np.argsort(SNR_eMBB, axis = 1),axis=1); # Maximum received power for each eMBB application
 	
+	np.savetxt("MAXSNR.csv",SNR_max_eMBB,delimiter=",")
+
 	#idx_max_mMTC = np.argsort(RX_mMTC, axis = 1); # Maximum received power for each mMTC application 
 	#rx_max_mMTC = np.sort(RX_mMTC, axis = 1); # Sorted Matrix for mMTC
 	#sinr_max_eMBB = np.empty((sinr_eMBB.shape[0],1))
 	#for i in range(0,sinr_eMBB.shape[0]):
 		#if sinr_eMBB[i,idx_max_eMBB[i,0]] == pad_value:
 	#	sinr_max_eMBB[i] = sinr_eMBB[i,idx_max_eMBB[i,0]]; # Capture the SINR from the BS which is the closest for the eMBB
-	
 	sinr_max_eMBB = np.empty((sinr_eMBB.shape[0],sinr_eMBB.shape[1]))
 	for i in range(sinr_max_eMBB.shape[0]):
 		for j in range(sinr_max_eMBB.shape[1]):
 			sinr_max_eMBB[i,j] = sinr_eMBB[i,idx_max_eMBB[i,j]]; # Developing the SINR matrix
-
+			if sinr_max_eMBB[i,j] == 350:
+				sinr_max_eMBB[i,j] = -300;
+	np.savetxt('SINRMAX.csv',sinr_max_eMBB,delimiter=",")
 	# ===> Establish the Resource Pool Variables
 
 	num_BS = num_MCBS + num_SCBS; # We calculate the total number of Base stations
@@ -94,50 +97,100 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 	#prohib_idx = []; # List to hold the prohibited indexes given their requirements are not satisfied
 
 	# ===> Check the resources now 
+	if flag == 0:
+		for j in range(assoc_vec_idx.shape[0]):
+			#print ("j =",j) 
+			if assoc_vec_idx[j] > 0:			
+				bw_per_user = access_bw[j]/assoc_vec_idx[j]; 
+				counter = 0;
+				for i in range(sinr_eMBB.shape[0]):
+					#print ("i =", i) 
+					if idx_max_eMBB[i,0] == j:
+						#if bw_per_user*np.log2(1+10**(assoc_vec[i]/10)) >= scn.eMBB_minrate:
+						if (j < num_SCBS):
+							if (bcap_sc[j,0] > bw_per_user*np.log2(1+10**(assoc_vec[i]/10))) & (access_bw[j,0] >= 0):
+								Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
+								access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
+								bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
+								Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
+								counter = counter + 1;
+							else:
+								idx_max_eMBB[i,best_AP_col] = idx_max_eMBB[i, best_AP_col + next_best_AP_counter[i]]; # Shift to the next best AP
+								next_best_AP_counter[i] = next_best_AP_counter[i] + 1; # Point to the new next best AP
+								Accepted_Users = Accepted_Users - counter; 
+								counter = 0;
+								j = j - 1;
+								break
+						elif j >= num_SCBS:
+							if (bcap_mc[j - num_SCBS,0] > bw_per_user*np.log2(1+10**(assoc_vec[i]/10))) & (access_bw[j,0] >= 0):
+								Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
+								access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
+								#print access_bw 
+								bcap_mc[j - num_SCBS,0] = bcap_mc[j - num_SCBS,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
+								Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
+								counter = counter + 1;
+							else:
+								idx_max_eMBB[i,best_AP_col] = idx_max_eMBB[i, best_AP_col + next_best_AP_counter[i]]; # Shift to the next best AP
+								next_best_AP_counter[i] = next_best_AP_counter[i] + 1; # Point to the new next best AP
+								Accepted_Users = Accepted_Users - counter; 
+								counter = 0;
+								j = j - 1;
+								break
+					else:
+						continue
+				
+			else:
+				continue
+				
 
-	for j in range(sinr_eMBB.shape[1]):
-		#print ("j =",j) 
-		if assoc_vec_idx[j] > 0:			
-			bw_per_user = access_bw[j]/assoc_vec_idx[j]; 
-			counter = 0;
-			for i in range(sinr_eMBB.shape[0]):
-				#print ("i =", i) 
-				if idx_max_eMBB[i,0] == j:
-					#if bw_per_user*np.log2(1+10**(assoc_vec[i]/10)) >= scn.eMBB_minrate:
-					if (j < num_SCBS):
-						if (bcap_sc[j,0] > bw_per_user*np.log2(1+10**(assoc_vec[i]/10))):
-							Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
-							access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
-							bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
-							Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
-							counter = counter + 1;
+	if flag == 1:
+		for j in range(assoc_vec_idx.shape[0]):
+			#print ("j =",j) 
+			if assoc_vec_idx[j] > 0:			
+				bw_per_user = access_bw[j]/assoc_vec_idx[j]; 
+				counter = 0;
+				for i in range(sinr_eMBB.shape[0]):
+					#print ("i =", i) 
+					if idx_max_eMBB[i,0] == j:
+						if bw_per_user*np.log2(1+10**(assoc_vec[i]/10)) >= scn.eMBB_minrate:
+							if (j < num_SCBS):
+								if (bcap_sc[j,0] > bw_per_user*np.log2(1+10**(assoc_vec[i]/10))) & (access_bw[j,0] >= 0):
+									Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
+									access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
+									bcap_sc[j,0] = bcap_sc[j,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
+									Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
+									counter = counter + 1;
+								else:
+									idx_max_eMBB[i,best_AP_col] = idx_max_eMBB[i, best_AP_col + next_best_AP_counter[i]]; # Shift to the next best AP
+									next_best_AP_counter[i] = next_best_AP_counter[i] + 1; # Point to the new next best AP
+									Accepted_Users = Accepted_Users - counter; 
+									counter = 0;
+									j = j - 1;
+									break
+							elif j >= num_SCBS:
+								if (bcap_mc[j - num_SCBS,0] > bw_per_user*np.log2(1+10**(assoc_vec[i]/10))) & (access_bw[j,0] >= 0):
+									Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
+									access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
+									#print access_bw 
+									bcap_mc[j - num_SCBS,0] = bcap_mc[j - num_SCBS,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
+									Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
+									counter = counter + 1;
+								else:
+									idx_max_eMBB[i,best_AP_col] = idx_max_eMBB[i, best_AP_col + next_best_AP_counter[i]]; # Shift to the next best AP
+									next_best_AP_counter[i] = next_best_AP_counter[i] + 1; # Point to the new next best AP
+									Accepted_Users = Accepted_Users - counter; 
+									counter = 0;
+									j = j - 1;
+									break
 						else:
-							idx_max_eMBB[i,best_AP_col] = idx_max_eMBB[i, best_AP_col + next_best_AP_counter[i]]; # Shift to the next best AP
-							next_best_AP_counter[i] = next_best_AP_counter[i] + 1; # Point to the new next best AP
-							Accepted_Users = Accepted_Users - counter; 
-							counter = 0;
-							j = j - 1;
-							break
-					elif j >= num_SCBS:
-						if (bcap_mc[j - num_SCBS,0] > bw_per_user*np.log2(1+10**(assoc_vec[i]/10))):
-							Tot_Datarate = Tot_Datarate + bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the Total network throughput
-							access_bw[j,0] = access_bw[j,0] - bw_per_user; # Update the available access bw 
-							bcap_mc[j - num_SCBS,0] = bcap_mc[j - num_SCBS,0] - bw_per_user*np.log2(1+10**(assoc_vec[i]/10)); # Update the available bhaul capacity
-							Accepted_Users = Accepted_Users + 1; # Increment the number of users that have been accepted into the system
-							counter = counter + 1;
-						else:
-							idx_max_eMBB[i,best_AP_col] = idx_max_eMBB[i, best_AP_col + next_best_AP_counter[i]]; # Shift to the next best AP
-							next_best_AP_counter[i] = next_best_AP_counter[i] + 1; # Point to the new next best AP
-							Accepted_Users = Accepted_Users - counter; 
-							counter = 0;
-							j = j - 1;
-							break
-				else:
-					continue
-			
-		else:
-			continue
-			
+							continue
+					else:
+						continue
+				
+			else:
+				continue
+				
+
 	#for i in range(sinr_eMBB.shape[0]):
 	#	for j in range(sinr_eMBB.shape[1]):
 	#		if Data_rate_sinr_eMBB_scbw[i,j] >= scn.eMBB_minrate:
@@ -167,6 +220,8 @@ def baseline_assoc(SNR_eMBB, SNR_mMTC, sinr_eMBB, sinr_mMTC, BHCAP_SC, BHCAP_MC,
 				
 	print "Generated the Baseline Data"
 
+	#np.savetxt('Avguser_DR.csv',Tot_Datarate/Accepted_Users, delimiter =",")
+	
 	#return Data_Rate_eMBB_scbw, Data_Rate_eMBB_fscbw, Data_Rate_mMTC, Data_rate_sinr_eMBB_scbw, Data_rate_sinr_eMBB_fscbw, Data_rate_sinr_mMTC
 	return Tot_Datarate, Accepted_Users
 

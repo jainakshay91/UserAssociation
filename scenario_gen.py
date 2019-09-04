@@ -7,6 +7,7 @@
 #import dist_check
 import pathloss
 import copy
+import csv
 #from multiprocessing import Process
 # ===================================================
 # Load/Generate the Macro Cell base station locations
@@ -19,7 +20,7 @@ def macro_cell(simulation_area,MCBS_intersite,np,dsc):
     
     offset = MCBS_intersite/2; # Offset param
     locs_interim = np.arange(offset, np.sqrt(simulation_area).astype(int), MCBS_intersite); # Range of numbers from 0 to the end of the grid area, with intersite distance spacing 
-    print locs_interim
+    #print locs_interim
     locs_MCBS = dsc.gridder(locs_interim,MCBS_intersite,np); # Calling a permutation function that generates the grid
     return locs_MCBS
 
@@ -32,12 +33,13 @@ def small_cell(num, MCBS_locs, SCBS_intersite,SCBS_per_MCBS,MCBS_intersite,np,ds
     while True:	
         dist_from_MCBS = np.random.uniform(0,offset,(SCBS_per_MCBS,1))
         angular_disp = np.random.uniform(0,2*np.pi,(SCBS_per_MCBS,1))
-        locs_SCBS_x = np.multiply(dist_from_MCBS,np.cos(angular_disp))
-        locs_SCBS_y = np.multiply(dist_from_MCBS,np.sin(angular_disp))
-       
-        #locs_SCBS_x = np.random.uniform(MCBS_locs[num,0] - offset,MCBS_locs[num,0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
-        #locs_SCBS_y = np.random.uniform(MCBS_locs[num,1] - offset,MCBS_locs[num,1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
+        locs_SCBS_x = np.multiply(dist_from_MCBS,np.cos(angular_disp)) + MCBS_locs[0]
+        locs_SCBS_y = np.multiply(dist_from_MCBS,np.sin(angular_disp)) + MCBS_locs[1]
+        #print MCBS_locs
+	#locs_SCBS_x = np.random.uniform(MCBS_locs[num,0] - offset,MCBS_locs[num,0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
+	#locs_SCBS_y = np.random.uniform(MCBS_locs[num,1] - offset,MCBS_locs[num,1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
         locs_SCBS = np.concatenate((locs_SCBS_x, locs_SCBS_y), axis=1); 
+        #print locs_SCBS
         if dsc.checker(locs_SCBS,SCBS_intersite,np)==1 and dsc.locs_checker(locs_SCBS, MCBS_locs,np, 'sc')==1:
             break
     return locs_SCBS
@@ -70,8 +72,13 @@ def user_dump(scn, SCBS_per_MCBS, num_MCBS, AP_locs, np, dsc):
                i = i - 1; # We go back and start the for loop from the current instance
                continue
             assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_users_scenario[i], scn.max_num_appl_UE)); # Generate User-App Association 
-        return usr_locs, assoc_usapp
-        #usr_locs_eMBB = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_eMBB,2)); # We obtain a set of eMBB locations
+        with open("ActualUsers.csv",'wb') as f:
+		w = csv.DictWriter(f,assoc_usapp.keys())
+		w.writeheader()
+		w.writerow(assoc_usapp)
+	return usr_locs, assoc_usapp
+        
+	#usr_locs_eMBB = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_eMBB,2)); # We obtain a set of eMBB locations
     #usr_locs_URLLC = np.random.uniform(0,np.sqrt(scn.simulation_area),(int(tot_dev_URLLC),2)); # We obtain a set of URLLC locations
     #usr_locs_mMTC = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_mMTC,2)); # We obtain a set of mMTC locations
     #return usr_locs_eMBB, usr_locs_URLLC, usr_locs_mMTC; # Return the locations of these applications/users with these applications
@@ -96,6 +103,53 @@ def mMTC_user_dump(scn, SCBS_per_MCBS, num_MCBS, np):
     #assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_dev_mMTC, scn.max_num_appl_UE)); # Generate User-App Association 
     return usr_locs
 
+
+# ===========================
+# mMTC User Location Selector
+# ===========================
+
+def mMTC_user_selector(scn, np, mmtc_usr_lcs, AP_locs, gencase, dsc, percentage):
+
+    if gencase == 0: # Gencase = 0 indicates that we use an uniform distribution to select the user locations
+
+        #print ("Total mMTC devices:", mmtc_usr_lcs['user_locations'].shape)
+        num_mMTC = np.random.randint(0,mmtc_usr_lcs['user_locations'].shape[0]); # First we select the number of users from the total possible users using the Uniform distribution
+        #print ("Number of mMTC:", num_mMTC)
+        mMTC_selected_idx = np.random.randint(0,mmtc_usr_lcs['user_locations'].shape[0],(num_mMTC,1)); # We select the indices of the mMTC devices
+        #print ("Selected Indices:", mMTC_selected_idx)
+        #selected_mmtc = np.take(mmtc_usr_lcs['user_locations'] ,mMTC_selected_idx, axis = 1); # THis is the variable that will store the chosen mMTC device locations
+        selected_mmtc = np.empty((num_mMTC,2)); # THis is the variable that will store the chosen mMTC device locations
+        for i in range(num_mMTC):
+            selected_mmtc[i,:] = mmtc_usr_lcs['user_locations'][mMTC_selected_idx[i],:]; # Select Locations -- this is the inefficient way. Study np.take to understand the efficient way of getting user locations
+
+        mMTC_AP_dist_mat = np.empty((num_mMTC, AP_locs.shape[0])) # Matrix that holds the distance between mMTC devices and APs
+        for i in range(AP_locs.shape[0]):
+            mMTC_AP_dist_mat[:,i] = dsc.dist_calc(selected_mmtc, AP_locs[i,:], 0, 0, '2d', np) # Calculate the distance of each mMTC device to each of the APs in the scenario
+
+        mmtc_AP_asso = np.argmin(mMTC_AP_dist_mat, axis = 1); # We get the sorted matrix
+        num_mMTC_AP = np.bincount(mmtc_AP_asso); # We get the number of users for a given AP  
+        print "mMTC dump done"
+
+    elif gencase == 1: # Gencase = 1 indicates that we provision 5%-100% load per cell for mMTC devices
+
+        mMTC_AP_dist_mat = np.empty((mmtc_usr_lcs.shape[0], AP_locs.shape[0])) # Matrix that holds the distance between mMTC devices and APs
+        
+        for i in range(AP_locs.shape[0]):
+            mMTC_AP_dist_mat[:,i] = dsc.dist_calc(mmtc_usr_lcs, AP_locs[i,:], 0, 0, '2d', np) # Calculate the distance of each mMTC device to each of the APs in the scenario
+
+        sorted_mMTC_arr = np.argmin(mMTC_AP_dist_mat, axis = 1)
+        mMTC_assoc_dict = {}; # We have an empty dictionary to hold the AP and mMTC user association
+        mMTC_assoc_dict['APasso'] = np.sort(sorted_mMTC_arr) # Store the sorted AP association array
+        mMTC_assoc_dict['SortAsso'] = np.argsort(sorted_mMTC_arr) # Sort the association vector based on AP ID and store the indices of sorting  
+        mMTC_assoc_dict['Count'] = np.bincount(sorted_mMTC_arr) # Store the bincount for each AP
+
+        num_users_perbin = np.floor(mMTC_assoc_dict['Count']*percentage/100) # We get the vector for the number of mMTC devices active per AP
+        #for i in range() ==> Continue this when the basic case (gencase 0) is done
+    
+    #return selected_mmtc, mmtc_AP_asso, num_mMTC_AP
+    return num_mMTC_AP    
+
+
 # =============================
 # Generate the backhaul network
 # =============================
@@ -106,10 +160,10 @@ def backhaul_dump(scn, SCBS_per_MCBS, MCBS_locs, assoc_mat, np):
     # We create the wired and wireless backhaul matrix (Restricting it to just one backhaul link currently)
 
     mat_wlbh_sc = np.where(assoc_mat != 0, (assoc_mat <= scn.wl_bh_bp)*1, 0); # Wireless backhaul enabled small cells
+    #print mat_wlbh_sc
     mat_wrdbh_sc = (assoc_mat > scn.wl_bh_bp)*1; # Wired backhaul enabled small cells
     MC_hops = np.random.randint(scn.min_num_hops, scn.max_num_hops,size = MCBS_locs.shape[0]); # The macro cells always have wired backhaul (Local breakouts can be added later)
     SC_hops = ((assoc_mat > 0)*1)*np.transpose(MC_hops) + 1; # The number of hops for each small cells to the IMS core
-
     return mat_wlbh_sc, mat_wrdbh_sc, MC_hops, SC_hops # Return the hops and wired/wireless backhaul configuration 
 
 # ===============================
@@ -246,8 +300,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
 
     for i in range(0, RX_sc.shape[0]): # Small cell Received Power
         for j in range(0, RX_sc.shape[1]):
-            RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.sc_bw*10**(-3))), float('nan'));
-            # RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan'));
+            RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan'));
 
     for i in range(0, RX_mc.shape[0]): # Macro cell Received Power
         for j in range(0, RX_mc.shape[1]):
@@ -264,8 +317,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
     
     for i in range(0,PL_sc.shape[0]):
         for j in range(0,PL_sc.shape[1]):
-            #sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
-            sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr
+            sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
         # print sinr_sc[i,:] 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
         # (scn.transmit_power - 30 + scn.transmit_gain_sc + scn.receiver_gain - PL_sc[i,j] - 10*np.log10(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
         sinr_sc[i,:] = np.where(np.isnan(sinr_sc[i,:]), sinr_pad_value, sinr_sc[i,:]);
@@ -351,20 +403,29 @@ def backhaul_tput(assoc_mat, SCBS_per_MCBS, wl_mat, np, scn, dsc):
     # ==========================================================
     # We compute the throughput for the backhaul link of each SC
 
+    #print wl_mat
     PL_SC_MC = np.empty((wl_mat.shape[0],1)); # Initialize the Pathloss matrix
     tput_SC = copy.copy(PL_SC_MC); # Initialize the Throughput matrix
     dist_SC_MC = copy.copy(PL_SC_MC); # Initialize the 3D distance matrix
-    
+    #print ("Matrix Shape:",dist_SC_MC.shape)
+    #print ("Association Matrix:", assoc_mat.shape)
+    #print assoc_mat
+
     # ===> Computing the 3D distance 
     for k in range(0,assoc_mat.shape[0]):
-        dist_SC_MC[k] = np.sqrt(assoc_mat[k,next((i for i, x in enumerate(assoc_mat[k,:].tolist()) if x), None)]**2 + (scn.bs_ht_mc-scn.bs_ht_sc)**2); # The 3D distance from the MC for a given SC
+        #print ("K:",k) 
+        #print ("Wireless Matrix:", wl_mat[k,:])
+        #print ("Association Matrix Values:", assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)])
+        #print ("Distance:", np.sqrt(assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)]**2 + (scn.bs_ht_mc-scn.bs_ht_sc)**2))
+        if next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None) != None:
+            dist_SC_MC[k] = np.sqrt(assoc_mat[k,next((i for i, x in enumerate(wl_mat[k,:].tolist()) if x), None)]**2 + (scn.bs_ht_mc-scn.bs_ht_sc)**2); # The 3D distance from the MC for a given SC
 
     # ===> Computing the Pathloss for the Small Cells to the Macro cells
 
     for l in range(0, tput_SC.shape[0]):
         if next((i for i, x in enumerate(wl_mat[l,:].tolist()) if x), None) != None:
             #print assoc_mat[l,next((i for i, x in enumerate(assoc_mat[l,:].tolist()) if x), None)]
-            PL_SC_MC[l] = pathloss.pathloss_CI(scn, assoc_mat[l,next((i for i, x in enumerate(assoc_mat[l,:].tolist()) if x), None)], np, dist_SC_MC[l], dsc, 2); # Calculating the pathloss for Small cells to Macro Cells
+            PL_SC_MC[l] = pathloss.pathloss_CI(scn, assoc_mat[l,next((i for i, x in enumerate(wl_mat[l,:].tolist()) if x), None)], np, dist_SC_MC[l], dsc, 2); # Calculating the pathloss for Small cells to Macro Cells
         else:
             PL_SC_MC[l] = 0; # This is the Fiber based backhaul
             tput_SC[l] = scn.fib_BH_capacity; # Fiber backhaul capacity

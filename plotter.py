@@ -10,6 +10,9 @@
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+from mpl_toolkits.mplot3d import Axes3D
+
 
 # =======
 # Plotter
@@ -45,10 +48,21 @@ def plotter(typ_plt, x_val, y_val, tick_space_x, tick_space_y, rtn_flag_x, rtn_a
 # ====================================
 
 def optimizer_plotter(data_plt):
+	#sns.set_style("whitegrid", {'axes.grid' : False})
+	f = plt.figure(figsize=(12,10))
 	ax = sns.heatmap(data_plt); 
-	ax.set_title("Association heatmap")
+	#x = Axes3D(f)
+	#ax.scatter(data_plt.shape[0], data_plt.shape[1], data_plt)
+	#g = plt.figure(2)
+	#ax1 = sns.heatmap(data_plt[:,:,1]);
+
+	#h = plt.figure(3)
+	#ax2 = sns.heatmap(data_plt[:,:,2]);   
+	ax.set_title("User Data Rate Heatmap")
 	ax.set_xlabel("Access Points")
-	ax.set_ylabel("Applications")
+	ax.set_ylabel("eMBB Users")
+	#ax.set_zlabel("Data Rate")
+	plt.savefig(os.getcwd()+"/CircularDeploy_MCSC.png")
 	plt.show()	
 
 
