@@ -328,8 +328,8 @@ def SA_MRT_LAT(MCMC_iter, chat_frequency):
 sys.path.append(os.getcwd()); # Add current working directory to python path
 os.chdir(os.getcwd()); # Change to the current working directory
 chat_frequency = 10; # Select the divider so as to obtain timely update messages
-#num_processors = int(int(subprocess.check_output(['nproc']))/2)*2; # Number of Processors to be utilized 
-num_processors = 2
+num_processors = int(int(subprocess.check_output(['nproc']))/2)*2; # Number of Processors to be utilized 
+#num_processors = 2
 scn = scenario_var();
 MCMC_iter = scn.MCMC_iter; # Number of Monte Carlo Iterations
 
@@ -363,42 +363,42 @@ if __name__ == '__main__':
 
 	p1 = Process(target = Single_assoc, args = (MCMC_iter,chat_frequency))
 	p2 = Process(target = Dual_assoc, args = (MCMC_iter, chat_frequency))
-	#p3 = Process(target = DA_MRT, args = (MCMC_iter, chat_frequency))
-	#p4 = Process(target = DA_BHCAP, args = (MCMC_iter, chat_frequency))
-	#p5 = Process(target = DA_BHCAP_LAT, args = (MCMC_iter, chat_frequency))
-	#p6 = Process(target = DA_LAT, args = (MCMC_iter, chat_frequency))
-	#p7 = Process(target = SA_MRT, args = (MCMC_iter, chat_frequency))
-	#p8 = Process(target = SA_LAT, args = (MCMC_iter, chat_frequency))
-	#p9 = Process(target = SA_BHCAP_LAT, args = (MCMC_iter, chat_frequency))
-	#p10 = Process(target = SA_BHCAP, args = (MCMC_iter, chat_frequency))
-	#p11 = Process(target = DA_MRT_LAT, args = (MCMC_iter, chat_frequency))
-	#p12 = Process(target = SA_MRT_LAT, args = (MCMC_iter, chat_frequency))
+	p3 = Process(target = DA_MRT, args = (MCMC_iter, chat_frequency))
+	p4 = Process(target = DA_BHCAP, args = (MCMC_iter, chat_frequency))
+	p5 = Process(target = DA_BHCAP_LAT, args = (MCMC_iter, chat_frequency))
+	p6 = Process(target = DA_LAT, args = (MCMC_iter, chat_frequency))
+	p7 = Process(target = SA_MRT, args = (MCMC_iter, chat_frequency))
+	p8 = Process(target = SA_LAT, args = (MCMC_iter, chat_frequency))
+	p9 = Process(target = SA_BHCAP_LAT, args = (MCMC_iter, chat_frequency))
+	p10 = Process(target = SA_BHCAP, args = (MCMC_iter, chat_frequency))
+	p11 = Process(target = DA_MRT_LAT, args = (MCMC_iter, chat_frequency))
+	p12 = Process(target = SA_MRT_LAT, args = (MCMC_iter, chat_frequency))
 	
 	p1.start()
 	p2.start()
-	#p3.start()
-	#p4.start()
-	#p5.start()
-	#p6.start()
-	#p7.start()
-	#p8.start()
-	#p9.start()
-	#p10.start()
-	#p11.start()
-	#p12.start()
+	p3.start()
+	p4.start()
+	p5.start()
+	p6.start()
+	p7.start()
+	p8.start()
+	p9.start()
+	p10.start()
+	p11.start()
+	p12.start()
 
 	p1.join()
 	p2.join()
-	#p3.join()
-	#p4.join()
-	#p5.join()
-	#p6.join()
-	#p7.join()
-	#p8.join()
-	#p9.join()
-	#p10.join()
-	#p11.join()
-	#p12.join()
+	p3.join()
+	p4.join()
+	p5.join()
+	p6.join()
+	p7.join()
+	p8.join()
+	p9.join()
+	p10.join()
+	p11.join()
+	p12.join()
 	
 	
 	

@@ -12,6 +12,7 @@ from scenario_var import scenario_var
 from argparse import ArgumentParser
 from rssi_assoc import baseline_assoc
 import time
+import csv
 
 # =======================
 # Optimizer Configuration
@@ -459,9 +460,15 @@ for N in range(0,num_iter):
 			#print M_sum.shape
 			#print ("SC:", G_sum)
 			#print ("MC:", M_sum)
-			if N == (num_iter-1):
-				plotter.optimizer_plotter(new_rate) # We get the plot for the rates with maximum number of users
-			#plotter.optimizer_plotter(M_plt_idx[:,:,0] + M_plt_idx[:,:,1] + M_plt_idx[:,:,2] + M_plt_idx[:,:,3] + M_plt_idx[:,:,4])
+			if N == (num_iter-1) and (vars(args)['dual'] == 1 or vars(args)['bhaul'] == 1 or vars(args)['minRate'] == 1 or vars(args)['latency'] == 1):
+				#plotter.optimizer_plotter(new_rate) # We get the plot for the rates with maximum number of users
+				with open("Rate" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv:
+					csvWriter = csv.writer(my_csv,delimiter=',')
+					csvWriter.writerows(new_rate) # We write the rate matrix to the csv file for visualization
+				with open("OptAssignment" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv2:
+					csvWriter = csv.writer(my_csv2,delimiter=',')
+					csvWriter.writerows(np.asarray(X_optimal).reshape((var_row_num,var_col_num))) # We write the optimal association matrix to csv files for analysis purposes
+			#plotter.optimizer_plotter(M_plt_idx[:,:,0] + M_plt_idx[:,:,1] + M_plt_idx[:,:,2] + M_plt_idx[:,:,3] + M_plt_idx[:,:,4])0
 			#plotter.optimizer_plotter(G_plt_idx[:,:,0] + G_plt_idx[:,:,1] + G_plt_idx[:,:,2])	
 
 			# =========================
