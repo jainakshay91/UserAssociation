@@ -103,6 +103,7 @@ try:
 	generated_mMTC_locs = scenario_gen.mMTC_user_dump(scn,SCBS_per_MCBS,macro_cell_locations.shape[0],np); # Massive  Machine Type User locations
 	#mMTC_locs, mMTC_AP_asso, num_mMTC_AP = scenario_gen.mMTC_user_selector(scn, np, generated_mMTC_locs, AP_locs, 0, dsc, 0); # We select the number of active mMTC devices in the scenario
 	num_mMTC_AP = scenario_gen.mMTC_user_selector(scn, np, generated_mMTC_locs, AP_locs, 0, dsc, 0); # We select the number of active mMTC devices in the scenario and cluster them with APs for BH consumption
+	#print num_mMTC_AP
 	print "User and AP Dump completed"
 	# ======================================
 	# Generate the SINR values for the users
@@ -132,7 +133,7 @@ try:
 	#RX_mMTC_reorg = dsc.reorganizer(RX_mMTC, idx_sc_mMTC, idx_mc_mMTC, num_SCBS_mMTC, num_MCBS_tot_mMTC, float('nan'), np, scn); # We reorganize the RX Power matrix for the Baseline framework
 
 	#np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']),sinr_mMTC, usr_lcs_mMTC, idx_sc_mMTC, sinr_pad_mMTC, num_SCBS_mMTC, num_MCBS_tot_mMTC, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC, RX_mMTC_reorg, allow_pickle = True); # Save these variables to be utilized by the optimizer
-	np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']), mMTC_locs, mMTC_AP_asso, num_mMTC_AP, allow_pickle = True); # Save these variables to be utilized by the optimizer
+	np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']), num_mMTC_AP, allow_pickle = True); # Save these variables to be utilized by the optimizer
 	
 except KeyboardInterrupt:
 	sys.exit("Exiting this process with Iteration Number" + str(vars(args)['iter']))

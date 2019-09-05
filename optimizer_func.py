@@ -73,9 +73,15 @@ num_iter = ((scn.num_users_max - scn.num_users_min)/scn.user_steps_siml);
 # ==============================
 
 optim_data_mMTC = np.load(os.getcwd() + '/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']) +'.npz', allow_pickle = True); # Extracting the mMTC data 
-Rx_power_mMTC = optim_data_mMTC['arr_11']; # Received Power from Small cells for all the mMTC devices
-sinr_APs_mMTC = optim_data_mMTC['arr_0']; # SINR data for the mMTC devices
+#Rx_power_mMTC = optim_data_mMTC['arr_11']; # Received Power from Small cells for all the mMTC devices
+num_AP_mMTC = optim_data_mMTC['arr_0']; # Number of mMTC devices per AP (MC first and then SC)
+data_rate_consum_BH_mMTC = np.empty((num_AP_mMTC.shape[0],1)) # Consumed Data Rate 
 
+# ====> The bandwidth consumption at each cell by the mMTC devices (In the Backhaul)
+for i in range(num_AP_mMTC.shape[0]):
+	data_rate_consum_BH_mMTC[i] = np.sum(np.random.random_sample((num_AP_mMTC[i],1))*(scn.mMTC_maxrate[1] - scn.mMTC_maxrate[0]))
+	
+#print data_rate_consum_BH_mMTC
 #RX_power_mc_mMTC = optim_data_mMTC['arr_12']; # Received Power from Macro cells for all the mMTC devices
 #RX_power_mMTC = np.hstack((Rx_power_sc_mMTC, RX_power_mc_mMTC)); # Stack all the received powers for the mMTC users
 
@@ -100,6 +106,25 @@ for N in range(0,num_iter):
 	SNR_iter = optim_data['arr_12']; # Small Cell Received Power 
 	SCBS_per_MCBS = optim_data['arr_13']; # Number of small cells per macro cell
 	
+
+	# ================================================================
+	# Update the Available Backhaul Capacity based on mMTC Consumption
+
+	BH_Capacity_SC = BH_Capacity_SC - data_rate_consum_BH_mMTC[:num_scbs]; # We reduce the available backhaul capacity for small cells
+	BH_Capacity_MC = BH_Capacity_MC - data_rate_consum_BH_mMTC[num_scbs:num_scbs+num_mcbs]; # We reduce the available backhaul capacity for macro cells
+
+	# ===> Add the consumption from mMTC devices associated to small cell, which is in turn associated with a macro cell
+
+	ini_idx = 0; # Initial index
+	nex_idx = SCBS_per_MCBS[0]; # The next index
+	for i in range(SCBS_per_MCBS.shape[0]):
+		BH_Capacity_MC[i] = BH_Capacity_MC[i] - np.sum(data_rate_consum_BH_mMTC[ini_idx:nex_idx]) # Reduce the Available MC backhaul capacity further due the mMTC devices on the SCs associated to it
+		if i < (SCBS_per_MCBS.shape[0] - 1):
+			ini_idx = nex_idx # Update the indices
+			nex_idx = nex_idx + SCBS_per_MCBS[i+1] # Update the indices
+		else:
+			break
+
 	#RX_power_mc = optim_data['arr_13']; # Macro Cell Received Power 
 	#RX_power = np.hstack((RX_power_mc,RX_power_sc)); # Stack all the received powers for the eMBB users
 	SNR_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
