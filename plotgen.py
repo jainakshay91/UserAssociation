@@ -557,12 +557,14 @@ y_min_2 = np.amin([np.amin(B_Dat_DR_avg)]);
 y_max_2 = np.max([np.amax(B_Dat_DR_avg)]);
 #plotter.plotter('dashline',np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml),Net_Throughput_avg,5,10,1,45,0,0,1,'major','both', 'yes', 'Total Network Throughput', np)
 #print Net_Throughput_SA_LAT_avg
-plt.semilogy(x_axis, Net_Throughput_avg, 'r--*', x_axis, Net_Throughput_DC_avg, 'b--*' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'k--s', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm--d', x_axis , Net_Throughput_DC_LAT_avg, 'c--p',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--D', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:', x_axis, Net_Throughput_SA_MRT_LAT_avg, 'r-o', x_axis, Net_Throughput_DC_MRT_LAT_avg, 'k-o', x_axis, B_Dat_DR_avg, 'm--p'); #x_axis, B_Dat_DR_avg, 'k--x',
+plt.plot(x_axis, Net_Throughput_avg, 'r-o', x_axis, Net_Throughput_DC_avg, 'b-o' , x_axis, Net_Throughput_DC_MRT_avg, 'g-.', x_axis, Net_Throughput_DC_BHCAP_avg, 'k--s', x_axis, Net_Throughput_DC_BHCAP_LAT_avg, 'm--d', x_axis , Net_Throughput_DC_LAT_avg, 'c--p',x_axis, Net_Throughput_SA_MRT_avg, 'k-.', x_axis, Net_Throughput_SA_LAT_avg, 'b:', x_axis, Net_Throughput_SA_BHCAP_avg, 'g--D', x_axis, Net_Throughput_SA_BHCAP_LAT_avg, 'r:', x_axis, Net_Throughput_SA_MRT_LAT_avg, 'b--*', x_axis, Net_Throughput_DC_MRT_LAT_avg, 'k--*'); #x_axis, B_Dat_DR_avg, 'k--x',
 plt.xticks(np.arange(scn.num_users_min, scn.num_users_max, scn.user_steps_siml));
 #plt.yticks(np.arange(y_min_1,y_max_1,5e10));
-plt.legend(['Single Association (SA)','Dual Connectivity (DC)', 'DC + Minimum Rate', 'DC + Constrained Backhaul (CB) [1% Bound Gap]', 'DC + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DC + CPL', 'SA + Minimum Rate', 'SA + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]','SA + Minimum Rate + CPL', 'DC + Minimum Rate + CPL', 'Baseline(SINR)'], loc='upper left', bbox_to_anchor=(0.4, 0.25, 0.5, 0.5), prop={'size': 6}) #'Baseline (RSSI)',
+plt.legend(['Single Association (SA)','Dual Connectivity (DC)', 'DC + Minimum Rate', 'DC + Constrained Backhaul (CB) [1% Bound Gap]', 'DC + CB + Constrained Path Latency (CPL) [1% Bound Gap]', 'DC + CPL', 'SA + Minimum Rate', 'SA + CPL', 'SA + CB [1% Bound Gap]', 'SA + CB + CPL [1% Bound Gap]','SA + Minimum Rate + CPL', 'DC + Minimum Rate + CPL'], loc='upper left', bbox_to_anchor=(0.0, 0.5, 0.5, 0.5), prop={'size': 6}) #'Baseline (RSSI)',
 plt.grid(which= 'major',axis= 'both');
 plt.title('Network Wide Throughput')
+plt.xlabel('Number of eMBB users')
+plt.ylabel('Throughput (bps)')
 plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
         orientation='landscape', papertype='letter', format='png',
         transparent=False, bbox_inches='tight', pad_inches=0.1,
@@ -636,6 +638,10 @@ ax2.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
 ax.grid(which= 'both',axis= 'both')
 ax2.grid(which= 'both',axis= 'both')
 f.suptitle('Total Network Throughput (Split Plot)')
+f.text(0.04, 0.5, 'Throughput (bps)', va='center', rotation='vertical')
+f.text(0.5, 0.04, 'Number of eMBB users', ha='center')
+#ax2.xlabel('Number of eMBB users')
+
 plt.savefig('NetThrough_Split', dpi=1200, facecolor='w', edgecolor='w',
         orientation='landscape', papertype='letter', format='png',
         transparent=False, bbox_inches='tight', pad_inches=0.1,
