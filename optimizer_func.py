@@ -72,9 +72,9 @@ num_iter = ((scn.num_users_max - scn.num_users_min)/scn.user_steps_siml);
 # Load Massive Machine Type Data
 # ==============================
 
-optim_data_mMTC = np.load(os.getcwd() + '/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']) +'.npz', allow_pickle = True); # Extracting the mMTC data 
-Rx_power_mMTC = optim_data_mMTC['arr_11']; # Received Power from Small cells for all the mMTC devices
-sinr_APs_mMTC = optim_data_mMTC['arr_0']; # SINR data for the mMTC devices
+#optim_data_mMTC = np.load(os.getcwd() + '/Data/Temp/optim_var_mMTC'+ str(vars(args)['iter']) +'.npz', allow_pickle = True); # Extracting the mMTC data 
+#Rx_power_mMTC = optim_data_mMTC['arr_11']; # Received Power from Small cells for all the mMTC devices
+#sinr_APs_mMTC = optim_data_mMTC['arr_0']; # SINR data for the mMTC devices
 
 #RX_power_mc_mMTC = optim_data_mMTC['arr_12']; # Received Power from Macro cells for all the mMTC devices
 #RX_power_mMTC = np.hstack((Rx_power_sc_mMTC, RX_power_mc_mMTC)); # Stack all the received powers for the mMTC users

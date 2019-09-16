@@ -500,7 +500,7 @@ B_Dat_DR_fs_avg = np.sum(B_Dat_DR_fs, axis = 0)/MCMC_iter;
 # Satisfied User Count
 
 AU_Base_DR_fs_avg = np.floor(np.sum(AU_Base_DR_fs, axis = 0)/MCMC_iter);
-AU_Base_DR_avg = np.floor(np.sum(AU_Base_DR, axis = 0)/MCMC_iter); 
+#AU_Base_DR_avg = np.floor(np.sum(AU_Base_DR, axis = 0)/MCMC_iter); 
 AU_DR_avg = np.floor(np.sum(AU_DR, axis = 0)/MCMC_iter);
 AU_DR_DC_avg = np.floor(np.sum(AU_DR_DC, axis = 0)/MCMC_iter);
 AU_DR_DC_MRT_avg = np.floor(np.sum(AU_DR_DC_MRT, axis = 0)/MCMC_iter);
@@ -520,7 +520,7 @@ AU_DR_DC_MRT_LAT_avg = np.floor(np.sum(AU_DR_DC_MRT_LAT, axis = 0)/MCMC_iter);
 # =================================
 # Save multiple Numpy arrays to CSV
 
-df = pd.DataFrame({"Baseline MinRate": AU_Base_DR_fs_avg, "Baseline": AU_Base_DR_avg, "Single Association": AU_DR_avg, "Dual Association": AU_DR_DC_avg, "Dual Association MinRate": AU_DR_DC_MRT_avg, "Dual Association BHaul": AU_DR_DC_BHCAP_avg, "Dual Association LAT": AU_DR_DC_LAT_avg, "Dual Association Bhaul LAT": AU_DR_DC_BHCAP_LAT_avg, "Single Association MRT": AU_DR_SA_MRT_avg, "Single Association LAT": AU_DR_SA_LAT_avg, "Single Association Bhaul": AU_DR_SA_BHCAP_avg, "Single Association BHCAP+LAT": AU_DR_SA_BHCAP_LAT_avg, "Single Association MRT+LAT": AU_DR_SA_MRT_LAT_avg, "Dual Association MRT+LAT": AU_DR_DC_MRT_LAT_avg})
+df = pd.DataFrame({"Baseline": AU_Base_DR_avg, "Single Association": AU_DR_avg, "Dual Association": AU_DR_DC_avg, "Dual Association MinRate": AU_DR_DC_MRT_avg, "Dual Association BHaul": AU_DR_DC_BHCAP_avg, "Dual Association LAT": AU_DR_DC_LAT_avg, "Dual Association Bhaul LAT": AU_DR_DC_BHCAP_LAT_avg, "Single Association MRT": AU_DR_SA_MRT_avg, "Single Association LAT": AU_DR_SA_LAT_avg, "Single Association Bhaul": AU_DR_SA_BHCAP_avg, "Single Association BHCAP+LAT": AU_DR_SA_BHCAP_LAT_avg, "Single Association MRT+LAT": AU_DR_SA_MRT_LAT_avg, "Dual Association MRT+LAT": AU_DR_DC_MRT_LAT_avg})
 df.to_csv("AcceptedUsers.csv", index=False)
 
 # ========================================
@@ -589,7 +589,7 @@ plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
 #ax.legend()
 
 print ('Baseline Accepted Users:', AU_Base_DR_avg)
-print ('Baseline with Minimum rate Accepted Users:', AU_Base_DR_fs_avg)
+#print ('Baseline with Minimum rate Accepted Users:', AU_Base_DR_fs_avg)
 print ('SA Accepted Users:', AU_DR_avg)
 print ('DC Accepted Users:', AU_DR_DC_avg)
 print ('DC+MRT Accepted Users:', AU_DR_DC_MRT_avg)
@@ -651,7 +651,7 @@ plt.savefig('NetThrough_Split', dpi=1200, facecolor='w', edgecolor='w',
 # ================
 # Fairness BoxPlot
 
-box_data = [jfr_SA, jfr_DC, jfr_DC_MRT, jfr_SA_MRT, jfr_DC_LAT, jfr_SA_LAT, jfr_DC_BHCAP, jfr_SA_BHCAP, jfr_DC_BHCAP_LAT, jfr_SA_BHCAP_LAT, jfr_DC_MRT_LAT, jfr_SA_MRT_LAT] 
+box_data = [jfr_DC, jfr_SA, jfr_DC_MRT, jfr_SA_MRT, jfr_DC_LAT, jfr_SA_LAT, jfr_DC_BHCAP, jfr_SA_BHCAP, jfr_DC_BHCAP_LAT, jfr_SA_BHCAP_LAT, jfr_DC_MRT_LAT, jfr_SA_MRT_LAT] 
 fig, ax = plt.subplots()
 plt.title('Jain\'s Fairness Index Deviation')
 plt.boxplot(box_data)
