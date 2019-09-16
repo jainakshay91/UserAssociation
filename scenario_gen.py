@@ -71,7 +71,8 @@ def user_dump(scn, SCBS_per_MCBS, num_MCBS, AP_locs, np, dsc):
             if dsc.locs_checker(usr_locs[attr_name_usr + str(i)], AP_locs,np,'user')==0:
                i = i - 1; # We go back and start the for loop from the current instance
                continue
-            assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_users_scenario[i], scn.max_num_appl_UE)); # Generate User-App Association 
+            #assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_users_scenario[i], scn.max_num_appl_UE)); # Generate User-App Association 
+            assoc_usapp[attr_name_assoc + str(i)] = np.ones((tot_users_scenario[i], scn.max_num_appl_UE), dtype = int); # Generate User-App Association 
         with open("ActualUsers.csv",'wb') as f:
 		w = csv.DictWriter(f,assoc_usapp.keys())
 		w.writeheader()

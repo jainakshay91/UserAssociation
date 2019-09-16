@@ -74,7 +74,7 @@ try:
 	u_idx = SCBS_per_MCBS[0]; # upper index for the association matrix
 	for i in range(0,macro_cell_locations.shape[0]):
 	    small_cell_locations = scenario_gen.small_cell(i, macro_cell_locations[i,:], scn.SCBS_intersite, SCBS_per_MCBS[i], scn.MCBS_intersite, np, dsc); #Get the small cell locations for each macro cell domain 
-	    print small_cell_locations
+	    #print small_cell_locations
 	    locs_SCBS[l_idx:u_idx,:] = small_cell_locations; # Store the small cell locations in the list of numpy arrays
 	    SCBS_MCBS_assoc[l_idx:u_idx,i] = dsc.dist_calc(small_cell_locations,macro_cell_locations[i], 0, 0, '2d', np); # Insert ones in these indexes for the association matrix
 	    #print SCBS_MCBS_assoc[l_idx:u_idx,i]
@@ -116,6 +116,7 @@ try:
 		# Create Compressed Variable Files
 		
 		np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_'+ str(i) + str(vars(args)['iter']),sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS_tot, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC, RX, SCBS_per_MCBS, allow_pickle = True); # Save these variables to be utilized by the optimizer
+		np.savez_compressed(os.getcwd()+'/Data/Temp/hmap_' + str(i) + str(vars(args)['iter']), usr_lcs, locs_SCBS, macro_cell_locations, SCBS_per_MCBS, SCBS_MCBS_assoc) # Data necessary for heatmap is saved here
 		#np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var_1',sinr_sorted, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC); # Save these variables to be utilized by the optimizer
 
 		# ===========================
