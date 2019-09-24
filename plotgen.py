@@ -11,6 +11,7 @@ import pandas as pd
 from scenario_var import scenario_var 
 import copy 
 import os, sys
+import plotter
 
 # =======================
 # Generate Class Variable
@@ -27,6 +28,18 @@ MCMC_iter = scn.MCMC_iter; # Number of Iterations to be analyzed
 simdata_path = os.getcwd() + '/Data/Process/'
 constraint_fp = {'Baseline':'0000', 'DC':'1000', 'DC_MRT':'1100','DC_BHCAP':'1010', 'DC_BHCAP_LAT':'1011', 'DC_LAT':'1001', 'DC_MRT_LAT':'1101', 'SA_MRT':'0100','SA_BHCAP':'0010','SA_BHCAP_LAT':'0011','SA_LAT':'0001','SA_MRT_LAT':'0101'}
 num_iter = ((scn.num_users_max - scn.num_users_min)/scn.user_steps_siml); 
+rate_matrix_DC = []
+rate_matrix_DC_MRT = []
+rate_matrix_DC_MRT_LAT = []
+rate_matrix_DC_BHCAP_LAT = []
+rate_matrix_DC_BHCAP = []
+rate_matrix_SA_MRT = []
+rate_matrix_SA_LAT = []
+rate_matrix_SA_BHCAP = []
+rate_matrix_SA_BHCAP_LAT = []
+rate_matrix_SA_MRT_LAT = []
+rate_matrix_SA = []
+
 Net_Throughput = np.empty((MCMC_iter, num_iter));
 Net_Throughput_DC = copy.copy(Net_Throughput);
 Net_Throughput_DC_MRT = copy.copy(Net_Throughput);
@@ -151,7 +164,7 @@ for i in range(0,MCMC_iter):
 	# ================================
 	# Load the Data from the Optimizer
 
-	Baseline_dat = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['Baseline'] + '.npz', allow_pickle='True')
+	Baseline_dat = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['Baseline'] + '.npz', allow_pickle='True') # Single Association
 	Dat_DC = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['DC'] + '.npz',  allow_pickle='True')
 	Dat_DC_MRT = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['DC_MRT'] + '.npz',  allow_pickle='True')
 	Dat_DC_BHCAP = np.load(simdata_path +'_'+ str(i) +'dat_' + constraint_fp['DC_BHCAP'] + '.npz',  allow_pickle='True')
@@ -177,6 +190,23 @@ for i in range(0,MCMC_iter):
 	Data_SA_BHCAP_LAT = Dat_SA_BHCAP_LAT['arr_0'];
 	Data_SA_MRT_LAT = Dat_SA_MRT_LAT['arr_0'];
 	Data_DC_MRT_LAT = Dat_DC_MRT_LAT['arr_0'];
+
+	if i == 1:
+		temp = Data_DC.item()['Rates'+str(1)]
+		rate_matrix_DC = np.sum(temp, axis = 1).tolist()
+		temp1 = Data.item()['Rates'+str(1)]
+		rate_matrix_SA = np.sum(temp1, axis = 1).tolist()
+		rate_matrix_DC_MRT = np.sum(Data_DC_MRT.item()['Rates'+str(1)], axis=1).tolist()
+		rate_matrix_DC_BHCAP_LAT = np.sum(Data_DC_BHCAP_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		rate_matrix_DC_LAT = np.sum(Data_DC_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		rate_matrix_SA_MRT = np.sum(Data_SA_MRT.item()['Rates'+str(1)], axis=1).tolist()
+		rate_matrix_SA_LAT = np.sum(Data_SA_MRT.item()['Rates'+str(1)], axis=1).tolist()
+		rate_matrix_SA_BHCAP = np.sum(Data_SA_BHCAP.item()['Rates'+str(1)], axis=1).tolist()
+		rate_matrix_SA_BHCAP_LAT = np.sum(Data_SA_BHCAP_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		rate_matrix_SA_MRT_LAT = np.sum(Data_SA_MRT_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		rate_matrix_DC_MRT_LAT = np.sum(Data_DC_MRT_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		rate_matrix_DC_BHCAP = np.sum(Data_DC_BHCAP.item()['Rates'+str(1)], axis=1).tolist()
+
 
 	for k in range(0,num_iter):
 		if Data.item()['Status' + str(k)] == 2:
@@ -670,3 +700,19 @@ plt.savefig('Boxplot', dpi=1200, facecolor='w', edgecolor='w',
 #plt.grid(which= 'major',axis= 'both');
 #plt.title('Per Application Data Rate (SA + CB + CPL)')
 #plt.show()
+
+# ===============
+# Heatmap Plotter
+
+plt.close("all")
+hmap_data = np.load(os.getcwd() +'/Data/Temp/hmap_119.npz', allow_pickle='True')
+usr_locs = hmap_data['arr_0']
+mc_locs = hmap_data['arr_2']
+sc_locs = hmap_data['arr_1']
+
+
+
+#plotter.hmap_creator(usr_locs, mc_locs, sc_locs, rate_matrix_DC_BHCAP_LAT, np, scn)
+plotter.hist_plotter(rate_matrix_DC, rate_matrix_SA, rate_matrix_DC_BHCAP, rate_matrix_SA_BHCAP, rate_matrix_SA_LAT, rate_matrix_SA_MRT, rate_matrix_DC_MRT, rate_matrix_DC_LAT, rate_matrix_SA_MRT_LAT, rate_matrix_DC_MRT_LAT, rate_matrix_SA_BHCAP_LAT, rate_matrix_DC_BHCAP_LAT, np, scn)
+#plotter.scatter_plotter(rate_matrix_DC, rate_matrix_SA,np,scn)
+#plotter.accepted_user_plotter(AU_Base_DR_avg,AU_DR_avg,AU_DR_DC_avg,AU_DR_DC_MRT_avg,AU_DR_DC_BHCAP_avg,AU_DR_DC_LAT_avg,AU_DR_DC_BHCAP_LAT_avg,AU_DR_SA_MRT_avg,AU_DR_SA_LAT_avg,AU_DR_SA_BHCAP_avg,AU_DR_SA_BHCAP_LAT_avg,AU_DR_SA_MRT_LAT_avg,AU_DR_DC_MRT_LAT_avg,np,scn)
