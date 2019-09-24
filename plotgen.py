@@ -394,73 +394,73 @@ for i in range(0,MCMC_iter):
 
 	for j in range(0,X_Optimal.shape[0]):
 		Base_DR.append(scn.eMBB_minrate); 
-		if Data.item()['Status'+str(10)] == 2:
+		if Data.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_jfr = Data.item()['X_optimal_data'+str(0)];
 			#Rate_jfr = Data.item()['Rates'+str(0)]; 
 			application_DR.append(sum(Rate[j,:]*X_Optimal[j,:]));
 		else:
 			pass
-		if Data_DC.item()['Status'+str(10)] == 2:
+		if Data_DC.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_DC_jfr = Data_DC.item()['X_optimal_data'+str(1)];
 			#Rate_DC_jfr = Data_DC.item()['Rates'+str(1)];
 			application_DR_DC.append(sum(Rate_DC[j,:]*X_Optimal_DC[j,:]));
 		else:
 			pass
-		if Data_DC_MRT.item()['Status'+str(10)] == 2:
+		if Data_DC_MRT.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_DC_MRT_jfr = Data_DC_MRT.item()['X_optimal_data'+str(1)];
 			#Rate_DC_MRT_jfr = Data_DC_MRT.item()['Rates'+str(1)];
 			application_DR_DC_MRT.append(sum(Rate_DC_MRT[j,:]*X_Optimal_DC_MRT[j,:]));
 		else:
 			pass
-		if Data_DC_BHCAP.item()['Status'+str(10)] == 2:
+		if Data_DC_BHCAP.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_DC_BHCAP_jfr = Data_DC_BHCAP.item()['X_optimal_data'+str(1)];
 			#Rate_DC_BHCAP_jfr = Data_DC_BHCAP.item()['Rates'+str(1)];
 			application_DR_DC_BHCAP.append(sum(Rate_DC_BHCAP[j,:]*X_Optimal_DC_BHCAP[j,:]));
 		else:
 			pass
-		if Data_DC_BHCAP_LAT.item()['Status'+str(10)] == 2:
+		if Data_DC_BHCAP_LAT.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_DC_BHCAP_LAT_jfr = Data_DC_BHCAP_LAT.item()['X_optimal_data'+str(1)];
 			#Rate_DC_BHCAP_LAT_jfr = Data_DC_BHCAP_LAT.item()['Rates'+str(1)];
 			application_DR_DC_BHCAP_LAT.append(sum(Rate_DC_BHCAP_LAT[j,:]*X_Optimal_DC_BHCAP_LAT[j,:]));
 		else:
 			pass
-		if Data_DC_LAT.item()['Status'+str(10)] == 2:
+		if Data_DC_LAT.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_DC_LAT_jfr = Data_DC_LAT.item()['X_optimal_data'+str(1)];
 			#Rate_DC_LAT_jfr = Data_DC_LAT.item()['Rates'+str(1)];
 			application_DR_DC_LAT.append(sum(Rate_DC_LAT[j,:]*X_Optimal_DC_LAT[j,:]));
 		else:
 			pass
-		if Data_SA_MRT.item()['Status'+str(10)] == 2:
+		if Data_SA_MRT.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_SA_MRT_jfr = Data_SA_MRT.item()['X_optimal_data'+str(1)];
 			#Rate_SA_MRT_jfr = Data_SA_MRT.item()['Rates'+str(1)];
 			application_DR_SA_MRT.append(sum(Rate_SA_MRT[j,:]*X_Optimal_SA_MRT[j,:]));
 		else:
 			pass
-		if Data_SA_LAT.item()['Status'+str(10)] == 2:
+		if Data_SA_LAT.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_SA_LAT_jfr = Data_SA_LAT.item()['X_optimal_data'+str(1)];
 			#Rate_SA_LAT_jfr = Data_SA_LAT.item()['Rates'+str(1)];
 			application_DR_SA_LAT.append(sum(Rate_SA_LAT[j,:]*X_Optimal_SA_LAT[j,:]));
 		else: 
 			pass
-		if Data_SA_BHCAP.item()['Status'+str(10)] == 2:
+		if Data_SA_BHCAP.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_SA_BHCAP_jfr = Data_SA_BHCAP.item()['X_optimal_data'+str(1)];
 			#Rate_SA_BHCAP_jfr = Data_SA_BHCAP.item()['Rates'+str(1)];
 			application_DR_SA_BHCAP.append(sum(Rate_SA_BHCAP[j,:]*X_Optimal_SA_BHCAP[j,:]));
 		else:
 			pass
-		if Data_SA_BHCAP_LAT.item()['Status'+str(10)] == 2:
+		if Data_SA_BHCAP_LAT.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_SA_BHCAP_LAT_jfr = Data_SA_BHCAP_LAT.item()['X_optimal_data'+str(1)];
 			#Rate_SA_BHCAP_LAT_jfr = Data_SA_BHCAP_LAT.item()['Rates'+str(1)];
 			application_DR_SA_BHCAP_LAT.append(sum(Rate_SA_BHCAP_LAT[j,:]*X_Optimal_SA_BHCAP_LAT[j,:]));
 		else:
 			pass
-		if Data_SA_MRT_LAT.item()['Status'+str(10)] == 2:
+		if Data_SA_MRT_LAT.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_SA_MRT_MAT_jfr = Data_SA_MRT_LAT.item()['X_optimal_data'+str(1)];
 			#Rate_SA_MRT_LAT_jfr = Data_SA_MRT_LAT.item()['Rates'+str(1)];
 			application_DR_SA_MRT_LAT.append(sum(Rate_SA_MRT_LAT[j,:]*X_Optimal_SA_MRT_LAT[j,:]));
 		else:
 			pass
-		if Data_DC_MRT_LAT.item()['Status'+str(10)] == 2:
+		if Data_DC_MRT_LAT.item()['Status'+str(num_iter-1)] == 2:
 			#X_Optimal_DC_MRT_LAT_jfr = Data_DC_MRT_LAT_.item()['X_optimal_data'+str(1)];
 			#Rate_DC_MRT_LAT_jfr = Data_DC_MRT_LAT.item()['Rates'+str(1)];
 			application_DR_DC_MRT_LAT.append(sum(Rate_DC_MRT_LAT[j,:]*X_Optimal_DC_MRT_LAT[j,:]));
@@ -499,8 +499,8 @@ B_Dat_DR_fs_avg = np.sum(B_Dat_DR_fs, axis = 0)/MCMC_iter;
 # ====================
 # Satisfied User Count
 
-AU_Base_DR_fs_avg = np.floor(np.sum(AU_Base_DR_fs, axis = 0)/MCMC_iter);
-#AU_Base_DR_avg = np.floor(np.sum(AU_Base_DR, axis = 0)/MCMC_iter); 
+#AU_Base_DR_fs_avg = np.floor(np.sum(AU_Base_DR_fs, axis = 0)/MCMC_iter);
+AU_Base_DR_avg = np.floor(np.sum(AU_Base_DR, axis = 0)/MCMC_iter); 
 AU_DR_avg = np.floor(np.sum(AU_DR, axis = 0)/MCMC_iter);
 AU_DR_DC_avg = np.floor(np.sum(AU_DR_DC, axis = 0)/MCMC_iter);
 AU_DR_DC_MRT_avg = np.floor(np.sum(AU_DR_DC_MRT, axis = 0)/MCMC_iter);
