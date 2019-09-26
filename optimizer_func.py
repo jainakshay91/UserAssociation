@@ -154,18 +154,18 @@ for N in range(0,num_iter):
 
 	print "Calculating the AP path latencies"
 	#print Hops_SC
-	bh_paths = np.empty((num_scbs+num_mcbs,1)); # We consider just a single path per AP
+	bh_paths = np.empty((num_scbs+num_mcbs)); # We consider just a single path per AP
 	Hops_sc = (np.sum((Hops_SC - 1), axis = 1)).reshape(Hops_SC.shape[0],1); # Reshaping the Small cells hops count matrix
 	#print mat_wlbh_sc
 	#print mat_wrdbh_sc
 	#print Hops_sc
 	for i in range(0,Hops_sc.shape[0]):
 		if np.nonzero(mat_wlbh_sc[i,:]):
-			bh_paths[i,:] = Hops_sc[i,:]*scn.wrd_link_delay + scn.wl_link_delay; # Small cell path latency with wireless backhaul
+			bh_paths[i] = Hops_sc[i,:]*scn.wrd_link_delay + scn.wl_link_delay; # Small cell path latency with wireless backhaul
 		elif np.nonzero(mat_wrdbh_sc[i,:]):
-			bh_paths[i,:] = (Hops_sc[i,:] + 1)*scn.wrd_link_delay; # Small cell path latency with wired backhaul
+			bh_paths[i] = (Hops_sc[i,:] + 1)*scn.wrd_link_delay; # Small cell path latency with wired backhaul
 	#bh_paths[:Hops_sc.shape[0],:] = Hops_sc*scn.wrd_link_delay + scn.wl_link_delay; # Small cell path latency
-	bh_paths[Hops_sc.shape[0]:,0] = Hops_MC*scn.wrd_link_delay; # Macro cell path latency  
+	bh_paths[Hops_sc.shape[0]:bh_paths.shape[0]] = Hops_MC*scn.wrd_link_delay; # Macro cell path latency  
 	#print bh_paths
 	#print var_col_num
 
@@ -302,7 +302,7 @@ for N in range(0,num_iter):
 		AP_latency = m.addVars(var_row_num, var_col_num, name="AP_latency"); # Initializing the Path Latency constraint
 		for i in range(0, var_row_num):
 			for j in  range(0, var_col_num):
-				AP_latency[i,j] = LinExpr(bh_paths[j],X.select(i,j)); # Constraint Expression
+				AP_latency[i,j] = bh_paths[j]*X[i,j]; # Constraint Expression
 		
 
 		# ============================
@@ -392,7 +392,7 @@ for N in range(0,num_iter):
 			pass
 
 		m.update()
-		#m.write("debug.lp");
+		m.write("debug.lp");
 
 		m.optimize()
 
@@ -462,7 +462,11 @@ for N in range(0,num_iter):
 
 			G_total_compute = np.concatenate((GSC_compute, GMC_compute), axis = 1) # Bandwidth Contribution matrix
 			new_rate = rate*G_total_compute; # New rate matrix
-			#print np.sum(new_rate,axis  = 1)
+			print np.sum(new_rate,axis  = 1)
+			print "============================"
+			print "BHCAP check"
+			bhval = 0; # Initialize the Utilized Bhaul capacity value
+			
 			#		new_rate[i,j] = (np.sum(G_plt_idx[i,j,:]*np.asarray(scn.BW_SC),axis = 0) + np.sum(M_plt_idx[i,j,:]*np.asarray(scn.BW_MC),axis = 0))*rate[i,j]			
 	
 			G_sum = np.sum(G_plt_idx[:,:,0] + G_plt_idx[:,:,1] + G_plt_idx[:,:,2], axis = 1)
@@ -493,7 +497,40 @@ for N in range(0,num_iter):
 			Data['Status' + str(N)] = m.status; # Insert the status
 			Data['Apps'+str(N)] = var_row_num;
 			Data['APs'+str(N)] = var_col_num;
-			
+
+			# ========================
+			# Validity of the Solution
+
+			# ===> Backhaul Capacity Utilization
+
+			bhutil = np.empty((var_col_num,1)) # This variable will hold the utilized Backhaul capacity
+			ct = 0; # Counting the number of small cells within a macro cell
+			for j in range(var_col_num):
+				if j < num_scbs:
+					bhutil[j] = np.sum(new_rate[:,j]) # We sum the data rate of the users getting access from a small cell
+					#print ("Available Backhaul Capacity for SC#"+str(j),BH_Capacity_SC[j,0])
+				elif j >= num_scbs:
+					idx_in = ct
+					idx_ot = ct + SCBS_per_MCBS[j - num_scbs]
+					bhutil[j] = np.sum(new_rate[:,j]) + np.sum(bhutil[idx_in:idx_ot]) # Total BH utilization for the BH on macro cell
+					#print ("Available Backhaul Capacity for MC#"+str(j-num_scbs),BH_Capacity_MC)
+					ct = idx_ot # Update the count variable for the next Macro BS
+
+				#print ("Backhaul Utilization for AP#" + str(j), bhutil[j])
+			Data['BHUTIL'+str(N)] = bhutil; # Save the Backhaul utilization values for visualization
+			Data['AvailBHUtil_SC'+str(N)] = BH_Capacity_SC; # Save the Available Small Cell BH Capacity. For MC it is constant and can be extracted from the scenario_file 
+			# ===> Latency Provisioning 
+
+			lat_prov = np.matmul(np.asarray(X_optimal).reshape((var_row_num,var_col_num)),np.diag(bh_paths)); # This variable will hold the actual latency offered
+			# print np.asarray(X_optimal).reshape((var_row_num,var_col_num))
+			# print lat_prov
+			# print np.diag(bh_paths)
+			# #print var_row_num
+			# for i in range(var_row_num):
+			# 	print ("Latency offered for element #"+str(i),lat_prov[i,np.nonzero(lat_prov[i,:])])
+
+			Data['LatenOff'+str(N)] = lat_prov; # Save the latency provisioned by the algorithm 
+
 		else:
 			Data['Status' + str(N)] = m.status; # Add the status for detecting infeasible solution
 			#print ("Status_Flags:" + str(k), str(m.status))
