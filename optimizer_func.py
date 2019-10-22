@@ -13,6 +13,7 @@ from argparse import ArgumentParser
 from rssi_assoc import baseline_assoc
 import time
 import csv
+import csvsaver
 
 # =======================
 # Optimizer Configuration
@@ -131,7 +132,8 @@ for N in range(0,num_iter):
 	 	SNR_eMBB[iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],SNR_iter[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
 	 	iter = iter + np.sum(user_AP_assoc[i,1]); # Incrementing the iterator for the next user-application sets
 	
-	np.savetxt('log.csv',sinr_eMBB, delimiter=",")
+	#np.savetxt('SINR.csv',sinr_eMBB, delimiter=",")
+	csvsaver.csvsaver(np.where(sinr_eMBB == sinr_pad_val, 0, sinr_eMBB), [], "SINR.csv")
 	#print sinr_eMBB
 	#print sinr_applications[0]
 
@@ -202,7 +204,7 @@ for N in range(0,num_iter):
 
 		# ===> Establish the Objective Function
 
-		obj_func = quicksum(G_SC[i,j,k]*scn.BW_SC[k]*rate[i,j] for i in range(var_row_num) for j in range(num_scbs) for k in range(3)) + quicksum(G_MC[i,j,k]*scn.BW_MC[k]*rate[i,j] for i in range(var_row_num) for j in range(num_mcbs) for k in range(5)); 
+		obj_func = quicksum(G_SC[i,j,k]*scn.BW_SC[k]*rate[i,j] for i in range(var_row_num) for j in range(num_scbs) for k in range(3)) + quicksum(G_MC[i,j - num_scbs,k]*scn.BW_MC[k]*rate[i,j] for i in range(var_row_num) for j in range(num_scbs, num_scbs + num_mcbs) for k in range(5)); 
 		#obj_func = LinExpr(); # Initialize the objective function
 		#obj_func.addTerms(rate,X);
 		# for i in range(0,var_row_num):
@@ -222,16 +224,18 @@ for N in range(0,num_iter):
 
 		DC = m.addVars(var_row_num,1, name = "DC"); # Initializing the Constraint Variables
 		for i in range(0,var_row_num):
-			DC[i,0] = X.sum(i,'*'); # Constraint Expression
+			#DC[i,0] = X.sum(i,'*'); # Constraint Expression
+			DC[i,0] = quicksum(X[i,j] for j in range(var_col_num))
 		
-		MC = m.addVars(var_row_num,1, name = "MC"); # Initializing the Constraint Variables with MC 
+		MC = m.addVars(var_row_num,1, name = "K"); # Initializing the Constraint Variables with MC 
 		for i in range(0,var_row_num):
-			MC[i,0] = X.sum(i,np.arange(num_scbs,num_scbs+num_mcbs).tolist()); # Macro Cell Constraint Expression
+			#MC[i,0] = X.sum(i,np.arange(num_scbs,num_scbs+num_mcbs).tolist()); # Macro Cell Constraint Expression
+			MC[i,0] = quicksum(X[i,j] for j in range(num_scbs, num_mcbs+num_scbs)) # Macro Cell Constraint Expression
 
-		SC = m.addVars(var_row_num,1, name = "SC"); # Initializing the Constraint Variable with SC
+		SC = m.addVars(var_row_num,1, name = "J"); # Initializing the Constraint Variable with SC
 		for i in range(0,var_row_num):
-			SC[i,0] = X.sum(i,np.arange(0,num_scbs).tolist()); # Small Cell Constraint Expression
-
+			#SC[i,0] = X.sum(i,np.arange(0,num_scbs).tolist()); # Small Cell Constraint Expression
+			SC[i,0] = quicksum(X[i,j] for j in range(num_scbs)) # Small Cell Constraint Expression
 		# ======================================================= 
 		# Set up the Minimum Rate Constraint for the Applications
 
@@ -309,15 +313,17 @@ for N in range(0,num_iter):
 		# Unity Assignment Constraints
 
 		U_SC = m.addVars(var_row_num, int(num_scbs), name="USC");
+		
 		for i in range(var_row_num):
+			#U_SC[i,j] = LinExpr([1]*3,G_SC.select(i,j,'*'))
 			for j in range(num_scbs):
-				U_SC[i,j] = LinExpr([1]*3,G_SC.select(i,j,'*'))
+				U_SC[i,j] = quicksum(G_SC[i,j,k] for k in range(3))
 
 		U_MC = m.addVars(var_row_num, int(num_mcbs), name="UMC")
 		for i in range(var_row_num):
+			#U_MC[i,j] = LinExpr([1]*5,G_MC.select(i,j,'*'))
 			for j in range(num_mcbs):
-				U_MC[i,j] = LinExpr([1]*5,G_MC.select(i,j,'*'))
-
+				U_MC[i,j] = quicksum(G_MC[i,j,k] for k in range(5))
 
 
 		# ==========================
@@ -338,11 +344,11 @@ for N in range(0,num_iter):
 		m.addConstrs((G_SC[i,j,k] <= BW_SC[i,k] for i in range(var_row_num) for j in range(num_scbs) for k in range(3)), name = 'l1'); # Linearization constraint 1
 		m.addConstrs((G_SC[i,j,k] <= X[i,j] for i in range(var_row_num) for j in range(num_scbs) for k in range(3)), name = 'l2'); # Linearization constraint 2
 		m.addConstrs((G_SC[i,j,k] >= (BW_SC[i,k] + X[i,j] -1) for i in range(var_row_num) for j in range(num_scbs) for k in range(3)), name = 'l3'); # Linearization constraint 3
-		m.addConstrs((G_MC[i,j - num_scbs,k] <= BW_MC[i,k] for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l1'); # Linearization constraint 4
-		m.addConstrs((G_MC[i,j - num_scbs,k] <= X[i,j] for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l2'); # Linearization constraint 5
-		m.addConstrs((G_MC[i,j - num_scbs,k] >= (BW_MC[i,k] + X[i,j] -1) for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l3'); # Linearization constraint 6
+		m.addConstrs((G_MC[i,j - num_scbs,k] <= BW_MC[i,k] for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l4'); # Linearization constraint 4
+		m.addConstrs((G_MC[i,j - num_scbs,k] <= X[i,j] for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l5'); # Linearization constraint 5
+		m.addConstrs((G_MC[i,j - num_scbs,k] >= (BW_MC[i,k] + X[i,j] -1) for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l6'); # Linearization constraint 6
 		m.addConstrs((U_SC[i,j] <= 1 for i in range(var_row_num) for j in range(num_scbs)),name = 'U1')
-		m.addConstrs((U_MC[i,j] <= 1 for i in range(var_row_num) for j in range(num_mcbs)), name = 'U2')
+		m.addConstrs((U_MC[i,j] <= 1 for i in range(var_row_num) for j in range(num_mcbs)),name = 'U2')
 
 		if vars(args)['dual'] == 0:
 			print "==================="
@@ -369,8 +375,10 @@ for N in range(0,num_iter):
 			#m.addConstrs((U_SC[i,j] <= 1 for i in range(var_row_num) for j in range(num_scbs)))
 			#m.addConstrs((U_MC[i,j] == 1 for i in range(var_row_num) for j in range(num_mcbs)))
 			m.addConstrs((MC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+			#m.addConstrs((quicksum(X[i,j] for j in range(num_scbs, num_scbs+num_mcbs)) == 1 for i in range(var_row_num)), name ='c8'); # Adding the Dual Connectivity constraint 
 			m.addConstrs((SC[i,0] <= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
 			
+
 			#m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
@@ -417,12 +425,15 @@ for N in range(0,num_iter):
 			M_plt = []
 			SCbw = []
 			MCbw = []
+			MC_sel = []
 
 			for v in m.getVars():
 				if "GSC" in v.varName:
 					G_plt.append(v.x)
 				if "GMC" in v.varName:
 					M_plt.append(v.x)
+				#if "" in v.varName:
+				#	print v.x
 			#	if "bwmc" in v.varName:
 			#		MCbw.append(v.x)
 			#	if "bwsc" in v.varName:
@@ -431,6 +442,7 @@ for N in range(0,num_iter):
 			# =============================
 			# Visualization and Computation			
 
+			
 			#fin_rate = np.zeros((var_row_num,1))
 			#for i in range(var_row_num):
 			#	for j in range(var_col_num):
@@ -462,19 +474,52 @@ for N in range(0,num_iter):
 
 			G_total_compute = np.concatenate((GSC_compute, GMC_compute), axis = 1) # Bandwidth Contribution matrix
 			new_rate = rate*G_total_compute; # New rate matrix
-			print np.sum(new_rate,axis  = 1)
-			print "============================"
-			print "BHCAP check"
-			bhval = 0; # Initialize the Utilized Bhaul capacity value
+			#print new_rate
+
+			# ==> Data rate each user gets from the SC and MC for MCSC - DC
+
+			Rate_data = np.empty((var_row_num,4))
+			G_sum = np.empty((num_scbs,1))
+			M_sum = np.empty((num_mcbs,1))
+			for i in range(var_row_num):
+				# print "=============="
+				# print ("For user #",i)
+				# #print new_rate[i,num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])]
+				# print("Small Cell Data Rate:", new_rate[i, np.nonzero(new_rate[i,:num_scbs])])
+				# print("Macro Cell Data Rate:", new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])])
+				if new_rate[i, np.nonzero(new_rate[i,:num_scbs])].size == 0:
+					Rate_data[i,0] = 0
+				else:
+					Rate_data[i,0] = np.sum(new_rate[i, np.nonzero(new_rate[i,:num_scbs])])
+
+				if new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])].size == 0:
+					Rate_data[i,1] = 0
+				else:
+					Rate_data[i,1] = np.sum(new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])])
+				#print np.where(new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])].size == 0 , "Size is 0", new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])]) 
+
+			csvsaver.csvsaver(Rate_data,["SC Rate","MC Rate"], "OptimizedDataRate_user_MCSC.csv")
+			#print np.sum(new_rate, axis = 1)
+			print np.amin(np.sum(new_rate,axis  = 1))
+			print np.amax(np.sum(new_rate,axis  = 1))
+			print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+			print ("MINRATE Constraint satisfied?:", np.all(np.sum(new_rate,axis  = 1)>=scn.eMBB_minrate))
+			print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+			# #print "============================"
+			#print "BHCAP check"
+			#bhval = 0; # Initialize the Utilized Bhaul capacity value
 			
 			#		new_rate[i,j] = (np.sum(G_plt_idx[i,j,:]*np.asarray(scn.BW_SC),axis = 0) + np.sum(M_plt_idx[i,j,:]*np.asarray(scn.BW_MC),axis = 0))*rate[i,j]			
 	
-			G_sum = np.sum(G_plt_idx[:,:,0] + G_plt_idx[:,:,1] + G_plt_idx[:,:,2], axis = 1)
-			M_sum = np.sum(M_plt_idx[:,:,0] + M_plt_idx[:,:,1] + M_plt_idx[:,:,2] + M_plt_idx[:,:,3] + M_plt_idx[:,:,4], axis = 1)
+			G_sum[:,0] = np.sum(G_plt_idx[:,:,0] + G_plt_idx[:,:,1] + G_plt_idx[:,:,2], axis = 0)
+			M_sum[:,0] = np.sum(M_plt_idx[:,:,0] + M_plt_idx[:,:,1] + M_plt_idx[:,:,2] + M_plt_idx[:,:,3] + M_plt_idx[:,:,4], axis = 0)
 			#print G_sum.shape
 			#print M_sum.shape
 			#print ("SC:", G_sum)
 			#print ("MC:", M_sum)
+			csvsaver.csvsaver(G_sum,["Accepted Users per SC"], "GS.csv")
+			csvsaver.csvsaver(M_sum,["Accepted Users per MC"], "MC.csv")			
+
 			if N == (num_iter-1) and (vars(args)['dual'] == 1 or vars(args)['bhaul'] == 1 or vars(args)['minRate'] == 1 or vars(args)['latency'] == 1):
 				#plotter.optimizer_plotter(new_rate) # We get the plot for the rates with maximum number of users
 				with open("Rate" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv:
@@ -491,13 +536,18 @@ for N in range(0,num_iter):
 
 			print "Saving Data"
 
-			Data['X_optimal_data' + str(N)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
+			#Data['X_optimal_data' + str(N)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
+			Data['X_optimal_data' + str(N)] = (G_total_compute>0)*1; # Optimal Association Matrix
 			Data['Net_Throughput' + str(N)] = m.objVal; # Network wide throughput
 			Data['Rates' + str(N)] = new_rate; # Data rate matrix  
 			Data['Status' + str(N)] = m.status; # Insert the status
 			Data['Apps'+str(N)] = var_row_num;
 			Data['APs'+str(N)] = var_col_num;
 
+			#print np.sum((G_total_compute>0)*1, axis = 1) 
+			#print np.sum((np.asarray(X_optimal).reshape((var_row_num,var_col_num))>0)*1, axis =1)
+			#print np.nonzero((np.asarray(X_optimal).reshape((var_row_num,var_col_num))>0)*1)
+			#print np.array_equal((G_total_compute>0)*1, (np.asarray(X_optimal).reshape((var_row_num,var_col_num))>0)*1)
 			# ========================
 			# Validity of the Solution
 

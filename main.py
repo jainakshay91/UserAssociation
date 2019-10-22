@@ -19,6 +19,7 @@ from argparse import ArgumentParser
 
 parser = ArgumentParser(description = 'Scenario Generator Main Function'); # Initializing the class variable
 parser.add_argument('-iter', type = int, help = 'Iteration Number of the Simulation');
+parser.add_argument('-interf', type = int, help = 'Interference Limited Region Indicator')
 args = parser.parse_args(); # Parse the Arguments
 
 # =====================================
@@ -109,14 +110,14 @@ try:
 	for i in range(0,len(usr_locs.keys())):
 		print "Iteration #" + str(i)
 		print "====================="
-		sinr_sorted, locs_sc_ret, usr_lcs, idx_sc, idx_mc, sinr_pad, num_SCBS, num_MCBS, num_MCBS_tot, RX_eMBB = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_locs['user_locations'+str(i)], dsc, np)
+		sinr_sorted, locs_sc_ret, usr_lcs, idx_sc, idx_mc, sinr_pad, num_SCBS, num_MCBS, num_MCBS_tot, RX_eMBB, l_nl = scenario_gen.sinr_gen (scn, sum(SCBS_per_MCBS), macro_cell_locations, np.asarray(locs_SCBS), usr_locs['user_locations'+str(i)], dsc, np, int(vars(args)['interf']) )
 		sinr = dsc.reorganizer(sinr_sorted, idx_sc, idx_mc, num_SCBS, num_MCBS_tot, sinr_pad, np, scn); # We reorganize the SINR matrix for the optimization framework
 		RX = dsc.reorganizer(RX_eMBB, idx_sc, idx_mc, num_SCBS, num_MCBS_tot, float('nan'), np, scn); # We reorganize the RX Power matrix for the Baseline framework
 		# ================================
 		# Create Compressed Variable Files
 		
-		np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_'+ str(i) + str(vars(args)['iter']),sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS_tot, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC, RX, SCBS_per_MCBS, allow_pickle = True); # Save these variables to be utilized by the optimizer
-		np.savez_compressed(os.getcwd()+'/Data/Temp/hmap_' + str(i) + str(vars(args)['iter']), usr_lcs, locs_SCBS, macro_cell_locations, SCBS_per_MCBS, SCBS_MCBS_assoc) # Data necessary for heatmap is saved here
+		np.savez_compressed(os.getcwd()+'/Data/Temp/optim_var_'+ str(i) + str(vars(args)['iter']),sinr, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS_tot, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC, RX, SCBS_per_MCBS, l_nl, allow_pickle = True); # Save these variables to be utilized by the optimizer
+		np.savez_compressed(os.getcwd()+'/Data/Temp/hmap_' + str(i) + str(vars(args)['iter']), usr_lcs, locs_SCBS, macro_cell_locations, SCBS_per_MCBS, SCBS_MCBS_assoc, l_nl, sinr) # Data necessary for heatmap is saved here
 		#np.savez_compressed('/home/akshayjain/Desktop/Simulation/optim_var_1',sinr_sorted, usr_apps_assoc, usr_lcs, idx_sc, sinr_pad, num_SCBS, num_MCBS, SC_wl_bh, SC_wrd_bh, MC_hops, SC_hops, BH_capacity_SC); # Save these variables to be utilized by the optimizer
 
 		# ===========================

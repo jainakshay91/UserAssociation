@@ -14,7 +14,7 @@ from scipy.stats import norm
 import seaborn as sns
 import os
 from mpl_toolkits.mplot3d import Axes3D
-
+from matplotlib import cm
 
 # =======
 # Plotter
@@ -74,49 +74,51 @@ def optimizer_plotter(data_plt):
 def hmap_creator(usr_lcs, mc_lcs, sc_lcs, rate_mat, np, scn):
 	f,ax = plt.subplots()
 	ax = plt.gca()
-	
-	s1, = ax.plot(usr_lcs[:,0], usr_lcs[:,1], "r+") # Plot the User locations
-	s2, = ax.plot(mc_lcs[:,0],mc_lcs[:,1],"b*") # Plot the macro cell locations
-	s3, = ax.plot(sc_lcs[:,0],sc_lcs[:,1],"g*") # Plot the small cell locations
+	print usr_lcs.shape[0]
+	print rate_mat 
+	#s1, = ax.plot(usr_lcs[:,0], usr_lcs[:,1], "r*", markersize=12) # Plot the User locations
+	s2, = ax.plot(mc_lcs[:,0],mc_lcs[:,1],"k^", markersize=12) # Plot the macro cell locations
+	s3, = ax.plot(sc_lcs[:,0],sc_lcs[:,1],"g^", markersize=8) # Plot the small cell locations
 	
 	# Create the color range
 	range_rate = np.arange(np.amin(rate_mat),np.amax(rate_mat),(np.amax(rate_mat)-np.amin(rate_mat))/7) # These are rate bands for the circular colors
-	color_range = ["ko","go","bo","ro","mo","co","yo"] # These are the color codes
+	color_range = ['#ffa07a','m','b','r','#daa520','#b22222','#8b0000'] # These are the color codes
 	circle_size = np.arange(6,13,1) # Circle size range
 	# color_sel = [] # Empty list to hold the color code and circle sizes
 	# # # Establish rate based circles on the plot 
 	for i in range(usr_lcs.shape[0]):
 		if rate_mat[i] >= range_rate[0] and rate_mat[i] < range_rate[1]:
 			#ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[0], markersize=circle_size[0], fillstyle='none')
-			s4, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[0], markersize=circle_size[0])
+			s4, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], marker = 'o', markeredgecolor = color_range[0], markerfacecolor = color_range[0], markersize=circle_size[0])
 						
 		elif rate_mat[i] >= range_rate[1] and rate_mat[i] < range_rate[2]:
 			#ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[1], markersize=circle_size[1], fillstyle='none')
-			s5, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[1], markersize=circle_size[1])
+			s5, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], marker = 'o', markeredgecolor = color_range[1], markerfacecolor = color_range[1], markersize=circle_size[1])
 			
 		elif rate_mat[i] >= range_rate[2] and rate_mat[i] < range_rate[3]:
 			#ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[2], markersize=circle_size[2], fillstyle='none')
-			s6, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[2], markersize=circle_size[2])
+			s6, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], marker = 'o', markeredgecolor = color_range[2], markerfacecolor = color_range[2], markersize=circle_size[2])
 			
 		elif rate_mat[i] >= range_rate[3] and rate_mat[i] < range_rate[4]:
 			#ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[3], markersize=circle_size[3], fillstyle='none')
-			s7, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[3], markersize=circle_size[3])
+			s7, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], marker = 'o',markeredgecolor = color_range[3], markerfacecolor = color_range[3], markersize=circle_size[3])
 			
 		elif rate_mat[i] >= range_rate[4] and rate_mat[i] < range_rate[5]:
 			#ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[4], markersize=circle_size[4], fillstyle='none')
-			s8, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[4], markersize=circle_size[4])
+			s8, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], marker = 'o', markeredgecolor = color_range[4], markerfacecolor = color_range[4], markersize=circle_size[4])
 			
 		elif rate_mat[i] >= range_rate[5] and rate_mat[i] < range_rate[6]:
 			#ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[5], markersize=circle_size[5], fillstyle='none')
-			s9, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[5], markersize=circle_size[5])
+			s9, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], marker = 'o', markeredgecolor = color_range[5], markerfacecolor = color_range[5], markersize=circle_size[5])
 			
 		else:
 			#ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[6], markersize=circle_size[6], fillstyle='none')
-			s10, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], color_range[6], markersize=circle_size[6])
+			s10, = ax.plot(usr_lcs[i,0],usr_lcs[i,1], marker = 'o', markeredgecolor = color_range[6], markerfacecolor = color_range[6], markersize=circle_size[6])
 
-	legend_cols = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10]
-	plt.legend(legend_cols,["Users", "Macro Cells", "Small Cells", str(format(range_rate[0],'0.6e'))+'--'+str(format(range_rate[1],'0.6e')),str(format(range_rate[1],'.6e'))+'--'+str(format(range_rate[2],'.6e')),str(format(range_rate[2],'0.6e'))+'--'+str(format(range_rate[3],'0.6e')),str(format(range_rate[3],'0.6e'))+'--'+str(format(range_rate[4],'0.6e')),str(format(range_rate[4],'0.6e'))+'--'+str(format(range_rate[5],'0.6e')),str(format(range_rate[5],'0.6e'))+'--'+str(format(range_rate[6],'0.6e'))],loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol = 5)	
-	plt.title("Heatmap of Individual User Data Rates (DC+BHCAP+LAT Scenario)")
+	#legend_cols = [ s2, s3, s4, s5, s6, s7, s8, s9, s10]
+	legend_cols = [ s2, s3, s4, s5, s10]
+	plt.legend(legend_cols,["Macro Cells", "Small Cells", str(format(range_rate[0],'0.6e'))+'--'+str(format(range_rate[1],'0.6e')),str(format(range_rate[1],'.6e'))+'--'+str(format(range_rate[2],'.6e')),str(format(range_rate[2],'0.6e'))+'--'+str(format(range_rate[3],'0.6e')),str(format(range_rate[3],'0.6e'))+'--'+str(format(range_rate[4],'0.6e')),str(format(range_rate[4],'0.6e'))+'--'+str(format(range_rate[5],'0.6e')),str(format(range_rate[5],'0.6e'))+'--'+str(format(range_rate[6],'0.6e'))],loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol = 4)	
+	plt.title("Heatmap of Individual User Data Rates (DC Scenario)")
 	plt.show()
 
 # =============================
@@ -152,19 +154,19 @@ def hist_plotter(rate_matrix_DC, rate_matrix_SA, rate_matrix_DC_BHCAP, rate_matr
 	
 
 	plt.plot(bincenters1,y1,'r-o',fillstyle='none')
-	#plt.plot(bincenters2,y2,'b-o',fillstyle='none')
+	plt.plot(bincenters2,y2,'b-o',fillstyle='none')
 	#plt.plot(bincenters3,y3,'b-o',fillstyle='none')
-	plt.plot(bincenters5,y5,'b-*',fillstyle='none')
+	#plt.plot(bincenters5,y5,'b-*',fillstyle='none')
 	plt.plot(bincenters1[y1.tolist().index(np.amax(y1))],np.amax(y1),'ko')
 	plt.plot(np.ones((np.arange(0,np.amax(y1)).shape[0]+1,1))*bincenters1[y1.tolist().index(np.amax(y1))],np.arange(0,np.amax(y1)+1),'k--')
-	#plt.plot(bincenters2[y2.tolist().index(np.amax(y2))],np.amax(y2),'go')
-	#plt.plot(np.ones((np.arange(0,np.amax(y2)).shape[0]+1,1))*bincenters2[y2.tolist().index(np.amax(y2))],np.arange(0,np.amax(y2)+1),'g--')
+	plt.plot(bincenters2[y2.tolist().index(np.amax(y2))],np.amax(y2),'go')
+	plt.plot(np.ones((np.arange(0,np.amax(y2)).shape[0]+1,1))*bincenters2[y2.tolist().index(np.amax(y2))],np.arange(0,np.amax(y2)+1),'g--')
 	#plt.plot(bincenters3[y3.tolist().index(np.amax(y3))],np.amax(y3),'go')
 	#plt.plot(np.ones((np.arange(0,np.amax(y3)).shape[0],1))*bincenters3[y3.tolist().index(np.amax(y3))],np.arange(0,np.amax(y3)),'g--')
 	#plt.plot(bincenters7[y7.tolist().index(np.amax(y7))],np.amax(y7),'go')
 	#plt.plot(np.ones((np.arange(0,np.amax(y7)).shape[0],1))*bincenters7[y7.tolist().index(np.amax(y7))],np.arange(0,np.amax(y7)),'g--')
-	plt.plot(bincenters5[y5.tolist().index(np.amax(y5))],np.amax(y5),'go')
-	plt.plot(np.ones((np.arange(0,np.amax(y5)).shape[0],1))*bincenters5[y5.tolist().index(np.amax(y5))],np.arange(0,np.amax(y5)),'g--')
+	#plt.plot(bincenters5[y5.tolist().index(np.amax(y5))],np.amax(y5),'go')
+	#plt.plot(np.ones((np.arange(0,np.amax(y5)).shape[0],1))*bincenters5[y5.tolist().index(np.amax(y5))],np.arange(0,np.amax(y5)),'g--')
 		
 
 	#plt.plot(bincenters3,y3,'k--')
@@ -178,7 +180,7 @@ def hist_plotter(rate_matrix_DC, rate_matrix_SA, rate_matrix_DC_BHCAP, rate_matr
 	#plt.plot(bincenters11,y11,'m-*')
 	#plt.plot(bincenters12,y12,'c:')
 	
-	plt.legend(["Dual Connectivity","Dual Connectivity + Minimum Rate"])
+	plt.legend(["Dual Connectivity","Single Association"])
 	plt.xlabel('Throughput(bps)')
 	plt.ylabel('Number of Users')
 	plt.title('Histogram of User Distribution')
@@ -186,13 +188,25 @@ def hist_plotter(rate_matrix_DC, rate_matrix_SA, rate_matrix_DC_BHCAP, rate_matr
 	plt.show()
 
 
-def scatter_plotter(rate_matrix_DC,rate_matrix_SA,np,scn):
-	plt.scatter(np.arange(1,len(rate_matrix_DC) +1),rate_matrix_DC,alpha=0.5)
-	plt.plot(np.arange(1,len(rate_matrix_DC) +1),np.ones((np.arange(1,len(rate_matrix_DC) +1).shape[0],1))*1e8, 'r--')
-	plt.xlabel('Users')
-	plt.ylabel('Throughput (in bps)')
-	plt.title("Data Rate Scatter Plot of Users (DC Scenario)")
-	plt.legend(["100 Mbps"])
+def scatter_plotter(rate_matrix_DC,rate_matrix_DC_BHCAP,np,scn):
+	
+	f,ax = plt.subplots(2)
+	f.suptitle('Data Rate Scatter Plot of Users -- DC Scenario (top); DC+BHCAP+LAT Scenario (bottom)')
+	ax[0].scatter(np.arange(1,len(rate_matrix_DC) +1),rate_matrix_DC,alpha=0.5)
+	ax[0].plot(np.arange(1,len(rate_matrix_DC) +1),np.ones((np.arange(1,len(rate_matrix_DC) +1).shape[0],1))*1e8, 'r--')
+	#ax[0].xlabel('Users')
+	#ax[0].ylabel('Throughput (in bps)')
+	#ax[0].title('a')
+	ax[0].legend(["100 Mbps"])
+	ax[1].scatter(np.arange(1,len(rate_matrix_DC_BHCAP) +1),rate_matrix_DC_BHCAP,alpha=0.5)
+	ax[1].plot(np.arange(1,len(rate_matrix_DC_BHCAP) +1),np.ones((np.arange(1,len(rate_matrix_DC_BHCAP) +1).shape[0],1))*1e8, 'r--')
+	#ax[1].xlabel('Users')
+	#ax[1].ylabel('Throughput (in bps)')
+	#ax[1].title('b')
+	ax[1].legend(["100 Mbps"])
+	f.text(0.5, 0.04, 'Users', ha='center')
+	f.text(0.04, 0.5, 'Throughput (in bps)', va='center', rotation='vertical')
+
 	plt.show()
 
 # ========================================
@@ -238,6 +252,71 @@ def accepted_user_plotter(accepted_usr_list_baseline, accepted_usr_list_SA, acce
 	ax.legend()
 	f.tight_layout()
 	plt.show()
+
+# ============================================
+# BH Utilization and Latency Provision Plotter
+# ============================================
+
+def bhutil_latprov_plotter(bhutil_val_DC, bhutil_val_DC_BHCAP, bhutil_val_DC_BHCAP_LAT, avail_bh, latprov_DC, latprov_DC_LAT, latprov_DC_MRT_LAT, latprov_DC_BHCAP_LAT, np, scn):
+
+	# ====> BH Utilization Plots
+
+	bhvbh = [item for sublist in bhutil_val_DC_BHCAP for item in sublist]
+	bhvbh_DC = [item for sublist in bhutil_val_DC for item in sublist]
+	avbh = [item for sublist in avail_bh for item in sublist]
+	#print np.amax(np.array(avbh))
+	tot_avail_bh = avbh + [scn.fib_BH_MC_capacity]*(len(bhvbh)-len(avail_bh))
+	#print len(tot_avail_bh)
+	f,axs = plt.subplots(2)
+	f.suptitle('Backhaul Resource Utilization -- Constrained (top) and Unconstrained (bottom) BH')
+	axs[0].bar(np.arange(len(bhvbh)), [x1 - x2 for (x1, x2) in zip(bhvbh, tot_avail_bh)])
+	#ax.bar(np.arange(len(bhvbh)), bhvbh)
+	#ax.plot(np.arange(len(bhvbh)), tot_avail_bh, 'r--')
+	axs[0].set_ylim(-1*(max(tot_avail_bh)+1e9), 1e9)
+	axs[0].grid()
+	#axs[0].set_title('Backhaul Resource Utilization -- Constrained BH')
+	#axs[0].set_xlabel('(a)')
+	#axs[0].set_ylabel('Demand to Available BW Difference (bps)')
+
+	axs[1].bar(np.arange(len(bhvbh_DC)), [x1 - x2 for (x1, x2) in zip(bhvbh_DC, tot_avail_bh)])
+	#ax.bar(np.arange(len(bhvbh)), bhvbh)
+	#ax.plot(np.arange(len(bhvbh)), tot_avail_bh, 'r--')
+	axs[1].set_ylim(-1*(max(tot_avail_bh)+1e9), max(tot_avail_bh)+1e9)
+	axs[1].grid()
+	#axs[1].set_title('Backhaul Resource Utilization -- Unconstrained BH')
+	#axs[1].set_xlabel('(b)')
+	#axs[1].set_ylabel('Demand to Available BW Difference (bps)')
+	f.text(0.5, 0.04, 'Access Points', ha='center')
+	f.text(0.04, 0.5, 'Demand to Available BW Difference (bps)', va='center', rotation='vertical')
+	f.tight_layout()
+	#plt.show()
+	plt.close("all")
+	# ====> Latency Plot
+	#print latprov_DC_LAT
+	lprov_DC_LAT = np.empty((latprov_DC_LAT.shape[0],2))
+	for i in range(latprov_DC_LAT.shape[0]):
+		temp = latprov_DC_LAT[i,np.nonzero(latprov_DC_LAT[i,:])]
+		if temp.shape[1] == 2:
+			lprov_DC_LAT[i,:] = temp
+		else:
+			lprov_DC_LAT[i,0] = temp
+			lprov_DC_LAT[i,1] = temp
+	#print lprov_DC_LAT[:,0].shape
+	plt.scatter(np.arange(1,lprov_DC_LAT.shape[0]+1), lprov_DC_LAT[:,0], c = 'b', marker = 'o',  alpha = 0.5)
+	plt.scatter(np.arange(1,lprov_DC_LAT.shape[0]+1), lprov_DC_LAT[:,1], c = 'b', marker = 'o',  alpha = 0.5)
+	plt.plot(np.arange(latprov_DC_LAT.shape[0]), [scn.eMBB_latency_req]*latprov_DC_LAT.shape[0],'r-')
+	plt.xlabel('Users')
+	plt.ylabel('Latency (in ms)')
+	plt.title("Latency Scatter Plot of Users (DC LAT Scenario)")
+	plt.legend(["3 ms"])
+	plt.show()
+def infeasible_iter_counter(iters_infeas, iters_infeas_DC, iters_infeas_DC_MRT, iters_infeas_DC_LAT, iters_infeas_DC_BHCAP, iters_infeas_DC_BHCAP_LAT, iters_infeas_SA_LAT, iters_infeas_SA_BHCAP, iters_infeas_SA_BHCAP_LAT, iters_infeas_SA_MRT_LAT, iters_infeas_SA_MRT ,np,scn):
+
+	plt.bar(iters_infeas_DC, iters_infeas_DC_BHCAP, iters_infeas_DC_LAT, iters_infeas_DC_MRT)
+	plt.title('Infeasible Iterations')
+	plt.show()
+
+# 
 #plt.plot(usr_lcs[0], usr_lcs[1],'k+');
 #plt.plot(macro_cell_locations[:,0], macro_cell_locations[:,1],'rs'); # Plot the macro cells
 #for j in range(0,macro_cell_locations.shape[0]):

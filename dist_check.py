@@ -152,8 +152,11 @@ def dist_calc(locs_src, locs_tgt, usr_ht, bs_ht, dist_type, np):
 def idx_mat(src_mat, param_val, srch_type, np): # This function works as an element locator and distance based Sorter
    
     if srch_type == 'minimum':
+        #print src_mat
         sorted_mat = np.sort(src_mat,kind='mergesort')[:,:param_val]; # Sort the matrix first
+        #print sorted_mat
         sorted_idx = np.argsort(src_mat,kind='mergesort')[:,:param_val]; #Indices of the sorted matrix
+        #print sorted_idx
         return sorted_mat,sorted_idx # Returning the sorted matrix and the index of the requested elements in the original matrix
    
     # This function can be extended further for maximum or non-maximal/minimal scenarios
@@ -166,11 +169,11 @@ def idx_mat(src_mat, param_val, srch_type, np): # This function works as an elem
         #print sorted_idx[1]
         return np.where(sorted_mat>200,0,sorted_mat),sorted_idx # Return Sorted Matrix and the indices 
     
-# ==============================
-# Interference Matrix Calculator
-# ==============================
+# ============================================================
+# Interference Limited Scenario Interference Matrix Calculator
+# ============================================================
 
-def interf(PL, scn, np): # This function returns the overall interference matrix given a Pathloss matrix
+def interf(PL, scn, np, tx_power, gain): # This function returns the overall interference matrix given a Pathloss matrix
     interf = np.empty((PL.shape[0],PL.shape[1])); # Initialize the interference matrix
     PR_interf = interf; # This is a temporary matrix to hold Rx Power values due to all other APs other than AP of interest
     #print PL[1,:]
@@ -178,9 +181,49 @@ def interf(PL, scn, np): # This function returns the overall interference matrix
     for i in range(0, PL.shape[1]):
         PL_temp = copy.copy(PL); # This is a temporary array store
         PL_temp[:,i] = float('nan'); # So the array now has Nan where we have our AP of interest
-        PR_interf = (10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_temp/10)); # Compute the received power on each UE-AP pair
+        PR_interf = (10**(tx_power/10)*(10**(gain/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_temp/10)); # Compute the received power on each UE-AP pair
         interf[:,i] = np.sum(np.where(np.isnan(PR_interf), 0, PR_interf), axis=1); #Interference from other APs for a given UE-AP pair
     return interf
+
+# ===========================================================
+# Small Cell Beamforming Based Interference Matrix Calculator
+# ===========================================================
+ 
+def angsc(usr_loc, sc_loc, np, scn): # This function will find the beam that points in the direction of the user
+    
+    beam_angles = np.arange(scn.beam_hpbw_rx, 360 + scn.beam_hpbw_rx , scn.beam_hpbw_rx) # UE RX beam angles
+    #print beam_angles
+
+
+    coord_diff = usr_loc - sc_loc # Compute the Perpendicular
+    theta_diff = np.degrees(np.arctan(coord_diff[1]/coord_diff[0])) # Computes the vector of angles each UE makes with a MCBS
+    #print theta_diff
+
+
+    theta_diff = np.where(theta_diff >= 0 , theta_diff, 360 + theta_diff)
+    #print theta_diff
+
+
+
+    angle_diff = beam_angles - theta_diff; # Subtract the angle of the current AP of interest with the beam sectors
+    #print angle_diff
+
+    sect_ang = np.where(angle_diff>=0)[0][0]; # Stores the index where a given AP is located within the UE beam
+    
+    #print sect_ang
+    return int(sect_ang)
+
+# def interf_sect(interf, idx_curr_MCBS, scn, np): # This function returns the overall interference matrix given a Pathloss matrix and the sectorization matrix
+#     interf = np.empty((PL.shape[0],PL.shape[1])); # Initialize the interference matrix
+#     PR_interf = interf; # This is a temporary matrix to hold Rx Power values due to all other APs other than AP of interest
+#     #print PL[1,:]
+#     #print "Next"
+#     for i in range(0, PL.shape[1]):
+#         PL_temp = copy.copy(PL); # This is a temporary array store
+#         PL_temp[:,i] = float('nan'); # So the array now has Nan where we have our AP of interest
+#         PR_interf = (10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_temp/10)); # Compute the received power on each UE-AP pair
+#         interf[:,i] = np.sum(np.where(np.isnan(PR_interf), 0, PR_interf), axis=1); #Interference from other APs for a given UE-AP pair
+#     return interf
 
 # ==================
 # Matrix Reorganizer
