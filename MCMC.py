@@ -328,8 +328,8 @@ def SA_MRT_LAT(MCMC_iter, chat_frequency):
 sys.path.append(os.getcwd()); # Add current working directory to python path
 os.chdir(os.getcwd()); # Change to the current working directory
 chat_frequency = 10; # Select the divider so as to obtain timely update messages
-#num_processors = int(int(subprocess.check_output(['nproc']))/2)*2; # Number of Processors to be utilized 
-num_processors = 2
+num_processors = int(int(subprocess.check_output(['nproc']))/2)*2; # Number of Processors to be utilized 
+#num_processors = 2
 scn = scenario_var();
 MCMC_iter = scn.MCMC_iter; # Number of Monte Carlo Iterations
 
