@@ -241,42 +241,42 @@ for i in range(0,MCMC_iter):
 		#print avail_bh
 
 	if i == 1:
-		if Data_DC.item()['Status'+str(1)] == 2:
+		if Data_DC.item()['Status'+str(5)] == 2:
 			#temp = Data_DC.item()['Rates'+str(1)]
-			rate_matrix_DC = np.sum(Data_DC.item()['Rates'+str(1)], axis = 1).tolist()
-		if Data.item()['Status'+str(1)] == 2:
+			rate_matrix_DC = np.sum(Data_DC.item()['Rates'+str(5)], axis = 1).tolist()
+		if Data.item()['Status'+str(5)] == 2:
 			#temp1 = Data.item()['Rates'+str(1)]
-			rate_matrix_SA = np.sum(Data.item()['Rates'+str(1)], axis = 1).tolist()
+			rate_matrix_SA = np.sum(Data.item()['Rates'+str(5)], axis = 1).tolist()
 		
-		if Data_DC_MRT.item()['Status'+str(1)] == 2:
-			rate_matrix_DC_MRT = np.sum(Data_DC_MRT.item()['Rates'+str(1)], axis=1).tolist()
+		if Data_DC_MRT.item()['Status'+str(5)] == 2:
+			rate_matrix_DC_MRT = np.sum(Data_DC_MRT.item()['Rates'+str(5)], axis=1).tolist()
 	
-		if Data_DC_BHCAP_LAT.item()['Status'+str(1)] == 2:
-			rate_matrix_DC_BHCAP_LAT = np.sum(Data_DC_BHCAP_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		if Data_DC_BHCAP_LAT.item()['Status'+str(5)] == 2:
+			rate_matrix_DC_BHCAP_LAT = np.sum(Data_DC_BHCAP_LAT.item()['Rates'+str(5)], axis=1).tolist()
 	
-		if Data_DC_LAT.item()['Status'+str(1)] == 2:
-			rate_matrix_DC_LAT = np.sum(Data_DC_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		if Data_DC_LAT.item()['Status'+str(5)] == 2:
+			rate_matrix_DC_LAT = np.sum(Data_DC_LAT.item()['Rates'+str(5)], axis=1).tolist()
 		
-		if Data_DC_MRT_LAT.item()['Status'+str(1)] == 2:
-			rate_matrix_DC_MRT_LAT = np.sum(Data_DC_MRT_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		if Data_DC_MRT_LAT.item()['Status'+str(5)] == 2:
+			rate_matrix_DC_MRT_LAT = np.sum(Data_DC_MRT_LAT.item()['Rates'+str(5)], axis=1).tolist()
 
-		if Data_DC_BHCAP.item()['Status'+str(1)] == 2:
-			rate_matrix_DC_BHCAP = np.sum(Data_DC_BHCAP.item()['Rates'+str(1)], axis=1).tolist()
+		if Data_DC_BHCAP.item()['Status'+str(5)] == 2:
+			rate_matrix_DC_BHCAP = np.sum(Data_DC_BHCAP.item()['Rates'+str(5)], axis=1).tolist()
 
-		if Data_SA_MRT.item()['Status'+str(1)] == 2:
-			rate_matrix_SA_MRT = np.sum(Data_SA_MRT.item()['Rates'+str(1)], axis=1).tolist()
+		if Data_SA_MRT.item()['Status'+str(5)] == 2:
+			rate_matrix_SA_MRT = np.sum(Data_SA_MRT.item()['Rates'+str(5)], axis=1).tolist()
 	
-		if Data_SA_LAT.item()['Status'+str(1)] == 2:
-			rate_matrix_SA_LAT = np.sum(Data_SA_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		if Data_SA_LAT.item()['Status'+str(5)] == 2:
+			rate_matrix_SA_LAT = np.sum(Data_SA_LAT.item()['Rates'+str(5)], axis=1).tolist()
 	
-		if Data_SA_BHCAP.item()['Status'+str(1)] == 2:
-			rate_matrix_SA_BHCAP = np.sum(Data_SA_BHCAP.item()['Rates'+str(1)], axis=1).tolist()
+		if Data_SA_BHCAP.item()['Status'+str(5)] == 2:
+			rate_matrix_SA_BHCAP = np.sum(Data_SA_BHCAP.item()['Rates'+str(5)], axis=1).tolist()
 		
-		if Data_SA_BHCAP_LAT.item()['Status'+str(1)] == 2:			
-			rate_matrix_SA_BHCAP_LAT = np.sum(Data_SA_BHCAP_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		if Data_SA_BHCAP_LAT.item()['Status'+str(5)] == 2:			
+			rate_matrix_SA_BHCAP_LAT = np.sum(Data_SA_BHCAP_LAT.item()['Rates'+str(5)], axis=1).tolist()
 		
-		if Data_SA_MRT_LAT.item()['Status'+str(1)] == 2:			
-			rate_matrix_SA_MRT_LAT = np.sum(Data_SA_MRT_LAT.item()['Rates'+str(1)], axis=1).tolist()
+		if Data_SA_MRT_LAT.item()['Status'+str(5)] == 2:			
+			rate_matrix_SA_MRT_LAT = np.sum(Data_SA_MRT_LAT.item()['Rates'+str(5)], axis=1).tolist()
 			
 
 	for k in range(0,num_iter):
@@ -784,8 +784,8 @@ sc_locs = hmap_data['arr_1']
 
 
 #plotter.hmap_creator(usr_locs, mc_locs, sc_locs, rate_matrix_DC, np, scn)
-#plotter.hist_plotter(rate_matrix_DC, rate_matrix_SA, rate_matrix_DC_BHCAP, rate_matrix_SA_BHCAP, rate_matrix_SA_LAT, rate_matrix_SA_MRT, rate_matrix_DC_MRT, rate_matrix_DC_LAT, rate_matrix_SA_MRT_LAT, rate_matrix_DC_MRT_LAT, rate_matrix_SA_BHCAP_LAT, rate_matrix_DC_BHCAP_LAT, np, scn)
+plotter.hist_plotter(rate_matrix_DC, rate_matrix_SA, rate_matrix_DC_BHCAP, rate_matrix_SA_BHCAP, rate_matrix_SA_LAT, rate_matrix_SA_MRT, rate_matrix_DC_MRT, rate_matrix_DC_LAT, rate_matrix_SA_MRT_LAT, rate_matrix_DC_MRT_LAT, rate_matrix_SA_BHCAP_LAT, rate_matrix_DC_BHCAP_LAT, np, scn)
 #plotter.scatter_plotter(rate_matrix_DC, rate_matrix_DC_BHCAP_LAT,np,scn)
 #plotter.accepted_user_plotter(AU_Base_DR_avg,AU_DR_avg,AU_DR_DC_avg,AU_DR_DC_MRT_avg,AU_DR_DC_BHCAP_avg,AU_DR_DC_LAT_avg,AU_DR_DC_BHCAP_LAT_avg,AU_DR_SA_MRT_avg,AU_DR_SA_LAT_avg,AU_DR_SA_BHCAP_avg,AU_DR_SA_BHCAP_LAT_avg,AU_DR_SA_MRT_LAT_avg,AU_DR_DC_MRT_LAT_avg,np,scn)
-#plotter.bhutil_latprov_plotter(bhutil_val_DC, bhutil_val_DC_BHCAP, bhutil_val_DC_BHCAP_LAT, avail_bh, latprov_DC, latprov_DC_LAT, latprov_DC_MRT_LAT, latprov_DC_BHCAP_LAT, np, scn)
+plotter.bhutil_latprov_plotter(bhutil_val_DC, bhutil_val_DC_BHCAP, bhutil_val_DC_BHCAP_LAT, avail_bh, latprov_DC, latprov_DC_LAT, latprov_DC_MRT_LAT, latprov_DC_BHCAP_LAT, np, scn)
 #plotter.infeasible_iter_counter(iters_infeas, iters_infeas_DC, iters_infeas_DC_MRT, iters_infeas_DC_LAT, iters_infeas_DC_BHCAP, iters_infeas_DC_BHCAP_LAT, iters_infeas_SA_LAT, iters_infeas_SA_BHCAP, iters_infeas_SA_BHCAP_LAT, iters_infeas_SA_MRT_LAT, iters_infeas_SA_MRT ,np,scn)

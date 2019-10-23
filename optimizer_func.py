@@ -517,8 +517,11 @@ for N in range(0,num_iter):
 			#print M_sum.shape
 			#print ("SC:", G_sum)
 			#print ("MC:", M_sum)
-			csvsaver.csvsaver(G_sum,["Accepted Users per SC"], "GS.csv")
-			csvsaver.csvsaver(M_sum,["Accepted Users per MC"], "MC.csv")			
+			if vars(args)['dual'] == 1 or vars(args)['minRate'] == 1:
+				filname_sc = 'GS'+str(vars(args)['dual'])+str(vars(args)['minRate'])+str(vars(args)['iter'])+'.csv' # Filename for the small cell
+				filname_mc = 'MC'+str(vars(args)['dual'])+str(vars(args)['minRate'])+str(vars(args)['iter'])+'.csv' # Filename for the Macro cell
+				csvsaver.csvsaver(G_sum,["Accepted Users per SC"], filname_sc)
+				csvsaver.csvsaver(M_sum,["Accepted Users per MC"], filname_mc)			
 
 			if N == (num_iter-1) and (vars(args)['dual'] == 1 or vars(args)['bhaul'] == 1 or vars(args)['minRate'] == 1 or vars(args)['latency'] == 1):
 				#plotter.optimizer_plotter(new_rate) # We get the plot for the rates with maximum number of users
