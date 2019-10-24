@@ -8,6 +8,8 @@
 import pathloss
 import copy
 import csv
+import csvsaver
+import sectbeam
 #from multiprocessing import Process
 # ===================================================
 # Load/Generate the Macro Cell base station locations
@@ -36,8 +38,8 @@ def small_cell(num, MCBS_locs, SCBS_intersite,SCBS_per_MCBS,MCBS_intersite,np,ds
         locs_SCBS_x = np.multiply(dist_from_MCBS,np.cos(angular_disp)) + MCBS_locs[0]
         locs_SCBS_y = np.multiply(dist_from_MCBS,np.sin(angular_disp)) + MCBS_locs[1]
         #print MCBS_locs
-	#locs_SCBS_x = np.random.uniform(MCBS_locs[0] - offset,MCBS_locs[0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
-	#locs_SCBS_y = np.random.uniform(MCBS_locs[1] - offset,MCBS_locs[1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
+	    #locs_SCBS_x = np.random.uniform(MCBS_locs[0] - offset,MCBS_locs[0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
+	    #locs_SCBS_y = np.random.uniform(MCBS_locs[1] - offset,MCBS_locs[1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
         locs_SCBS = np.concatenate((locs_SCBS_x, locs_SCBS_y), axis=1); 
         #print locs_SCBS
         if dsc.checker(locs_SCBS,SCBS_intersite,np)==1 and dsc.locs_checker(locs_SCBS, MCBS_locs,np, 'sc')==1:
@@ -71,7 +73,8 @@ def user_dump(scn, SCBS_per_MCBS, num_MCBS, AP_locs, np, dsc):
             if dsc.locs_checker(usr_locs[attr_name_usr + str(i)], AP_locs,np,'user')==0:
                i = i - 1; # We go back and start the for loop from the current instance
                continue
-            assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_users_scenario[i], scn.max_num_appl_UE)); # Generate User-App Association 
+            #assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_users_scenario[i], scn.max_num_appl_UE)); # Generate User-App Association 
+            assoc_usapp[attr_name_assoc + str(i)] = np.ones((tot_users_scenario[i], scn.max_num_appl_UE), dtype = int); # Generate User-App Association 
         with open("ActualUsers.csv",'wb') as f:
 		w = csv.DictWriter(f,assoc_usapp.keys())
 		w.writeheader()
@@ -170,7 +173,7 @@ def backhaul_dump(scn, SCBS_per_MCBS, MCBS_locs, assoc_mat, np):
 # SINR Calculator per Application
 # ===============================
 
-def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates the SINR per application      
+def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_flag): # Generates the SINR per application      
     
     # ======================================================
     # First the distances to the base stations is calculated
@@ -244,96 +247,341 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np): # Generates th
     # Limit the number of MC and SC for the SINR calculation
 
     
-    # ==> eMBB users
+    # # ==> eMBB users
     
-    num_MCBS_SINR = 4; # We choose the 4 closest MCs for the SINR calculation 
-    dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
-    sorted_MCBS_mat, idx_MCBS_SINR = dsc.idx_mat(dist_serv_cell, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
-    sorted_SCBS_mat, idx_SCBS_SINR = dsc.idx_mat(dist_serv_sc, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
-    #print idx_MCBS_SINR
-    #print "============"
-    #print idx_SCBS_SINR
+    # num_MCBS_SINR = 4; # We choose the 4 closest MCs for the SINR calculation 
+    # dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
+    # sorted_MCBS_mat, idx_MCBS_SINR = dsc.idx_mat(dist_serv_cell, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
+    # sorted_SCBS_mat, idx_SCBS_SINR = dsc.idx_mat(dist_serv_sc, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
+    # #print idx_MCBS_SINR
+    # #print "============"
+    # #print idx_SCBS_SINR
     
-    # ====================
-    # Pathloss Calculation
+    # # ====================
+    # # Pathloss Calculation
 
-    # Note: This part can be optimized even more -- Potential Compute time reduction
+    # # Note: This part can be optimized even more -- Potential Compute time reduction
 
-    # ==> For Small Cell 
+    # # ==> For Small Cell 
 
-    print "Initiating Pathloss Calculation for Small Cells"
+    # print "Initiating Pathloss Calculation for Small Cells"
 
-    PL_sc = np.empty((sorted_SCBS_mat.shape[0],sorted_SCBS_mat.shape[1])); # Initializing the Pathloss matrix 
-    for i in range(0,sorted_SCBS_mat.shape[0]):
-        for j in range(0,sorted_SCBS_mat.shape[1]):
-            if sorted_SCBS_mat[i][j] != 0:
-                PL_sc[i,j] = pathloss.pathloss_CI(scn, sorted_SCBS_mat[i][j], np, dist_serv_sc_3d[i][j], dsc, 1); # Calculating the pathloss for Small cells
-                #snr_sc[i][j] = scn.transmit_power + scn.transmit_gain_sc + scn.receiver_gain - PL_sc - (scn.N + 10*np.log10(scn.sc_bw)); # This is the SNR from one Small cell 
-            else:
-                PL_sc[i,j] = float('nan'); # Nan for no PL calc
+    # PL_sc = np.empty((sorted_SCBS_mat.shape[0],sorted_SCBS_mat.shape[1])); # Initializing the Pathloss matrix 
+    # for i in range(0,sorted_SCBS_mat.shape[0]):
+    #     for j in range(0,sorted_SCBS_mat.shape[1]):
+    #         if sorted_SCBS_mat[i][j] != 0:
+    #             PL_sc[i,j] = pathloss.pathloss_CI(scn, sorted_SCBS_mat[i][j], np, dist_serv_sc_3d[i][j], dsc, 1); # Calculating the pathloss for Small cells
+    #             #snr_sc[i][j] = scn.transmit_power + scn.transmit_gain_sc + scn.receiver_gain - PL_sc - (scn.N + 10*np.log10(scn.sc_bw)); # This is the SNR from one Small cell 
+    #         else:
+    #             PL_sc[i,j] = float('nan'); # Nan for no PL calc
 
-    # ==> For Macro Cell
+    # # ==> For Macro Cell
 
-    print "Initiating Pathloss Calculation for Macro Cells"
+    # print "Initiating Pathloss Calculation for Macro Cells"
 
-    PL_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initializing the Pathloss matrix
-    for i in range(0, sorted_MCBS_mat.shape[0]):
-        for j in range(0, sorted_MCBS_mat.shape[1]):
-            PL_mc[i,j] = pathloss.pathloss_CI(scn, sorted_MCBS_mat[i][j], np, dist_serv_cell_3d[i][j], dsc, 0); # Calculating the pathloss for Macro cells
+    # PL_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initializing the Pathloss matrix
+    # for i in range(0, sorted_MCBS_mat.shape[0]):
+    #     for j in range(0, sorted_MCBS_mat.shape[1]):
+    #         PL_mc[i,j] = pathloss.pathloss_CI(scn, sorted_MCBS_mat[i][j], np, dist_serv_cell_3d[i][j], dsc, 0); # Calculating the pathloss for Macro cells
 
     
-    # ========================
-    # Interference Calculation
+    # # ========================
+    # # Interference Calculation
     
-    print "Performing Interference Calculation"
-    interf_sc = dsc.interf(PL_sc, scn, np); # Calculate the interference matrix for small cells
-    interf_mc = dsc.interf(PL_mc, scn, np); # Calculate the interference matrix for macro cells. MCs and SCs work on different frequency bands and hence do not interfere with each other
-    #print interf_sc[1,:]
+    # print "Performing Interference Calculation"
+    # interf_sc = dsc.interf(PL_sc, scn, np); # Calculate the interference matrix for small cells
+    # interf_mc = dsc.interf(PL_mc, scn, np); # Calculate the interference matrix for macro cells. MCs and SCs work on different frequency bands and hence do not interfere with each other
+    # #print interf_sc[1,:]
 
-    # ====================
-    # Rx Power Computation
+    # # ====================
+    # # Rx Power Computation
 
-    print "Performing Received Power Calculation"
+    # print "Performing Received Power Calculation"
 
-    RX_sc = np.empty((PL_sc.shape[0], PL_sc.shape[1]));
-    RX_mc = np.empty((PL_mc.shape[0], PL_mc.shape[1]));
+    # RX_sc = np.empty((PL_sc.shape[0], PL_sc.shape[1]));
+    # RX_mc = np.empty((PL_mc.shape[0], PL_mc.shape[1]));
 
-    for i in range(0, RX_sc.shape[0]): # Small cell Received Power
-        for j in range(0, RX_sc.shape[1]):
-            RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan'));
+    # for i in range(0, RX_sc.shape[0]): # Small cell Received Power
+    #     for j in range(0, RX_sc.shape[1]):
+    #         RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan'));
 
-    for i in range(0, RX_mc.shape[0]): # Macro cell Received Power
-        for j in range(0, RX_mc.shape[1]):
-            RX_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(10**(scn.N/10)*scn.mc_bw*10**(-3)))
+    # for i in range(0, RX_mc.shape[0]): # Macro cell Received Power
+    #     for j in range(0, RX_mc.shape[1]):
+    #         RX_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(10**(scn.N/10)*scn.mc_bw*10**(-3)))
 
-    # ================
-    # SINR Calculation
+    # # ================
+    # # SINR Calculation
 
-    print "Performing SINR Calculation for Small cells"
+    # print "Performing SINR Calculation for Small cells"
 
-    sinr_sc = np.empty((sorted_SCBS_mat.shape[0],sorted_SCBS_mat.shape[1])); # Initialize SINR array
-    sinr_pad_value = 350; # This is a pad value to be padded at the end of the vectors 
-    #nz_idx = np.nonzero(PL_sc); # We store the non zero indices to extract the right SINR values for each user-AP pair
+    # sinr_sc = np.empty((sorted_SCBS_mat.shape[0],sorted_SCBS_mat.shape[1])); # Initialize SINR array
+    # sinr_pad_value = 350; # This is a pad value to be padded at the end of the vectors 
+    # #nz_idx = np.nonzero(PL_sc); # We store the non zero indices to extract the right SINR values for each user-AP pair
     
-    for i in range(0,PL_sc.shape[0]):
-        for j in range(0,PL_sc.shape[1]):
-            sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
-        # print sinr_sc[i,:] 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
-        # (scn.transmit_power - 30 + scn.transmit_gain_sc + scn.receiver_gain - PL_sc[i,j] - 10*np.log10(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
-        sinr_sc[i,:] = np.where(np.isnan(sinr_sc[i,:]), sinr_pad_value, sinr_sc[i,:]);
-        #sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
-    #print sinr_sc[1,:]
+    # for i in range(0,PL_sc.shape[0]):
+    #     for j in range(0,PL_sc.shape[1]):
+    #         sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
+    #     # print sinr_sc[i,:] 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
+    #     # (scn.transmit_power - 30 + scn.transmit_gain_sc + scn.receiver_gain - PL_sc[i,j] - 10*np.log10(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
+    #     sinr_sc[i,:] = np.where(np.isnan(sinr_sc[i,:]), sinr_pad_value, sinr_sc[i,:]);
+    #     #sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
+    # #print sinr_sc[1,:]
   
-    print "Performing SINR Calculation for Macro cells"
+    # print "Performing SINR Calculation for Macro cells"
 
-    sinr_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initialize SINR matrix
-    for i in range(0,PL_mc.shape[0]):
-        for j in range(0, PL_mc.shape[1]):
-            sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
+    # sinr_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initialize SINR matrix
+    # for i in range(0,PL_mc.shape[0]):
+    #     for j in range(0, PL_mc.shape[1]):
+    #         sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
 
-    print "Finished All Calculations and Returning to main Function"
-    return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, idx_MCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1], mc_locs.shape[0], np.hstack((RX_sc, RX_mc))
-    # The above calculation has to be optimally calculated for N users and M small cells. 
+    # print "Finished All Calculations and Returning to main Function"
+    # return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, idx_MCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1], mc_locs.shape[0], np.hstack((RX_sc, RX_mc))
+    # # The above calculation has to be optimally calculated for N users and M small cells. 
+    # ==> eMBB users
+    if inter_limit_flag == 1: # Interference limited scenario with no sectoring employed
+        print "================================================="
+        print "==========Interference Limited Regime============"
+        print "================================================="
+
+        num_MCBS_SINR = 4; # We choose the 4 closest MCs for the SINR calculation 
+        dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
+        sorted_MCBS_mat, idx_MCBS_SINR = dsc.idx_mat(dist_serv_cell, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
+        sorted_SCBS_mat, idx_SCBS_SINR = dsc.idx_mat(dist_serv_sc, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
+        #print sorted_MCBS_mat.shape
+        #print sorted_SCBS_mat.shape
+        #print idx_MCBS_SINR
+        #print "============"
+        #print idx_SCBS_SINR
+        
+        # ====================
+        # Pathloss Calculation
+
+        # Note: This part can be optimized even more -- Potential Compute time reduction
+
+        # ==> For Small Cell 
+
+        print "Initiating Pathloss Calculation for Small Cells"
+
+        PL_sc = np.empty((sorted_SCBS_mat.shape[0],sorted_SCBS_mat.shape[1])); # Initializing the Pathloss matrix 
+        l_nl = np.zeros((usr_lcs.shape[0], num_SCBS + mc_locs.shape[0])); # This variable will hold the LOS-NLOS values for the user. 
+        for i in range(0,sorted_SCBS_mat.shape[0]):
+            for j in range(0,sorted_SCBS_mat.shape[1]):
+                #print dist_serv_sc_3d[i][j]
+                if sorted_SCBS_mat[i][j] != 0:
+                    PL_sc[i,j], l_nl[i,j]  = pathloss.pathloss_CI(scn, sorted_SCBS_mat[i][j], np, dist_serv_sc_3d[i][int(idx_SCBS_SINR[i,j])], dsc, 1); # Calculating the pathloss for Small cells
+                    #snr_sc[i][j] = scn.transmit_power + scn.transmit_gain_sc + scn.receiver_gain - PL_sc - (scn.N + 10*np.log10(scn.sc_bw)); # This is the SNR from one Small cell 
+                else:
+                    PL_sc[i,j] = float('nan'); # Nan for no PL calc
+
+        # ==> For Macro Cell
+
+        print "Initiating Pathloss Calculation for Macro Cells"
+
+        PL_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initializing the Pathloss matrix
+        for i in range(0, sorted_MCBS_mat.shape[0]):
+            for j in range(0, sorted_MCBS_mat.shape[1]):
+                PL_mc[i,j], l_nl[i, j+ num_SCBS] = pathloss.pathloss_CI(scn, sorted_MCBS_mat[i][j], np, dist_serv_cell_3d[i][int(idx_MCBS_SINR[i,j])], dsc, 0); # Calculating the pathloss for Macro cells
+        
+        csvsaver.csvsaver(l_nl,[],"LosNlos.csv")
+
+        #print l_nl.shape 
+        #print np.sum(l_nl)
+        # ========================
+        # Interference Calculation
+
+        
+        print "Performing Interference Calculation"
+        interf_sc = dsc.interf(PL_sc, scn, np, scn.transmit_power, scn.transmit_gain_sc); # Calculate the interference matrix for small cells
+        interf_mc = dsc.interf(PL_mc, scn, np, scn.max_tnsmtpow_MCBS, scn.ant_gain_MCBS); # Calculate the interference matrix for macro cells. MCs and SCs work on different frequency bands and hence do not interfere with each other
+        
+        #print interf_sc[1,:]
+
+        # ====================
+        # Rx Power Computation
+
+        print "Performing Received Power Calculation"
+
+        RX_sc = np.empty((PL_sc.shape[0], PL_sc.shape[1]));
+        RX_mc = np.empty((PL_mc.shape[0], PL_mc.shape[1]));
+
+        for i in range(0, RX_sc.shape[0]): # Small cell Received Power
+            for j in range(0, RX_sc.shape[1]):
+                RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan'));
+
+        for i in range(0, RX_mc.shape[0]): # Macro cell Received Power
+            for j in range(0, RX_mc.shape[1]):
+                RX_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(10**(scn.N/10)*scn.mc_bw*10**(-3)))
+
+        # ================
+        # SINR Calculation
+
+        print "Performing SINR Calculation for Small cells"
+
+        sinr_sc = np.empty((sorted_SCBS_mat.shape[0],sorted_SCBS_mat.shape[1])); # Initialize SINR array
+        sinr_pad_value = 350; # This is a pad value to be padded at the end of the vectors 
+        #nz_idx = np.nonzero(PL_sc); # We store the non zero indices to extract the right SINR values for each user-AP pair
+        
+        for i in range(0,PL_sc.shape[0]):
+            for j in range(0,PL_sc.shape[1]):
+                sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
+            # print sinr_sc[i,:] 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
+            # (scn.transmit_power - 30 + scn.transmit_gain_sc + scn.receiver_gain - PL_sc[i,j] - 10*np.log10(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
+            sinr_sc[i,:] = np.where(np.isnan(sinr_sc[i,:]), sinr_pad_value, sinr_sc[i,:]);
+            #sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
+            #print sinr_sc[i,:]
+      
+        print "Performing SINR Calculation for Macro cells"
+
+        sinr_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initialize SINR matrix
+        for i in range(0,PL_mc.shape[0]):
+            for j in range(0, PL_mc.shape[1]):
+                sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
+            #print sinr_mc[i,:]
+        print "Finished All Calculations and Returning to main Function"
+        return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, idx_MCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1], mc_locs.shape[0], np.hstack((RX_sc, RX_mc)), l_nl
+        # The above calculation has to be optimally calculated for N users and M small cells. 
+
+        
+    
+    else:
+        print "==================================================="
+        print "=========Sectorized and Beamformed Regime=========="
+        print "==================================================="
+        
+        
+        num_MCBS_SINR = 4; # We choose the 4 closest MCs for the SINR calculation 
+        dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
+        sorted_MCBS_mat, idx_MCBS_SINR = dsc.idx_mat(dist_serv_cell, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
+        sorted_SCBS_mat, idx_SCBS_SINR = dsc.idx_mat(dist_serv_sc, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
+
+        # ==> For Macro Cell
+
+        print "\n Sectorizing Macro Cells and Computing Interferers"
+        
+        sector_UEMCBS = sectbeam.MCBS_sectorizer(np, scn, mc_locs.shape[0], mc_locs, usr_lcs) # Computing the Sectorization Matrix to compute the Interference
+        l_nl = np.zeros((usr_lcs.shape[0], num_SCBS + mc_locs.shape[0])); # This variable will hold the LOS-NLOS values for the user. 
+        
+        print "Initiating Pathloss and Interference Calculation for Macro Cells"
+        
+        PL_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initializing the Pathloss matrix
+        interf_mc = np.zeros((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # This is the matrix that will hold the interference values for each UE and significant TXs    
+        
+        for i in range(sorted_MCBS_mat.shape[0]):
+            interf_sect = [] # An empty list of indices which will store the list of other interfering cells
+            for j in range(sorted_MCBS_mat.shape[1]):
+                interf_sect = np.where(sector_UEMCBS[i,:] == sector_UEMCBS[i,idx_MCBS_SINR[i,j]])[0] # The interfering cells
+                #PL_mc[i,j], l_nl[i, j+ num_SCBS] = pathloss.pathloss_CI(scn, sorted_MCBS_mat[i][j], np, dist_serv_cell_3d[i][j], dsc, 0); # Calculating the pathloss for Macro cells
+                PL_mc[i,j], l_nl[i, j+ num_SCBS] = pathloss.pathloss_CI(scn, sorted_MCBS_mat[i][j], np, dist_serv_cell_3d[i][int(idx_MCBS_SINR[i,j])], dsc, 0); # Calculating the pathloss for Macro cells
+                temp = np.empty((len(interf_sect)-1)); # An empty numpy array to hold the pathloss of interfereing cells
+                #print len(interf_sect)
+                #print interf_sect[0].shape[0]
+                idx_temp = 0;
+                for k in range(len(interf_sect)):
+                    #print interf_sect[k]
+                    if interf_sect[k] != idx_MCBS_SINR[i,j]:
+                        temp[idx_temp], dummy = pathloss.pathloss_CI(scn, dist_serv_cell[i][interf_sect[k]], np, dist_serv_cell_3d[i][interf_sect[k]], dsc, 0); # Calculate the pathloss from the similar sector antennas to the UE
+                        idx_temp = idx_temp + 1; # Increment the temp vector index
+                        #print temp
+                interf_mc[i,j] =  np.sum((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(temp/10))); # Interference for User i and AP j
+        
+        print "Performing SINR Calculation for Macro cells"
+
+        sinr_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initialize SINR matrix
+        for i in range(0,PL_mc.shape[0]):
+            for j in range(0, PL_mc.shape[1]):
+                sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
+                    
+        #print interf_mc
+        #print sinr_mc
+        #print "==============="
+
+
+        # ==> For Small Cell 
+
+        print "Initiating Pathloss Calculation for Small Cells"
+
+        PL_sc = np.empty((sorted_SCBS_mat.shape[0],sorted_SCBS_mat.shape[1])); # Initializing the Pathloss matrix 
+        beam_sc = np.empty((sorted_SCBS_mat.shape[0], sorted_SCBS_mat.shape[1])); # Intializing the Beam ID matrix
+        
+        l_nl = np.zeros((usr_lcs.shape[0], num_SCBS + mc_locs.shape[0])); # This variable will hold the LOS-NLOS values for the user. 
+        for i in range(0,sorted_SCBS_mat.shape[0]):
+            for j in range(0,sorted_SCBS_mat.shape[1]):
+                #print dist_serv_sc_3d[i][j]
+                if sorted_SCBS_mat[i][j] != 0:
+                    PL_sc[i,j], l_nl[i,j]  = pathloss.pathloss_CI(scn, sorted_SCBS_mat[i][j], np, dist_serv_sc_3d[i][int(idx_SCBS_SINR[i,j])], dsc, 1); # Calculating the pathloss for Small cells
+                    #snr_sc[i][j] = scn.transmit_power + scn.transmit_gain_sc + scn.receiver_gain - PL_sc - (scn.N + 10*np.log10(scn.sc_bw)); # This is the SNR from one Small cell 
+                else:
+                    PL_sc[i,j] = float('nan'); # Nan for no PL calc
+
+                
+        # ===> Computing the Interference
+
+        #print "Computing Receive and Transmit beamforming based angles"
+        print "Entering the Approximate Small Cell Interference Computation"
+
+        interf_sc = np.zeros((sorted_SCBS_mat.shape[0], sorted_SCBS_mat.shape[1])) # We consider 0 interference to analyze our results
+
+        glob_angle_sc_rx = np.zeros((sorted_SCBS_mat.shape[0], sorted_SCBS_mat.shape[1])); # Initializing the matrix to hold UE to AP angles
+        #glob_angle_sc_tx = np.empty((sorted_SCBS_mat.shape[1], sorted_SCBS_mat.shape[0])); # THis is the TX angle matrix
+        
+        #print usr_lcs.shape
+        #print sc_locs.shape
+        print "Computing the UE based sector and APs located in it"
+
+        for i in range(sorted_SCBS_mat.shape[0]):
+            for j in range(sorted_SCBS_mat.shape[1]):
+                #print idx_SCBS_SINR[i,j]
+                #rint usr_lcs[i,:]
+                if idx_SCBS_SINR[i,j] != 'None':
+                    glob_angle_sc_rx[i,j] = dsc.angsc(usr_lcs[i,:],sc_locs[int(idx_SCBS_SINR[i,j]),:],np,scn) # Angle calculator to determine if 
+                else:
+                    glob_angle_sc_rx[i,j] = float('nan') # Nan for the APs beyond 200m radius
+
+        print "Common Sector and Average Interference Computation"
+
+        for i in range(sorted_SCBS_mat.shape[0]):
+            for j in range(sorted_SCBS_mat.shape[1]):
+                ap_int_idx = j; # This is our AP of interest
+                interf_ap_idx = np.where(glob_angle_sc_rx[i,:] == glob_angle_sc_rx[i,ap_int_idx])[0] # These are the indexes of the APs that will be interfering with the AP of interest
+                interf_sc[i,ap_int_idx] = np.sum((scn.beam_hpbw_tx/(360))*PL_sc[i,interf_ap_idx]) 
+
+
+        # ===> We try the SNR regime (Best Case solution with extreme directivity)
+
+        #interf_sc = np.zeros((sorted_SCBS_mat.shape[0], sorted_SCBS_mat.shape[1])) # We consider 0 interference to analyze our results
+
+        sinr_sc = np.empty((sorted_SCBS_mat.shape[0],sorted_SCBS_mat.shape[1])); # Initialize SINR array
+        sinr_pad_value = 350; # This is a pad value to be padded at the end of the vectors 
+        #nz_idx = np.nonzero(PL_sc); # We store the non zero indices to extract the right SINR values for each user-AP pair
+        
+        for i in range(0,PL_sc.shape[0]):
+            for j in range(0,PL_sc.shape[1]):
+                sinr_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan')); # We subtract the received power from other small cells to obtain the sinr 
+            # print sinr_sc[i,:] 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
+            # (scn.transmit_power - 30 + scn.transmit_gain_sc + scn.receiver_gain - PL_sc[i,j] - 10*np.log10(interf_sc[i,j] + 10**(scn.N/10)*scn.sc_bw*10**(-3)))
+            sinr_sc[i,:] = np.where(np.isnan(sinr_sc[i,:]), sinr_pad_value, sinr_sc[i,:]);
+            #sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
+            #print sinr_sc[i,:] 
+
+
+        # ====================
+        # Rx Power Computation
+
+        print "Performing Received Power Calculation"
+
+        RX_sc = np.empty((PL_sc.shape[0], PL_sc.shape[1]));
+        RX_mc = np.empty((PL_mc.shape[0], PL_mc.shape[1]));
+
+        for i in range(0, RX_sc.shape[0]): # Small cell Received Power
+            for j in range(0, RX_sc.shape[1]):
+                RX_sc[i,j] = np.where(np.isnan(PL_sc[i,j]) != True, 10*np.log10((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_sc[i,j]/10)))/(10**(scn.N/10)*scn.usr_scbw*10**(-3))), float('nan'));
+
+        for i in range(0, RX_mc.shape[0]): # Macro cell Received Power
+            for j in range(0, RX_mc.shape[1]):
+                RX_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(10**(scn.N/10)*scn.mc_bw*10**(-3)))
+                    
+        print "Finished All Calculations and Returning to main Function"
+        return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, idx_MCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1], mc_locs.shape[0], np.hstack((RX_sc, RX_mc)), l_nl
 
 
 # =========================

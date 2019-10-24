@@ -27,6 +27,30 @@ MCMC_iter = scn.MCMC_iter; # Number of Iterations to be analyzed
 simdata_path = os.getcwd() + '/Data/Process/'
 constraint_fp = {'Baseline':'0000', 'DC':'1000', 'DC_MRT':'1100','DC_BHCAP':'1010', 'DC_BHCAP_LAT':'1011', 'DC_LAT':'1001', 'DC_MRT_LAT':'1101', 'SA_MRT':'0100','SA_BHCAP':'0010','SA_BHCAP_LAT':'0011','SA_LAT':'0001','SA_MRT_LAT':'0101'}
 num_iter = ((scn.num_users_max - scn.num_users_min)/scn.user_steps_siml); 
+
+
+rate_matrix_DC = []
+rate_matrix_DC_MRT = []
+rate_matrix_DC_MRT_LAT = []
+rate_matrix_DC_BHCAP_LAT = []
+rate_matrix_DC_BHCAP = []
+rate_matrix_DC_LAT = []
+rate_matrix_SA_MRT = []
+rate_matrix_SA_LAT = []
+rate_matrix_SA_BHCAP = []
+rate_matrix_SA_BHCAP_LAT = []
+rate_matrix_SA_MRT_LAT = []
+rate_matrix_SA = []
+
+bhutil_val_DC = []
+bhutil_val_DC_BHCAP = []
+bhutil_val_DC_BHCAP_LAT = []
+latprov_DC_MRT_LAT = []
+latprov_DC = []
+latprov_DC_BHCAP_LAT = []
+latprov_DC_LAT = []
+avail_bh = []
+
 Net_Throughput = np.empty((MCMC_iter, num_iter));
 Net_Throughput_DC = copy.copy(Net_Throughput);
 Net_Throughput_DC_MRT = copy.copy(Net_Throughput);
@@ -177,6 +201,79 @@ for i in range(0,MCMC_iter):
 	Data_SA_BHCAP_LAT = Dat_SA_BHCAP_LAT['arr_0'];
 	Data_SA_MRT_LAT = Dat_SA_MRT_LAT['arr_0'];
 	Data_DC_MRT_LAT = Dat_DC_MRT_LAT['arr_0'];
+
+	if i == 1:
+		if Data_DC.item()['Status'+str(5)] == 2:
+			bhutil_val_DC = (Data_DC.item()['BHUTIL'+str(5)].tolist())
+			latprov_DC = (Data_DC.item()['LatenOff'+str(5)].tolist())
+		else:
+			bhutil_val_DC = (np.zeros(Data_DC.item()['APs'+str(5)]).tolist())
+			latprov_DC = (np.zeros(Data_DC.item()['APs'+str(5)]).tolist())
+		
+		if Data_DC_LAT.item()['Status'+str(5)] == 2:
+			latprov_DC_LAT = (Data_DC_LAT.item()['LatenOff'+str(5)])
+			print latprov_DC_LAT
+		else:
+			latprov_DC_LAT = (np.zeros(Data_DC_LAT.item()['APs'+str(5)]).tolist())
+
+		if Data_DC_BHCAP_LAT.item()['Status'+str(5)] == 2: 
+			bhutil_val_DC_BHCAP_LAT = (Data_DC_BHCAP_LAT.item()['BHUTIL'+str(5)].tolist())
+			latprov_DC_BHCAP_LAT = (Data_DC_BHCAP_LAT.item()['LatenOff'+str(5)].tolist())
+		else: 
+			bhutil_val_DC_BHCAP_LAT = (np.zeros(Data_DC_BHCAP_LAT.item()['APs'+str(5)]).tolist())
+			latprov_DC_BHCAP_LAT = (np.zeros(Data_DC_BHCAP_LAT.item()['APs'+str(5)]).tolist())	
+		
+		if Data_DC_BHCAP.item()['Status'+str(5)] == 2: 
+			bhutil_val_DC_BHCAP = (Data_DC_BHCAP.item()['BHUTIL'+str(5)].tolist())
+		else:
+			bhutil_val_DC_BHCAP = (np.zeros(Data_DC_BHCAP.item()['APs'+str(5)]).tolist())
+
+		if Data_DC_MRT_LAT.item()['Status'+str(5)] == 2: 
+			latprov_DC_MRT_LAT = (Data_DC_MRT_LAT.item()['LatenOff'+str(5)].tolist())
+		else:
+			latprov_DC_MRT_LAT = (np.zeros(Data_DC_MRT_LAT.item()['APs'+str(5)]).tolist())	
+
+		#print Data_DC_LAT.item()['X_optimal_data'+str(1)]
+		avail_bh = Data_DC.item()['AvailBHUtil_SC'+str(5)]
+		#print avail_bh
+
+	if i == 1:
+		if Data_DC.item()['Status'+str(5)] == 2:
+			#temp = Data_DC.item()['Rates'+str(1)]
+			rate_matrix_DC = np.sum(Data_DC.item()['Rates'+str(5)], axis = 1).tolist()
+		if Data.item()['Status'+str(5)] == 2:
+			#temp1 = Data.item()['Rates'+str(1)]
+			rate_matrix_SA = np.sum(Data.item()['Rates'+str(5)], axis = 1).tolist()
+		
+		if Data_DC_MRT.item()['Status'+str(5)] == 2:
+			rate_matrix_DC_MRT = np.sum(Data_DC_MRT.item()['Rates'+str(5)], axis=1).tolist()
+	
+		if Data_DC_BHCAP_LAT.item()['Status'+str(5)] == 2:
+			rate_matrix_DC_BHCAP_LAT = np.sum(Data_DC_BHCAP_LAT.item()['Rates'+str(5)], axis=1).tolist()
+	
+		if Data_DC_LAT.item()['Status'+str(5)] == 2:
+			rate_matrix_DC_LAT = np.sum(Data_DC_LAT.item()['Rates'+str(5)], axis=1).tolist()
+		
+		if Data_DC_MRT_LAT.item()['Status'+str(5)] == 2:
+			rate_matrix_DC_MRT_LAT = np.sum(Data_DC_MRT_LAT.item()['Rates'+str(5)], axis=1).tolist()
+
+		if Data_DC_BHCAP.item()['Status'+str(5)] == 2:
+			rate_matrix_DC_BHCAP = np.sum(Data_DC_BHCAP.item()['Rates'+str(5)], axis=1).tolist()
+
+		if Data_SA_MRT.item()['Status'+str(5)] == 2:
+			rate_matrix_SA_MRT = np.sum(Data_SA_MRT.item()['Rates'+str(5)], axis=1).tolist()
+	
+		if Data_SA_LAT.item()['Status'+str(5)] == 2:
+			rate_matrix_SA_LAT = np.sum(Data_SA_LAT.item()['Rates'+str(5)], axis=1).tolist()
+	
+		if Data_SA_BHCAP.item()['Status'+str(5)] == 2:
+			rate_matrix_SA_BHCAP = np.sum(Data_SA_BHCAP.item()['Rates'+str(5)], axis=1).tolist()
+		
+		if Data_SA_BHCAP_LAT.item()['Status'+str(5)] == 2:			
+			rate_matrix_SA_BHCAP_LAT = np.sum(Data_SA_BHCAP_LAT.item()['Rates'+str(5)], axis=1).tolist()
+		
+		if Data_SA_MRT_LAT.item()['Status'+str(5)] == 2:			
+			rate_matrix_SA_MRT_LAT = np.sum(Data_SA_MRT_LAT.item()['Rates'+str(5)], axis=1).tolist()
 
 	for k in range(0,num_iter):
 		if Data.item()['Status' + str(k)] == 2:
@@ -499,7 +596,7 @@ B_Dat_DR_fs_avg = np.sum(B_Dat_DR_fs, axis = 0)/MCMC_iter;
 # ====================
 # Satisfied User Count
 
-AU_Base_DR_fs_avg = np.floor(np.sum(AU_Base_DR_fs, axis = 0)/MCMC_iter);
+#AU_Base_DR_fs_avg = np.floor(np.sum(AU_Base_DR_fs, axis = 0)/MCMC_iter);
 AU_Base_DR_avg = np.floor(np.sum(AU_Base_DR, axis = 0)/MCMC_iter); 
 AU_DR_avg = np.floor(np.sum(AU_DR, axis = 0)/MCMC_iter);
 AU_DR_DC_avg = np.floor(np.sum(AU_DR_DC, axis = 0)/MCMC_iter);
@@ -515,12 +612,12 @@ AU_DR_SA_MRT_LAT_avg = np.floor(np.sum(AU_DR_SA_MRT, axis = 0)/MCMC_iter);
 AU_DR_DC_MRT_LAT_avg = np.floor(np.sum(AU_DR_DC_MRT_LAT, axis = 0)/MCMC_iter);
 
 
-#np.savetxt("Accepted_USER.csv",AU_Base_DR_fs_avg, AU_Base_DR_avg, AU_DR_avg, AU_DR_DC_avg, AU_DR_DC_MRT_avg, AU_DR_DC_BHCAP_avg, AU_DR_DC_LAT_avg, AU_DR_DC_BHCAP_LAT_avg, AU_DR_SA_MRT_avg, AU_DR_SA_LAT_avg, AU_DR_SA_BHCAP_avg, AU_DR_SA_BHCAP_LAT_avg, AU_DR_SA_MRT_LAT_avg, AU_DR_DC_MRT_LAT_avg, delimiter=",")
+#np.savetxt("Accepted_USER.csv", AU_Base_DR_avg, AU_DR_avg, AU_DR_DC_avg, AU_DR_DC_MRT_avg, AU_DR_DC_BHCAP_avg, AU_DR_DC_LAT_avg, AU_DR_DC_BHCAP_LAT_avg, AU_DR_SA_MRT_avg, AU_DR_SA_LAT_avg, AU_DR_SA_BHCAP_avg, AU_DR_SA_BHCAP_LAT_avg, AU_DR_SA_MRT_LAT_avg, AU_DR_DC_MRT_LAT_avg, delimiter=",")
 
 # =================================
 # Save multiple Numpy arrays to CSV
 
-df = pd.DataFrame({"Baseline MinRate": AU_Base_DR_fs_avg, "Baseline": AU_Base_DR_avg, "Single Association": AU_DR_avg, "Dual Association": AU_DR_DC_avg, "Dual Association MinRate": AU_DR_DC_MRT_avg, "Dual Association BHaul": AU_DR_DC_BHCAP_avg, "Dual Association LAT": AU_DR_DC_LAT_avg, "Dual Association Bhaul LAT": AU_DR_DC_BHCAP_LAT_avg, "Single Association MRT": AU_DR_SA_MRT_avg, "Single Association LAT": AU_DR_SA_LAT_avg, "Single Association Bhaul": AU_DR_SA_BHCAP_avg, "Single Association BHCAP+LAT": AU_DR_SA_BHCAP_LAT_avg, "Single Association MRT+LAT": AU_DR_SA_MRT_LAT_avg, "Dual Association MRT+LAT": AU_DR_DC_MRT_LAT_avg})
+df = pd.DataFrame({"Baseline": AU_Base_DR_avg, "Single Association": AU_DR_avg, "Dual Association": AU_DR_DC_avg, "Dual Association MinRate": AU_DR_DC_MRT_avg, "Dual Association BHaul": AU_DR_DC_BHCAP_avg, "Dual Association LAT": AU_DR_DC_LAT_avg, "Dual Association Bhaul LAT": AU_DR_DC_BHCAP_LAT_avg, "Single Association MRT": AU_DR_SA_MRT_avg, "Single Association LAT": AU_DR_SA_LAT_avg, "Single Association Bhaul": AU_DR_SA_BHCAP_avg, "Single Association BHCAP+LAT": AU_DR_SA_BHCAP_LAT_avg, "Single Association MRT+LAT": AU_DR_SA_MRT_LAT_avg, "Dual Association MRT+LAT": AU_DR_DC_MRT_LAT_avg})
 df.to_csv("AcceptedUsers.csv", index=False)
 
 # ========================================
@@ -587,7 +684,7 @@ plt.savefig('NetThrough', dpi=1200, facecolor='w', edgecolor='w',
 #ax.legend()
 
 print ('Baseline Accepted Users:', AU_Base_DR_avg)
-print ('Baseline with Minimum rate Accepted Users:', AU_Base_DR_fs_avg)
+#print ('Baseline with Minimum rate Accepted Users:', AU_Base_DR_fs_avg)
 print ('SA Accepted Users:', AU_DR_avg)
 print ('DC Accepted Users:', AU_DR_DC_avg)
 print ('DC+MRT Accepted Users:', AU_DR_DC_MRT_avg)
@@ -664,3 +761,21 @@ plt.savefig('Boxplot', dpi=1200, facecolor='w', edgecolor='w',
 #plt.grid(which= 'major',axis= 'both');
 #plt.title('Per Application Data Rate (SA + CB + CPL)')
 #plt.show()
+
+# ===============
+# Heatmap Plotter
+
+plt.close("all")
+hmap_data = np.load(os.path.dirname(os.getcwd()) +'/Result_files/CircularDeploy_MCSC/Temp/hmap_10.npz', allow_pickle='True')
+usr_locs = hmap_data['arr_0']
+mc_locs = hmap_data['arr_2']
+sc_locs = hmap_data['arr_1']
+
+
+
+#plotter.hmap_creator(usr_locs, mc_locs, sc_locs, rate_matrix_DC, np, scn)
+plotter.hist_plotter(rate_matrix_DC, rate_matrix_SA, rate_matrix_DC_BHCAP, rate_matrix_SA_BHCAP, rate_matrix_SA_LAT, rate_matrix_SA_MRT, rate_matrix_DC_MRT, rate_matrix_DC_LAT, rate_matrix_SA_MRT_LAT, rate_matrix_DC_MRT_LAT, rate_matrix_SA_BHCAP_LAT, rate_matrix_DC_BHCAP_LAT, np, scn)
+#plotter.scatter_plotter(rate_matrix_DC, rate_matrix_DC_BHCAP_LAT,np,scn)
+#plotter.accepted_user_plotter(AU_Base_DR_avg,AU_DR_avg,AU_DR_DC_avg,AU_DR_DC_MRT_avg,AU_DR_DC_BHCAP_avg,AU_DR_DC_LAT_avg,AU_DR_DC_BHCAP_LAT_avg,AU_DR_SA_MRT_avg,AU_DR_SA_LAT_avg,AU_DR_SA_BHCAP_avg,AU_DR_SA_BHCAP_LAT_avg,AU_DR_SA_MRT_LAT_avg,AU_DR_DC_MRT_LAT_avg,np,scn)
+plotter.bhutil_latprov_plotter(bhutil_val_DC, bhutil_val_DC_BHCAP, bhutil_val_DC_BHCAP_LAT, avail_bh, latprov_DC, latprov_DC_LAT, latprov_DC_MRT_LAT, latprov_DC_BHCAP_LAT, np, scn)
+#plotter.infeasible_iter_counter(iters_infeas, iters_infeas_DC, iters_infeas_DC_MRT, iters_infeas_DC_LAT, iters_infeas_DC_BHCAP, iters_infeas_DC_BHCAP_LAT, iters_infeas_SA_LAT, iters_infeas_SA_BHCAP, iters_infeas_SA_BHCAP_LAT, iters_infeas_SA_MRT_LAT, iters_infeas_SA_MRT ,np,scn)

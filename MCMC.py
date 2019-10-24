@@ -72,7 +72,7 @@ def send_message(text, chat_id):
 
 def parallel_executor(iter_num):
 	print ("Iteration number:", iter_num)
-	subprocess.call(['python',os.path.join(os.getcwd(),"main.py"), '-iter', str(iter_num)])
+	subprocess.call(['python',os.path.join(os.getcwd(),"main.py"), '-iter', str(iter_num), '-interf', str(0)])
 
 def Single_assoc(MCMC_iter, chat_frequency):
 	for i in range(MCMC_iter):
@@ -121,7 +121,7 @@ def DA_MRT(MCMC_iter, chat_frequency):
 		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
 		try:
 			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
-			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '1','-dual', '1','-bhaul', '0','-latency', '0', '-mipGP', '0'])
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '1','-dual', '1','-bhaul', '0','-latency', '0', '-mipGP', '1'])
 			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
 			if i%chat_frequency == 0:
 				try:
