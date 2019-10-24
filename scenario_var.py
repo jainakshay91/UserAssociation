@@ -17,7 +17,7 @@ class scenario_var:
 	#SCBS_per_MCBS = np.random.randint(3,10,size=1); # Create a set for number of small cells per macro BS
 	#UE_density_eMBB = 10; #Number of eMBB devices per TRP (5GPPP white paper)
 	UE_density_URLLC = (4000/1e6); #Number of URLLC devices per sq. m (5GPPP white paper)
-	UE_density_mMTC = 24; #Number of mMTC devices per Macro (5GPPP white paper)
+	UE_density_mMTC = 24000; #Number of mMTC devices per Macro (5GPPP white paper)
 	#UE_density_eMBB = 24000; #Number of URLLC UEs per Macro BS
 	ant_gain_MCBS = 17; # dBi gain 
 	max_tnsmtpow_MCBS = 49; # dBm gain per band (in 20 MHz)
@@ -46,7 +46,7 @@ class scenario_var:
 	MCMC_iter = 40; # Number of Monte Carlo Iterations
 	num_Subcarriers_MCBS = 1200; # LTE number of subcarriers
 	num_Subcarriers_SCBS = 3300; # 5G NR number of subcarriers 
-	#usr_scbw = 2*1e8; # 100 MHz bandwidth per user 
+	usr_scbw = 2*1e8; # 200 MHz bandwidth per user for noise calculation
 	mMTC_bw = 180*1e3; # Device Bandwidth (Guard Band Operations considered)
 	mMTC_maxrate = [1e6, 480*1e6]; # Device data rate
 	eNB_bw = 80*1e6; # Bandwidth for the Macro Cells (Qualcomm Media Release)
