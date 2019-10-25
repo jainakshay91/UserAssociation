@@ -39,17 +39,20 @@ class scenario_var:
 	user_steps_siml = 100; # For the simulation we increase users in steps of 50
 	eMBB_minrate = 1e8; # 100 mbps minimum required data rate for most eMBB applications
 	fib_BH_capacity = 1e9; # 1Gbps of fibre backhaul capacity (Find a reference for this)
-	fib_BH_MC_capacity = 10e9; # 10Gbps of fiber backhaul for MCs
+	fib_BH_MC_capacity = 1e10; # 10Gbps of fiber backhaul for MCs
 	wl_link_delay = 1*1e-3; # 1 ms link delay for the wireless link [Mona Jaber Paper] 
 	wrd_link_delay = 1*1e-3; # 1-7 ms link delay for the wired link [Mona Jaber Paper]
 	eMBB_latency_req = 3*1e-3; # 3 ms link latency requirement for the eMBB applications
-	MCMC_iter = 40; # Number of Monte Carlo Iterations
+	MCMC_iter = 2; # Number of Monte Carlo Iterations
 	num_Subcarriers_MCBS = 1200; # LTE number of subcarriers
 	num_Subcarriers_SCBS = 3300; # 5G NR number of subcarriers 
 	usr_scbw = 2*1e8; # 200 MHz bandwidth per user for noise calculation
 	mMTC_bw = 180*1e3; # Device Bandwidth (Guard Band Operations considered)
-	mMTC_maxrate = [1e6, 480*1e6]; # Device data rate
+	mMTC_maxrate = [1e3, 1e4]; # Device data rate
 	eNB_bw = 80*1e6; # Bandwidth for the Macro Cells (Qualcomm Media Release)
 	BW_SC = [50*1e6, 100*1e6, 200*1e6]; # Small cell bandwidth values (All values are in MHz)
 	BW_MC = [1.5*1e6, 3*1e6, 5*1e6, 10*1e6, 20*1e6]; # Macro cell bandwidth values (All values are in MHz)
+	beam_hpbw_rx = 60 # Assuming a HPBW of 60 degrees at the receiver (UE)
+	beam_hpbw_tx = 30 # Assuming a HPBW of 30 degrees at the transmitter (Small Cells)
+ 	
 

@@ -117,6 +117,7 @@ def mMTC_user_selector(scn, np, mmtc_usr_lcs, AP_locs, gencase, dsc, percentage)
 
         #print ("Total mMTC devices:", mmtc_usr_lcs['user_locations'].shape)
         num_mMTC = np.random.randint(0,mmtc_usr_lcs['user_locations'].shape[0]); # First we select the number of users from the total possible users using the Uniform distribution
+        #num_mMTC = 20000
         #print ("Number of mMTC:", num_mMTC)
         mMTC_selected_idx = np.random.randint(0,mmtc_usr_lcs['user_locations'].shape[0],(num_mMTC,1)); # We select the indices of the mMTC devices
         #print ("Selected Indices:", mMTC_selected_idx)
@@ -673,7 +674,7 @@ def backhaul_tput(assoc_mat, SCBS_per_MCBS, wl_mat, np, scn, dsc):
     for l in range(0, tput_SC.shape[0]):
         if next((i for i, x in enumerate(wl_mat[l,:].tolist()) if x), None) != None:
             #print assoc_mat[l,next((i for i, x in enumerate(assoc_mat[l,:].tolist()) if x), None)]
-            PL_SC_MC[l] = pathloss.pathloss_CI(scn, assoc_mat[l,next((i for i, x in enumerate(wl_mat[l,:].tolist()) if x), None)], np, dist_SC_MC[l], dsc, 2); # Calculating the pathloss for Small cells to Macro Cells
+            PL_SC_MC[l], flg = pathloss.pathloss_CI(scn, assoc_mat[l,next((i for i, x in enumerate(wl_mat[l,:].tolist()) if x), None)], np, dist_SC_MC[l], dsc, 2); # Calculating the pathloss for Small cells to Macro Cells
         else:
             PL_SC_MC[l] = 0; # This is the Fiber based backhaul
             tput_SC[l] = scn.fib_BH_capacity; # Fiber backhaul capacity
@@ -682,15 +683,14 @@ def backhaul_tput(assoc_mat, SCBS_per_MCBS, wl_mat, np, scn, dsc):
     # ===> Computing the Throughput for the Small Cells to Macro Cells
 
     #interf_sc_mc = dsc.interf(PL_SC_MC, scn, np); # Calculate the interference matrix for small cells
-    l_idx = 0; 
-    u_idx = SCBS_per_MCBS[0];
+    #l_idx = 0; 
+    #u_idx = SCBS_per_MCBS[0];
     #print SCBS_per_MCBS
     for j in range(0,tput_SC.shape[0]):
-        if j < u_idx: 
-            tput_SC[j] = np.where(PL_SC_MC[j] != 0, (scn.sc_bw/SCBS_per_MCBS[l_idx])*np.log2(1+(10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.ant_gain_MCBS/10)*10**(-3))/(10**(PL_SC_MC[j]/10)))/(10**(scn.N/10)*(scn.sc_bw/SCBS_per_MCBS[l_idx])*10**(-3))), tput_SC[j]); # We subtract the received power from other small cells to obtain the sinr 
-        else:
-            l_idx = l_idx + 1; # Increment the lower index
-            u_idx = u_idx + SCBS_per_MCBS[l_idx]; # Increment the 
-            tput_SC[j] = np.where(PL_SC_MC[j] != 0, (scn.sc_bw/SCBS_per_MCBS[l_idx])*np.log2(1+(10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.ant_gain_MCBS/10)*10**(-3))/(10**(PL_SC_MC[j]/10)))/(10**(scn.N/10)*(scn.sc_bw/SCBS_per_MCBS[l_idx])*10**(-3))), tput_SC[j]); # We subtract the received power from other small cells to obtain the sinr 
+        #if j < u_idx: 
+        tput_SC[j] = np.where(PL_SC_MC[j] != 0, (scn.sc_bw)*np.log2(1+(10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.ant_gain_MCBS/10)*10**(-3))/(10**(PL_SC_MC[j]/10)))/(10**(scn.N/10)*(scn.sc_bw)*10**(-3))), tput_SC[j]); # We subtract the received power from other small cells to obtain the sinr 
+        # else:
+        #     l_idx = l_idx + 1; # Increment the lower index
+        #     u_idx = u_idx + SCBS_per_MCBS[l_idx]; # Increment the 
+        #     tput_SC[j] = np.where(PL_SC_MC[j] != 0, (scn.sc_bw)*np.log2(1+(10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.ant_gain_MCBS/10)*10**(-3))/(10**(PL_SC_MC[j]/10)))/(10**(scn.N/10)*(scn.sc_bw)*10**(-3))), tput_SC[j]); # We subtract the received power from other small cells to obtain the sinr 
     return tput_SC
-

@@ -78,11 +78,13 @@ optim_data_mMTC = np.load(os.getcwd() + '/Data/Temp/optim_var_mMTC'+ str(vars(ar
 num_AP_mMTC = optim_data_mMTC['arr_0']; # Number of mMTC devices per AP (MC first and then SC)
 data_rate_consum_BH_mMTC = np.empty((num_AP_mMTC.shape[0],1)) # Consumed Data Rate 
 
+#print np.sum(num_AP_mMTC)
 # ====> The bandwidth consumption at each cell by the mMTC devices (In the Backhaul)
 for i in range(num_AP_mMTC.shape[0]):
-	data_rate_consum_BH_mMTC[i] = np.sum(np.random.random_sample((num_AP_mMTC[i],1))*(scn.mMTC_maxrate[1] - scn.mMTC_maxrate[0]))
+	data_rate_consum_BH_mMTC[i] = np.sum(np.random.random_sample((num_AP_mMTC[i],1))*(scn.mMTC_maxrate[1] - scn.mMTC_maxrate[0]) + scn.mMTC_maxrate[0])
+
 	
-#print data_rate_consum_BH_mMTC
+#print data_rate_consum_BH_mMTC.shape
 #RX_power_mc_mMTC = optim_data_mMTC['arr_12']; # Received Power from Macro cells for all the mMTC devices
 #RX_power_mMTC = np.hstack((Rx_power_sc_mMTC, RX_power_mc_mMTC)); # Stack all the received powers for the mMTC users
 
@@ -110,8 +112,8 @@ for N in range(0,num_iter):
 
 	# ================================================================
 	# Update the Available Backhaul Capacity based on mMTC Consumption
-
-	BH_Capacity_SC = BH_Capacity_SC - data_rate_consum_BH_mMTC[:num_scbs]; # We reduce the available backhaul capacity for small cells
+	#print num_scbs
+	BH_Capacity_SC = BH_Capacity_SC - data_rate_consum_BH_mMTC[0:num_scbs]; # We reduce the available backhaul capacity for small cells
 	BH_Capacity_MC = BH_Capacity_MC - data_rate_consum_BH_mMTC[num_scbs:num_scbs+num_mcbs]; # We reduce the available backhaul capacity for macro cells
 
 	# ===> Add the consumption from mMTC devices associated to small cell, which is in turn associated with a macro cell
@@ -126,6 +128,9 @@ for N in range(0,num_iter):
 		else:
 			break
 
+	#print BH_Capacity_SC
+	#print "==============="
+	#print BH_Capacity_MC
 	#RX_power_mc = optim_data['arr_13']; # Macro Cell Received Power 
 	#RX_power = np.hstack((RX_power_mc,RX_power_sc)); # Stack all the received powers for the eMBB users
 	SNR_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
@@ -180,19 +185,19 @@ for N in range(0,num_iter):
 
 	print "Calculating the AP path latencies"
 	#print Hops_SC
-	bh_paths = np.empty((num_scbs+num_mcbs,1)); # We consider just a single path per AP
+	bh_paths = np.empty((num_scbs+num_mcbs)); # We consider just a single path per AP
 	Hops_sc = (np.sum((Hops_SC - 1), axis = 1)).reshape(Hops_SC.shape[0],1); # Reshaping the Small cells hops count matrix
 	#print mat_wlbh_sc
 	#print mat_wrdbh_sc
 	#print Hops_sc
 	for i in range(0,Hops_sc.shape[0]):
 		if np.nonzero(mat_wlbh_sc[i,:]):
-			bh_paths[i,:] = Hops_sc[i,:]*scn.wrd_link_delay + scn.wl_link_delay; # Small cell path latency with wireless backhaul
+			bh_paths[i] = Hops_sc[i,:]*scn.wrd_link_delay + scn.wl_link_delay; # Small cell path latency with wireless backhaul
 		elif np.nonzero(mat_wrdbh_sc[i,:]):
-			bh_paths[i,:] = (Hops_sc[i,:] + 1)*scn.wrd_link_delay; # Small cell path latency with wired backhaul
+			bh_paths[i] = (Hops_sc[i,:] + 1)*scn.wrd_link_delay; # Small cell path latency with wired backhaul
 	#bh_paths[:Hops_sc.shape[0],:] = Hops_sc*scn.wrd_link_delay + scn.wl_link_delay; # Small cell path latency
-	bh_paths[Hops_sc.shape[0]:,0] = Hops_MC*scn.wrd_link_delay; # Macro cell path latency  
-	#print bh_paths
+	bh_paths[Hops_sc.shape[0]:bh_paths.shape[0]] = Hops_MC*scn.wrd_link_delay; # Macro cell path latency  
+	#print np.diag(bh_paths)
 	#print var_col_num
 
 	#print rate
@@ -340,7 +345,7 @@ for N in range(0,num_iter):
 		AP_latency = m.addVars(var_row_num, var_col_num, name="AP_latency"); # Initializing the Path Latency constraint
 		for i in range(0, var_row_num):
 			for j in  range(0, var_col_num):
-				AP_latency[i,j] = bh_paths[j]*X[i,j];; # Constraint Expression
+				AP_latency[i,j] = bh_paths[j]*X[i,j]; # Constraint Expression
 		
 
 		# ============================
@@ -398,7 +403,7 @@ for N in range(0,num_iter):
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
 			if vars(args)['bhaul'] == 1:
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
-				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
+				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC[i - num_scbs] for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 			if vars(args)['latency'] == 1:
 				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
 		elif vars(args)['dual'] == 1:	
@@ -416,7 +421,7 @@ for N in range(0,num_iter):
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
 			if vars(args)['bhaul'] == 1:
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
-				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
+				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC[i - num_scbs] for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 			if vars(args)['latency'] == 1:
 				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
 		
