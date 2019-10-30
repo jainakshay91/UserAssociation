@@ -406,7 +406,9 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
             for j in range(sorted_SCBS_mat.shape[1]):
                 ap_int_idx = j; # This is our AP of interest
                 interf_ap_idx = np.where(glob_angle_sc_rx[i,:] == glob_angle_sc_rx[i,ap_int_idx])[0] # These are the indexes of the APs that will be interfering with the AP of interest
-                interf_sc[i,ap_int_idx] = np.sum((scn.beam_hpbw_tx/(360))*PL_sc[i,interf_ap_idx]) 
+                #interf_sc[i,ap_int_idx] = np.sum((scn.beam_hpbw_tx/(360))*PL_sc[i,interf_ap_idx]) 
+                # (10**(tx_power/10)*(10**(gain/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_temp/10))
+                interf_sc[i,ap_int_idx] = np.sum((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_sc[i,interf_ap_idx]/10))) # We just use the calculated PL
 
 
         # ===> We try the SNR regime (Best Case solution with extreme directivity)
