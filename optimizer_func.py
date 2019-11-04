@@ -371,12 +371,12 @@ for N in range(0,num_iter):
 			print "================="	
 			print "Dual Connectivity"
 			print "================="
-			#m.addConstrs((DC[i,0] == 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+			m.addConstrs((DC[i,0] == 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
 			#m.addConstrs((U_SC[i,j] <= 1 for i in range(var_row_num) for j in range(num_scbs)))
 			#m.addConstrs((U_MC[i,j] == 1 for i in range(var_row_num) for j in range(num_mcbs)))
-			m.addConstrs((MC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+			#m.addConstrs((MC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
 			#m.addConstrs((quicksum(X[i,j] for j in range(num_scbs, num_scbs+num_mcbs)) == 1 for i in range(var_row_num)), name ='c8'); # Adding the Dual Connectivity constraint 
-			m.addConstrs((SC[i,0] <= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
+			#m.addConstrs((SC[i,0] <= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
 			
 
 			#m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
@@ -395,7 +395,9 @@ for N in range(0,num_iter):
 		#m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
 		
 		if vars(args)['mipGP'] == 1:
-			m.Params.MIPGap = 0.01; # Set the Upper and Lower Bound Gap to 0.1%
+			m.Params.MIPGap = 0.02; # Set the Upper and Lower Bound Gap to 0.2%
+			if vars(args)['dual'] == 1 and vars(args)['minRate'] == 1: 
+				m.Params.Cuts = 3; # To aid in convergence of the DC-MRT solution
 		else:
 			pass
 
@@ -517,11 +519,8 @@ for N in range(0,num_iter):
 			#print M_sum.shape
 			#print ("SC:", G_sum)
 			#print ("MC:", M_sum)
-			if vars(args)['dual'] == 1 or vars(args)['minRate'] == 1:
-				filname_sc = 'GS'+str(vars(args)['dual'])+str(vars(args)['minRate'])+str(vars(args)['iter'])+'.csv' # Filename for the small cell
-				filname_mc = 'MC'+str(vars(args)['dual'])+str(vars(args)['minRate'])+str(vars(args)['iter'])+'.csv' # Filename for the Macro cell
-				csvsaver.csvsaver(G_sum,["Accepted Users per SC"], filname_sc)
-				csvsaver.csvsaver(M_sum,["Accepted Users per MC"], filname_mc)			
+			csvsaver.csvsaver(G_sum,["Accepted Users per SC"], "GS.csv")
+			csvsaver.csvsaver(M_sum,["Accepted Users per MC"], "MC.csv")			
 
 			if N == (num_iter-1) and (vars(args)['dual'] == 1 or vars(args)['bhaul'] == 1 or vars(args)['minRate'] == 1 or vars(args)['latency'] == 1):
 				#plotter.optimizer_plotter(new_rate) # We get the plot for the rates with maximum number of users
