@@ -395,10 +395,11 @@ for N in range(0,num_iter):
 		#m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
 		
 		#if vars(args)['mipGP'] == 1:
-		m.Params.MIPGap = 0.02; # Set the Upper and Lower Bound Gap to 0.2%
+		m.Params.MIPGap = 0.05; # Set the Upper and Lower Bound Gap to 5%
 		m.Params.TIME_LIMIT = 600; # Set a timelimit of 10 seconds
-		if vars(args)['dual'] == 1 and vars(args)['minRate'] == 1 and vars(args)['bhaul'] == 0 and vars(args)['latency'] == 0: 
-				m.Params.Cuts = 1; # To aid in convergence of the DC-MRT solution
+		if vars(args)['dual'] == 1 and vars(args)['minRate'] == 1: 
+				m.Params.MIPFocus = 1; # To aid in convergence of the DC-MRT solution
+				m.Params.Cuts = 3; # Aggressive Cuts for faster convergence
 		else:
 			pass
 
@@ -586,7 +587,7 @@ for N in range(0,num_iter):
 
 		else:
 			Data['Status' + str(N)] = m.status; # Add the status for detecting infeasible solution
-			#print ("Status_Flags:" + str(k), str(m.status))
+			print ("Status_Flags:" + str(N), str(m.status))
 			Data['Apps' + str(N)] = var_row_num;
 			Data['APs' + str(N)] = var_col_num;
 			continue
