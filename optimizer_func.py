@@ -394,10 +394,11 @@ for N in range(0,num_iter):
 		#m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 		#m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
 		
-		if vars(args)['mipGP'] == 1:
-			m.Params.MIPGap = 0.02; # Set the Upper and Lower Bound Gap to 0.2%
-			if vars(args)['dual'] == 1 and vars(args)['minRate'] == 1: 
-				m.Params.Cuts = 3; # To aid in convergence of the DC-MRT solution
+		#if vars(args)['mipGP'] == 1:
+		m.Params.MIPGap = 0.02; # Set the Upper and Lower Bound Gap to 0.2%
+		m.Params.TIME_LIMIT = 600; # Set a timelimit of 10 seconds
+		if vars(args)['dual'] == 1 and vars(args)['minRate'] == 1 and vars(args)['bhaul'] == 0 and vars(args)['latency'] == 0: 
+				m.Params.Cuts = 1; # To aid in convergence of the DC-MRT solution
 		else:
 			pass
 
