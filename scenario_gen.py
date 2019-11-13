@@ -76,10 +76,10 @@ def user_dump(scn, SCBS_per_MCBS, num_MCBS, AP_locs, np, dsc):
             #assoc_usapp[attr_name_assoc + str(i)] = np.random.randint(2, size = (tot_users_scenario[i], scn.max_num_appl_UE)); # Generate User-App Association 
             assoc_usapp[attr_name_assoc + str(i)] = np.ones((tot_users_scenario[i], scn.max_num_appl_UE), dtype = int); # Generate User-App Association 
         with open("ActualUsers.csv",'wb') as f:
-		w = csv.DictWriter(f,assoc_usapp.keys())
-		w.writeheader()
-		w.writerow(assoc_usapp)
-	return usr_locs, assoc_usapp
+    		w = csv.DictWriter(f,assoc_usapp.keys())
+    		w.writeheader()
+    		w.writerow(assoc_usapp)
+        return usr_locs, assoc_usapp
         
 	#usr_locs_eMBB = np.random.uniform(0,np.sqrt(scn.simulation_area),(tot_dev_eMBB,2)); # We obtain a set of eMBB locations
     #usr_locs_URLLC = np.random.uniform(0,np.sqrt(scn.simulation_area),(int(tot_dev_URLLC),2)); # We obtain a set of URLLC locations

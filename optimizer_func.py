@@ -543,10 +543,12 @@ for N in range(0,num_iter):
 			#Data['X_optimal_data' + str(N)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
 			Data['X_optimal_data' + str(N)] = (G_total_compute>0)*1; # Optimal Association Matrix
 			Data['Net_Throughput' + str(N)] = m.objVal; # Network wide throughput
+			Data['Optimal_BW' + str(N)] = G_total_compute; # Stores the optimal Bandwidth 
 			Data['Rates' + str(N)] = new_rate; # Data rate matrix  
 			Data['Status' + str(N)] = m.status; # Insert the status
 			Data['Apps'+str(N)] = var_row_num;
 			Data['APs'+str(N)] = var_col_num;
+			Data['Time'+str(N)] = m.Runtime;
 
 			#print np.sum((G_total_compute>0)*1, axis = 1) 
 			#print np.sum((np.asarray(X_optimal).reshape((var_row_num,var_col_num))>0)*1, axis =1)

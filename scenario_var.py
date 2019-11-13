@@ -11,7 +11,7 @@ class scenario_var:
 	usr_ht = 1.5; # User height
 	bs_ht_sc = 10; # Small cell height
 	bs_ht_mc = 25; # Macro cell height
-	simulation_area = 0.25*1e6; #The area is in square meters; The shape is also a square 
+	simulation_area = 0.36*1e6; #The area is in square meters; The shape is also a square 
 	MCBS_intersite = 200; #Intersite distance for Macro BS
 	SCBS_intersite = 20; #Intersite distance for Small cell BS
 	#SCBS_per_MCBS = np.random.randint(3,10,size=1); # Create a set for number of small cells per macro BS
@@ -34,8 +34,8 @@ class scenario_var:
 	wl_bh_bp = 0.25*MCBS_intersite; # This is the distance beyond which a wired backhaul should be used (Can be changed later to the specifications)   
 	num_appl_types = 3; # We current have a broad category of 3 application types
 	max_num_appl_UE = 3; # Maximum number of applications on any given UE
-	num_users_min = 100; # Minimum number of users in the scenario
-	num_users_max = 250; # Maximum number of users in the scenario
+	num_users_min = 150; # Minimum number of users in the scenario
+	num_users_max = 300; # Maximum number of users in the scenario
 	user_steps_siml = 25; # For the simulation we increase users in steps of 50
 	eMBB_minrate = 1e8; # 100 mbps minimum required data rate for most eMBB applications
 	fib_BH_capacity = 1e9; # 1Gbps of fibre backhaul capacity (Find a reference for this)
@@ -43,7 +43,7 @@ class scenario_var:
 	wl_link_delay = 1*1e-3; # 1 ms link delay for the wireless link [Mona Jaber Paper] 
 	wrd_link_delay = 1*1e-3; # 1-7 ms link delay for the wired link [Mona Jaber Paper]
 	eMBB_latency_req = 3*1e-3; # 3 ms link latency requirement for the eMBB applications
-	MCMC_iter = 60; # Number of Monte Carlo Iterations
+	MCMC_iter = 100; # Number of Monte Carlo Iterations
 	num_Subcarriers_MCBS = 1200; # LTE number of subcarriers
 	num_Subcarriers_SCBS = 3300; # 5G NR number of subcarriers 
 	usr_scbw = 2*1e8; # 100 MHz bandwidth per user 
