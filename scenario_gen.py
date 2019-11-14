@@ -549,15 +549,15 @@ def backhaul_tput(assoc_mat, SCBS_per_MCBS, wl_mat, np, scn, dsc):
     # ===> Computing the Throughput for the Small Cells to Macro Cells
 
     #interf_sc_mc = dsc.interf(PL_SC_MC, scn, np); # Calculate the interference matrix for small cells
-    #l_idx = 0; 
-    #u_idx = SCBS_per_MCBS[0];
+    l_idx = 0; 
+    u_idx = SCBS_per_MCBS[0];
     #print SCBS_per_MCBS
     for j in range(0,tput_SC.shape[0]):
-        #if j < u_idx: 
-        tput_SC[j] = np.where(PL_SC_MC[j] != 0, (scn.sc_bw)*np.log2(1+(10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.ant_gain_MCBS/10)*10**(-3))/(10**(PL_SC_MC[j]/10)))/(10**(scn.N/10)*(scn.sc_bw)*10**(-3))), tput_SC[j]); # We subtract the received power from other small cells to obtain the sinr 
-        # else:
-        #     l_idx = l_idx + 1; # Increment the lower index
-        #     u_idx = u_idx + SCBS_per_MCBS[l_idx]; # Increment the 
-        #     tput_SC[j] = np.where(PL_SC_MC[j] != 0, (scn.sc_bw)*np.log2(1+(10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.ant_gain_MCBS/10)*10**(-3))/(10**(PL_SC_MC[j]/10)))/(10**(scn.N/10)*(scn.sc_bw)*10**(-3))), tput_SC[j]); # We subtract the received power from other small cells to obtain the sinr 
+        if j < u_idx: 
+            tput_SC[j] = np.where(PL_SC_MC[j] != 0, (scn.sc_bw/SCBS_per_MCBS[l_idx])*np.log2(1+(10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.ant_gain_MCBS/10)*10**(-3))/(10**(PL_SC_MC[j]/10)))/(10**(scn.N/10)*(scn.sc_bw/SCBS_per_MCBS[l_idx])*10**(-3))), tput_SC[j]); # We subtract the received power from other small cells to obtain the sinr 
+        else:
+            l_idx = l_idx + 1; # Increment the lower index
+            u_idx = u_idx + SCBS_per_MCBS[l_idx]; # Increment the 
+            tput_SC[j] = np.where(PL_SC_MC[j] != 0, (scn.sc_bw/SCBS_per_MCBS[l_idx])*np.log2(1+(10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.ant_gain_MCBS/10)*10**(-3))/(10**(PL_SC_MC[j]/10)))/(10**(scn.N/10)*(scn.sc_bw/SCBS_per_MCBS[l_idx])*10**(-3))), tput_SC[j]); # We subtract the received power from other small cells to obtain the sinr 
     return tput_SC
 
