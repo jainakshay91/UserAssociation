@@ -364,7 +364,7 @@ for N in range(0,num_iter):
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
 			
 			else:
-				m.addConstrs((min_RATE[i,0] > 0 for i in range(var_row_num)), name ='c15'); # Adding the minimum rate constraint for other strategies, which is to provide some data rate atleast
+				m.addConstrs((min_RATE[i,0] >= 1 for i in range(var_row_num)), name ='c15'); # Adding the minimum rate constraint for other strategies, which is to provide some data rate atleast (1 bps)
 				if vars(args)['bhaul'] == 1:
 					m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
 					m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
@@ -388,7 +388,7 @@ for N in range(0,num_iter):
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
 			else:
-				m.addConstrs((min_RATE[i,0] > 0 for i in range(var_row_num)), name ='c15'); # Adding the minimum rate constraint for other strategies, which is to provide some data rate atleast
+				m.addConstrs((min_RATE[i,0] >= 1 for i in range(var_row_num)), name ='c15'); # Adding the minimum rate constraint for other strategies, which is to provide some data rate atleast (1 bps)
 				if vars(args)['bhaul'] == 1:
 					m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
 					m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
