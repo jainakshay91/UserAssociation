@@ -362,11 +362,16 @@ for N in range(0,num_iter):
 			
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
-			if vars(args)['bhaul'] == 1:
-				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
-				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
-			if vars(args)['latency'] == 1:
-				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
+			
+			else:
+				m.addConstrs((min_RATE[i,0] > 0 for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
+				if vars(args)['bhaul'] == 1:
+					m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
+					m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
+					
+				if vars(args)['latency'] == 1:
+					m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
+				
 		elif vars(args)['dual'] == 1:	
 			print "================="	
 			print "Dual Connectivity"
@@ -382,13 +387,15 @@ for N in range(0,num_iter):
 			#m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
-			if vars(args)['bhaul'] == 1:
-				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
-				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
-			if vars(args)['latency'] == 1:
-				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
-		
+			else:
+				m.addConstrs((min_RATE[i,0] > 0 for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
+				if vars(args)['bhaul'] == 1:
+					m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
+					m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 
+				if vars(args)['latency'] == 1:
+					m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
+					
 		#m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint 
 		#m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
 		#m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
