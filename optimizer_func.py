@@ -557,6 +557,7 @@ for N in range(0,num_iter):
 			Data['Apps'+str(N)] = var_row_num;
 			Data['APs'+str(N)] = var_col_num;
 			Data['Time'+str(N)] = m.Runtime;
+			Data['SINR'+str(N)] = sinr_eMBB; 
 
 			#print np.sum((G_total_compute>0)*1, axis = 1) 
 			#print np.sum((np.asarray(X_optimal).reshape((var_row_num,var_col_num))>0)*1, axis =1)
