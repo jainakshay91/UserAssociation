@@ -10,6 +10,7 @@ import copy
 import csv
 import csvsaver
 import sectbeam
+import pdb
 #from multiprocessing import Process
 # ===================================================
 # Load/Generate the Macro Cell base station locations
@@ -199,6 +200,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
     # ======================================================
     # Limit the number of MC and SC for the SINR calculation
 
+    #pdb.set_trace()
     
     # ==> eMBB users
     if inter_limit_flag == 1: # Interference limited scenario with no sectoring employed
@@ -207,7 +209,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
         print "================================================="
 
         num_MCBS_SINR = 4; # We choose the 4 closest MCs for the SINR calculation 
-        dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
+        dist_SCBS_SINR = 100; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
         sorted_MCBS_mat, idx_MCBS_SINR = dsc.idx_mat(dist_serv_cell, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
         sorted_SCBS_mat, idx_SCBS_SINR = dsc.idx_mat(dist_serv_sc, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
         #print sorted_MCBS_mat.shape
@@ -256,7 +258,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
         print "Performing Interference Calculation"
         interf_sc = dsc.interf(PL_sc, scn, np, scn.transmit_power, scn.transmit_gain_sc); # Calculate the interference matrix for small cells
         interf_mc = dsc.interf(PL_mc, scn, np, scn.max_tnsmtpow_MCBS, scn.ant_gain_MCBS); # Calculate the interference matrix for macro cells. MCs and SCs work on different frequency bands and hence do not interfere with each other
-        
+        csvsaver.csvsaver(interf_sc,[],"InterferenceSC.csv")
         #print interf_sc[1,:]
 
         # ====================
@@ -293,6 +295,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
             #sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
             #print sinr_sc[i,:]
       
+        csvsaver.csvsaver(sinr_sc,[],"SINR_SC.csv")
         print "Performing SINR Calculation for Macro cells"
 
         sinr_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initialize SINR matrix
@@ -313,10 +316,12 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
         
         
         num_MCBS_SINR = 4; # We choose the 4 closest MCs for the SINR calculation 
-        dist_SCBS_SINR = 200; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
+        dist_SCBS_SINR = 100; # We choose the range of the farthest SC that will impact SINR calculation for a user to be 200 meters
         sorted_MCBS_mat, idx_MCBS_SINR = dsc.idx_mat(dist_serv_cell, num_MCBS_SINR,'minimum',np); # Distance based sorted matrix and index of the MCBS under consideration for the PL calculation
         sorted_SCBS_mat, idx_SCBS_SINR = dsc.idx_mat(dist_serv_sc, dist_SCBS_SINR, 'distance', np); # Distance based sorted matrix and index of the SCBS under consideration for the PL calculation
 
+        #print idx_SCBS_SINR
+        #print sorted_MCBS_mat.shape
         # ==> For Macro Cell
 
         print "\n Sectorizing Macro Cells and Computing Interferers"
@@ -328,11 +333,16 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
         
         PL_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initializing the Pathloss matrix
         interf_mc = np.zeros((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # This is the matrix that will hold the interference values for each UE and significant TXs    
-        
+        #interf_sect_data = np.zeros((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1]), dtype = object)
         for i in range(sorted_MCBS_mat.shape[0]):
             interf_sect = [] # An empty list of indices which will store the list of other interfering cells
             for j in range(sorted_MCBS_mat.shape[1]):
                 interf_sect = np.where(sector_UEMCBS[i,:] == sector_UEMCBS[i,idx_MCBS_SINR[i,j]])[0] # The interfering cells
+                #print ("SOmething Else:", np.where(sector_UEMCBS[i,:] == sector_UEMCBS[i,idx_MCBS_SINR[i,j]]))
+                # print ("MCBS of Interest:", idx_MCBS_SINR[i,j])
+                # print ("Sector of MCBS of Interest:", sector_UEMCBS[i,idx_MCBS_SINR[i,j]])
+                # print ("Interfering APs:", interf_sect)
+                #interf_sect_data[i,j] = interf_sect
                 #PL_mc[i,j], l_nl[i, j+ num_SCBS] = pathloss.pathloss_CI(scn, sorted_MCBS_mat[i][j], np, dist_serv_cell_3d[i][j], dsc, 0); # Calculating the pathloss for Macro cells
                 PL_mc[i,j], l_nl[i, j+ num_SCBS] = pathloss.pathloss_CI(scn, sorted_MCBS_mat[i][j], np, dist_serv_cell_3d[i][int(idx_MCBS_SINR[i,j])], dsc, 0); # Calculating the pathloss for Macro cells
                 temp = np.empty((len(interf_sect)-1)); # An empty numpy array to hold the pathloss of interfereing cells
@@ -342,13 +352,14 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
                 for k in range(len(interf_sect)):
                     #print interf_sect[k]
                     if interf_sect[k] != idx_MCBS_SINR[i,j]:
+                        #print ("Interference Calculation using indexes:", interf_sect[k])
                         temp[idx_temp], dummy = pathloss.pathloss_CI(scn, dist_serv_cell[i][interf_sect[k]], np, dist_serv_cell_3d[i][interf_sect[k]], dsc, 0); # Calculate the pathloss from the similar sector antennas to the UE
                         idx_temp = idx_temp + 1; # Increment the temp vector index
                         #print temp
                 interf_mc[i,j] =  np.sum((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(temp/10))); # Interference for User i and AP j
         
         print "Performing SINR Calculation for Macro cells"
-
+        #csvsaver.csvsaver(interf_sect_data,[],'Interfering Sectors Data')
         sinr_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initialize SINR matrix
         for i in range(0,PL_mc.shape[0]):
             for j in range(0, PL_mc.shape[1]):
@@ -396,20 +407,28 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
                 #print idx_SCBS_SINR[i,j]
                 #rint usr_lcs[i,:]
                 if idx_SCBS_SINR[i,j] != 'None':
+                    #print "Here"
                     glob_angle_sc_rx[i,j] = dsc.angsc(usr_lcs[i,:],sc_locs[int(idx_SCBS_SINR[i,j]),:],np,scn) # Angle calculator to determine if 
                 else:
-                    glob_angle_sc_rx[i,j] = float('nan') # Nan for the APs beyond 200m radius
-
+                    glob_angle_sc_rx[i,j] = float('Nan') # Nan for the APs beyond 200m radius
+        #print glob_angle_sc_rx
+        csvsaver.csvsaver(usr_lcs,[],"UELOCS.csv")
+        csvsaver.csvsaver(glob_angle_sc_rx,[],"SCAngles.csv")
+        csvsaver.csvsaver(sc_locs,[],"SCLocs.csv")
+        csvsaver.csvsaver(idx_SCBS_SINR,[],"SelectSCIDX.csv")
+        csvsaver.csvsaver(PL_sc,[],"PL_sc.csv")
         print "Common Sector and Average Interference Computation"
 
         for i in range(sorted_SCBS_mat.shape[0]):
             for j in range(sorted_SCBS_mat.shape[1]):
                 ap_int_idx = j; # This is our AP of interest
                 interf_ap_idx = np.where(glob_angle_sc_rx[i,:] == glob_angle_sc_rx[i,ap_int_idx])[0] # These are the indexes of the APs that will be interfering with the AP of interest
+                #print interf_ap_idx
                 #interf_sc[i,ap_int_idx] = np.sum((scn.beam_hpbw_tx/(360))*PL_sc[i,interf_ap_idx]) 
                 # (10**(tx_power/10)*(10**(gain/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_temp/10))
-                interf_sc[i,ap_int_idx] = np.sum((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_sc[i,interf_ap_idx]/10))) # We just use the calculated PL
-
+                #print PL_sc[i,interf_ap_idx]
+                interf_sc[i,ap_int_idx] = np.sum((10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_sc[i,interf_ap_idx]/10))) - (10**(scn.transmit_power/10)*(10**(scn.transmit_gain_sc/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_sc[i,ap_int_idx]/10)) # We just use the calculated PL
+        csvsaver.csvsaver(interf_sc,[],"InterferenceSC.csv")
 
         # ===> We try the SNR regime (Best Case solution with extreme directivity)
 
@@ -428,7 +447,9 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
             #sinr_sc[i, np.where(np.isnan(sinr_sc[i,:]) == True )] = np.amin(np.where(np.isnan(sinr_sc[i,:]) != True )); # Replace the None values with the minimum of that row 
             #print sinr_sc[i,:] 
 
-
+        csvsaver.csvsaver(sinr_sc,[],"SINR_SC.csv")
+        #print sinr_sc.shape 
+        #print sinr_mc.shape 
         # ====================
         # Rx Power Computation
 

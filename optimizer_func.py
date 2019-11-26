@@ -86,24 +86,24 @@ for N in range(0,num_iter):
 	print "Dataset # " + str(N) + ": Collecting the Stored Variables"
 
 	optim_data = np.load(os.getcwd() + '/Data/Temp/optim_var_'+ str(N) + str(vars(args)['iter']) +'.npz', allow_pickle = True)
-	sinr_APs = optim_data['arr_0']; # Load the SINR data to be used for the optimization
-	user_AP_assoc = optim_data['arr_1'].item()['user_app' + str(N)]; # Load the User-Applications Association data to be used for the optimization
-	sinr_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
-	sinr_pad_val = optim_data['arr_4']; # In the small cell calculation we use an sinr pad value for ease of computation
-	num_scbs = optim_data['arr_5']; # Number of Small cells
-	num_mcbs = optim_data['arr_6']; # Number of Macro cells
-	mat_wlbh_sc = optim_data['arr_7']; # Wireless backhaul matrix for Small Cells
-	mat_wrdbh_sc = optim_data['arr_8']; # Wired backhaul matrix for Macro cells
-	Hops_MC = optim_data['arr_9']; # Number of hops to the IMS core from Macro cells
-	Hops_SC = optim_data['arr_10']; # Number of hops to the IMS core from Small cells
-	BH_Capacity_SC = optim_data['arr_11']; # Backhaul capacity for Small cells
+	sinr_eMBB = optim_data['arr_0']; # Load the SINR data to be used for the optimization
+	#user_AP_assoc = optim_data['arr_1'].item()['user_app' + str(N)]; # Load the User-Applications Association data to be used for the optimization
+	#sinr_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
+	sinr_pad_val = optim_data['arr_3']; # In the small cell calculation we use an sinr pad value for ease of computation
+	num_scbs = optim_data['arr_4']; # Number of Small cells
+	num_mcbs = optim_data['arr_5']; # Number of Macro cells
+	mat_wlbh_sc = optim_data['arr_6']; # Wireless backhaul matrix for Small Cells
+	mat_wrdbh_sc = optim_data['arr_7']; # Wired backhaul matrix for Macro cells
+	Hops_MC = optim_data['arr_8']; # Number of hops to the IMS core from Macro cells
+	Hops_SC = optim_data['arr_9']; # Number of hops to the IMS core from Small cells
+	BH_Capacity_SC = optim_data['arr_10']; # Backhaul capacity for Small cells
 	BH_Capacity_MC = scn.fib_BH_MC_capacity; # Backhaul capacity for Macro cells
-	SNR_iter = optim_data['arr_12']; # Small Cell Received Power 
-	SCBS_per_MCBS = optim_data['arr_13']; # Number of small cells per macro cell
+	SNR_eMBB = optim_data['arr_11']; # Small Cell Received Power 
+	SCBS_per_MCBS = optim_data['arr_12']; # Number of small cells per macro cell
 	
 	#RX_power_mc = optim_data['arr_13']; # Macro Cell Received Power 
 	#RX_power = np.hstack((RX_power_mc,RX_power_sc)); # Stack all the received powers for the eMBB users
-	SNR_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
+	#SNR_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
 	# ==================================
 	# Print to Understand Matrix Formats
 	#print num_scbs
@@ -127,13 +127,16 @@ for N in range(0,num_iter):
 
 	print "Creating the Application to Access Point SINR association matrix"
 	iter = 0; # Application number tracking
-	for i in range(0,sinr_APs.shape[0]):
-		sinr_eMBB [iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],sinr_APs[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
-	 	SNR_eMBB[iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],SNR_iter[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
-	 	iter = iter + np.sum(user_AP_assoc[i,1]); # Incrementing the iterator for the next user-application sets
+	# for i in range(0,sinr_APs.shape[0]):
+	# 	#sinr_eMBB [iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],sinr_APs[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
+	#  	SNR_eMBB[iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],SNR_iter[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
+	#  	iter = iter + np.sum(user_AP_assoc[i,1]); # Incrementing the iterator for the next user-application sets
 	
+	#sinr_eMBB = sinr_APs
+	#SNR_eMBB = SNR_iter
 	#np.savetxt('SINR.csv',sinr_eMBB, delimiter=",")
-	csvsaver.csvsaver(np.where(sinr_eMBB == sinr_pad_val, 0, sinr_eMBB), [], "SINR.csv")
+	print sinr_eMBB
+	csvsaver.csvsaver(sinr_eMBB, [], "SINR"+str(N)+".csv")
 	#print sinr_eMBB
 	#print sinr_applications[0]
 
@@ -150,7 +153,7 @@ for N in range(0,num_iter):
 			rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for MC  
 
 	var_row_num = sinr_eMBB.shape[0];
-	var_col_num = sinr_APs.shape[1];
+	var_col_num = sinr_eMBB.shape[1];
 
 	#print var_row_num
 
@@ -510,7 +513,7 @@ for N in range(0,num_iter):
 					Rate_data[i,1] = np.sum(new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])])
 				#print np.where(new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])].size == 0 , "Size is 0", new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])]) 
 
-			csvsaver.csvsaver(Rate_data,["SC Rate","MC Rate"], "OptimizedDataRate_user_MCSC.csv")
+			#csvsaver.csvsaver(Rate_data,["SC Rate","MC Rate"], "OptimizedDataRate_user_MCSC.csv")
 			#print np.sum(new_rate, axis = 1)
 			print np.amin(np.sum(new_rate,axis  = 1))
 			print np.amax(np.sum(new_rate,axis  = 1))
@@ -532,14 +535,14 @@ for N in range(0,num_iter):
 			csvsaver.csvsaver(G_sum,["Accepted Users per SC"], "GS.csv")
 			csvsaver.csvsaver(M_sum,["Accepted Users per MC"], "MC.csv")			
 
-			if N == (num_iter-1) and (vars(args)['dual'] == 1 or vars(args)['bhaul'] == 1 or vars(args)['minRate'] == 1 or vars(args)['latency'] == 1):
-				#plotter.optimizer_plotter(new_rate) # We get the plot for the rates with maximum number of users
-				with open("Rate" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv:
-					csvWriter = csv.writer(my_csv,delimiter=',')
-					csvWriter.writerows(new_rate) # We write the rate matrix to the csv file for visualization
-				with open("OptAssignment" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv2:
-					csvWriter = csv.writer(my_csv2,delimiter=',')
-					csvWriter.writerows(np.asarray(X_optimal).reshape((var_row_num,var_col_num))) # We write the optimal association matrix to csv files for analysis purposes
+			# if N == (num_iter-1) and (vars(args)['dual'] == 1 or vars(args)['bhaul'] == 1 or vars(args)['minRate'] == 1 or vars(args)['latency'] == 1):
+			# 	#plotter.optimizer_plotter(new_rate) # We get the plot for the rates with maximum number of users
+			# 	with open("Rate" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv:
+			# 		csvWriter = csv.writer(my_csv,delimiter=',')
+			# 		csvWriter.writerows(new_rate) # We write the rate matrix to the csv file for visualization
+			# 	with open("OptAssignment" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv2:
+			# 		csvWriter = csv.writer(my_csv2,delimiter=',')
+			# 		csvWriter.writerows(np.asarray(X_optimal).reshape((var_row_num,var_col_num))) # We write the optimal association matrix to csv files for analysis purposes
 			#plotter.optimizer_plotter(M_plt_idx[:,:,0] + M_plt_idx[:,:,1] + M_plt_idx[:,:,2] + M_plt_idx[:,:,3] + M_plt_idx[:,:,4])0
 			#plotter.optimizer_plotter(G_plt_idx[:,:,0] + G_plt_idx[:,:,1] + G_plt_idx[:,:,2])	
 
@@ -557,7 +560,7 @@ for N in range(0,num_iter):
 			Data['Apps'+str(N)] = var_row_num;
 			Data['APs'+str(N)] = var_col_num;
 			Data['Time'+str(N)] = m.Runtime;
-			Data['SINR'+str(N)] = sinr_eMBB; 
+			Data['SINR'+str(N)] = sinr_eMBB;
 
 			#print np.sum((G_total_compute>0)*1, axis = 1) 
 			#print np.sum((np.asarray(X_optimal).reshape((var_row_num,var_col_num))>0)*1, axis =1)
