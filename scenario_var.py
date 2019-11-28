@@ -22,8 +22,9 @@ class scenario_var:
 	ant_gain_MCBS = 17; # dBi gain 
 	max_tnsmtpow_MCBS = 49; # dBm gain per band (in 20 MHz)
 	transmit_gain_sc = 30; # This value is in dBi
-	receiver_gain = 15; # This value is in dBi
-	transmit_power = 30; # This value is in dBm
+	receiver_gain = 14; # This value is in dBi for UE-SC network
+	rx_mc_gain = 0; # This value is in dB for UE-MC network 
+	transmit_power = 23; # This value is in dBm
 	mMTC_tnsmt_power = 20; # This value is in dBm
 	other_losses = 20; # This is in dB (due to cable losses, penetration, reflection, etc. )
 	sc_bw = 1e9; # 1 GHz bandwidth for the small cells

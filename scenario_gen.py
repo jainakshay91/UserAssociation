@@ -256,8 +256,8 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
 
         
         print "Performing Interference Calculation"
-        interf_sc = dsc.interf(PL_sc, scn, np, scn.transmit_power, scn.transmit_gain_sc); # Calculate the interference matrix for small cells
-        interf_mc = dsc.interf(PL_mc, scn, np, scn.max_tnsmtpow_MCBS, scn.ant_gain_MCBS); # Calculate the interference matrix for macro cells. MCs and SCs work on different frequency bands and hence do not interfere with each other
+        interf_sc = dsc.interf(PL_sc, scn, np, scn.transmit_power, scn.transmit_gain_sc, scn.receiver_gain); # Calculate the interference matrix for small cells
+        interf_mc = dsc.interf(PL_mc, scn, np, scn.max_tnsmtpow_MCBS, scn.ant_gain_MCBS, scn.rx_mc_gain); # Calculate the interference matrix for macro cells. MCs and SCs work on different frequency bands and hence do not interfere with each other
         csvsaver.csvsaver(interf_sc,[],"InterferenceSC.csv")
         #print interf_sc[1,:]
 
@@ -275,7 +275,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
 
         for i in range(0, RX_mc.shape[0]): # Macro cell Received Power
             for j in range(0, RX_mc.shape[1]):
-                RX_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(10**(scn.N/10)*scn.mc_bw*10**(-3)))
+                RX_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.rx_mc_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(10**(scn.N/10)*scn.mc_bw*10**(-3)))
 
         # ================
         # SINR Calculation
@@ -301,7 +301,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
         sinr_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initialize SINR matrix
         for i in range(0,PL_mc.shape[0]):
             for j in range(0, PL_mc.shape[1]):
-                sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
+                sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.rx_mc_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
             #print sinr_mc[i,:]
         print "Finished All Calculations and Returning to main Function"
         return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, idx_MCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1], mc_locs.shape[0], np.hstack((RX_sc, RX_mc)), l_nl
@@ -356,14 +356,14 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
                         temp[idx_temp], dummy = pathloss.pathloss_CI(scn, dist_serv_cell[i][interf_sect[k]], np, dist_serv_cell_3d[i][interf_sect[k]], dsc, 0); # Calculate the pathloss from the similar sector antennas to the UE
                         idx_temp = idx_temp + 1; # Increment the temp vector index
                         #print temp
-                interf_mc[i,j] =  np.sum((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(temp/10))); # Interference for User i and AP j
+                interf_mc[i,j] =  np.sum((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.rx_mc_gain/10)*10**(-3)))/(10**(temp/10))); # Interference for User i and AP j
         
         print "Performing SINR Calculation for Macro cells"
         #csvsaver.csvsaver(interf_sect_data,[],'Interfering Sectors Data')
         sinr_mc = np.empty((sorted_MCBS_mat.shape[0], sorted_MCBS_mat.shape[1])); # Initialize SINR matrix
         for i in range(0,PL_mc.shape[0]):
             for j in range(0, PL_mc.shape[1]):
-                sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
+                sinr_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.rx_mc_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(interf_mc[i,j] + 10**(scn.N/10)*scn.mc_bw*10**(-3)))
                     
         #print interf_mc
         #print sinr_mc
@@ -464,7 +464,7 @@ def sinr_gen (scn, num_SCBS, mc_locs, sc_locs, usr_lcs, dsc, np, inter_limit_fla
 
         for i in range(0, RX_mc.shape[0]): # Macro cell Received Power
             for j in range(0, RX_mc.shape[1]):
-                RX_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.receiver_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(10**(scn.N/10)*scn.mc_bw*10**(-3)))
+                RX_mc[i,j] = 10*np.log10((10**(scn.max_tnsmtpow_MCBS/10)*(10**(scn.ant_gain_MCBS/10))*(10**(scn.rx_mc_gain/10)*10**(-3))/(10**(PL_mc[i,j]/10)))/(10**(scn.N/10)*scn.mc_bw*10**(-3)))
                     
         print "Finished All Calculations and Returning to main Function"
         return np.hstack((sinr_sc,sinr_mc)), sorted_SCBS_mat, usr_lcs, idx_SCBS_SINR, idx_MCBS_SINR, sinr_pad_value, PL_sc.shape[1], PL_mc.shape[1], mc_locs.shape[0], np.hstack((RX_sc, RX_mc)), l_nl

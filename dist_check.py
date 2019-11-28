@@ -174,7 +174,7 @@ def idx_mat(src_mat, param_val, srch_type, np): # This function works as an elem
 # Interference Limited Scenario Interference Matrix Calculator
 # ============================================================
 
-def interf(PL, scn, np, tx_power, gain): # This function returns the overall interference matrix given a Pathloss matrix
+def interf(PL, scn, np, tx_power, gain, rx_gain): # This function returns the overall interference matrix given a Pathloss matrix
     interf = np.empty((PL.shape[0],PL.shape[1])); # Initialize the interference matrix
     PR_interf = interf; # This is a temporary matrix to hold Rx Power values due to all other APs other than AP of interest
     #print PL.shape 
@@ -185,7 +185,7 @@ def interf(PL, scn, np, tx_power, gain): # This function returns the overall int
         PL_temp[:,i] = float('nan'); # So the array now has Nan where we have our AP of interest
         #print ("PL matrix is:", PL_temp)
         #csvsaver.csvsaver(PL_temp,[],"PL_temp"+str(i)+".csv")
-        PR_interf = (10**(tx_power/10)*(10**(gain/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_temp/10)); # Compute the received power on each UE-AP pair
+        PR_interf = (10**(tx_power/10)*(10**(gain/10))*(10**(rx_gain/10)*10**(-3)))/(10**(PL_temp/10)); # Compute the received power on each UE-AP pair
         #print ("Received Interference is:", PR_interf)
         #csvsaver.csvsaver(PR_interf,[],"PR_interf"+str(i)+".csv")
         interf[:,i] = np.sum(np.where(np.isnan(PR_interf), 0, PR_interf), axis=1); #Interference from other APs for a given UE-AP pair
