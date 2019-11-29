@@ -19,14 +19,14 @@ class scenario_var:
 	UE_density_URLLC = (4000/1e6); #Number of URLLC devices per sq. m (5GPPP white paper)
 	UE_density_mMTC = 24; #Number of mMTC devices per Macro (5GPPP white paper)
 	#UE_density_eMBB = 24000; #Number of URLLC UEs per Macro BS
-	ant_gain_MCBS = 17; # dBi gain 
-	max_tnsmtpow_MCBS = 49; # dBm gain per band (in 20 MHz)
-	transmit_gain_sc = 30; # This value is in dBi
-	receiver_gain = 14; # This value is in dBi for UE-SC network
-	rx_mc_gain = 0; # This value is in dB for UE-MC network 
-	transmit_power = 23; # This value is in dBm
-	mMTC_tnsmt_power = 20; # This value is in dBm
-	other_losses = 20; # This is in dB (due to cable losses, penetration, reflection, etc. )
+	ant_gain_MCBS = 17; # dBi gain [5G PPP doc]
+	max_tnsmtpow_MCBS = 49; # dBm gain per band (in 20 MHz) [5G PPP doc]
+	transmit_gain_sc = 30; # This value is in dBi [5G PPP doc]
+	receiver_gain = 14; # This value is in dBi for UE-SC network [KTH Paper]
+	rx_mc_gain = 0; # This value is in dB for UE-MC network [5G PPP doc] 
+	transmit_power = 23; # This value is in dBm [5G PPP doc]
+	#mMTC_tnsmt_power = 20; # This value is in dBm 
+	#other_losses = 20; # This is in dB (due to cable losses, penetration, reflection, etc. )
 	sc_bw = 1e9; # 1 GHz bandwidth for the small cells
 	mc_bw = 20*1e6; # 20 MHz bandwidth for the UE on LTE macro cells
 	N = -174; # This is the noise spectral density in dbm/Hz
@@ -53,6 +53,6 @@ class scenario_var:
 	eNB_bw = 80*1e6; # Bandwidth for the Macro Cells (Qualcomm Media Release)
 	BW_SC = [50*1e6, 100*1e6, 200*1e6]; # Small cell bandwidth values (All values are in MHz)
 	BW_MC = [1.5*1e6, 3*1e6, 5*1e6, 10*1e6, 20*1e6]; # Macro cell bandwidth values (All values are in MHz)
-	beam_hpbw_rx = 60 # Assuming a HPBW of 60 degrees at the receiver (UE)
-	beam_hpbw_tx = 30 # Assuming a HPBW of 30 degrees at the transmitter (Small Cells)
+	beam_hpbw_rx = 45 # Assuming a HPBW of 45 degrees at the receiver (UE) [KTH Paper]
+	#beam_hpbw_tx = 30 # Assuming a HPBW of 30 degrees at the transmitter (Small Cells)
  	
