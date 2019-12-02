@@ -39,8 +39,8 @@ def small_cell(num, MCBS_locs, SCBS_intersite,SCBS_per_MCBS,MCBS_intersite,np,ds
         locs_SCBS_x = np.multiply(dist_from_MCBS,np.cos(angular_disp)) + MCBS_locs[0]
         locs_SCBS_y = np.multiply(dist_from_MCBS,np.sin(angular_disp)) + MCBS_locs[1]
         #print MCBS_locs
-	#locs_SCBS_x = np.random.uniform(MCBS_locs[num,0] - offset,MCBS_locs[num,0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
-	#locs_SCBS_y = np.random.uniform(MCBS_locs[num,1] - offset,MCBS_locs[num,1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
+        #locs_SCBS_x = np.random.uniform(MCBS_locs[0] - offset,MCBS_locs[0] + offset,(SCBS_per_MCBS,1)); # Generating the X coordinate of the small cells for a given macro cell
+        #locs_SCBS_y = np.random.uniform(MCBS_locs[1] - offset,MCBS_locs[1] + offset,(SCBS_per_MCBS,1)); # Generating the Y coordinate of the small cells for a given macro cell
         locs_SCBS = np.concatenate((locs_SCBS_x, locs_SCBS_y), axis=1); 
         #print locs_SCBS
         if dsc.checker(locs_SCBS,SCBS_intersite,np)==1 and dsc.locs_checker(locs_SCBS, MCBS_locs,np, 'sc')==1:
