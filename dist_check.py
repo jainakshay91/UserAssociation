@@ -10,6 +10,7 @@
 
 from bp_assister import bp_assist
 import copy
+import csvsaver
 
 # ===========================
 # Inter-site distance checker
@@ -152,8 +153,11 @@ def dist_calc(locs_src, locs_tgt, usr_ht, bs_ht, dist_type, np):
 def idx_mat(src_mat, param_val, srch_type, np): # This function works as an element locator and distance based Sorter
    
     if srch_type == 'minimum':
+        #print src_mat
         sorted_mat = np.sort(src_mat,kind='mergesort')[:,:param_val]; # Sort the matrix first
+        #print sorted_mat
         sorted_idx = np.argsort(src_mat,kind='mergesort')[:,:param_val]; #Indices of the sorted matrix
+        #print sorted_idx
         return sorted_mat,sorted_idx # Returning the sorted matrix and the index of the requested elements in the original matrix
    
     # This function can be extended further for maximum or non-maximal/minimal scenarios
@@ -162,23 +166,28 @@ def idx_mat(src_mat, param_val, srch_type, np): # This function works as an elem
         #print src_mat[1,:]
         sorted_mat = np.sort(src_mat,kind='mergesort'); # Sort the SC distance matrix
         #print sorted_mat[1,:]
-        sorted_idx = np.where(sorted_mat<=200,np.argsort(src_mat,kind='mergesort'),'None'); # Indices of the SCs that are within 200m and can impact the UE through interference
+        sorted_idx = np.where(sorted_mat<=100,np.argsort(src_mat,kind='mergesort'),'None'); # Indices of the SCs that are within 200m and can impact the UE through interference
         #print sorted_idx[1]
-        return np.where(sorted_mat>200,0,sorted_mat),sorted_idx # Return Sorted Matrix and the indices 
+        return np.where(sorted_mat>100,0,sorted_mat),sorted_idx # Return Sorted Matrix and the indices 
     
 # ============================================================
 # Interference Limited Scenario Interference Matrix Calculator
 # ============================================================
 
-def interf(PL, scn, np, tx_power, gain): # This function returns the overall interference matrix given a Pathloss matrix
+def interf(PL, scn, np, tx_power, gain, rx_gain): # This function returns the overall interference matrix given a Pathloss matrix
     interf = np.empty((PL.shape[0],PL.shape[1])); # Initialize the interference matrix
     PR_interf = interf; # This is a temporary matrix to hold Rx Power values due to all other APs other than AP of interest
+    #print PL.shape 
     #print PL[1,:]
     #print "Next"
     for i in range(0, PL.shape[1]):
         PL_temp = copy.copy(PL); # This is a temporary array store
         PL_temp[:,i] = float('nan'); # So the array now has Nan where we have our AP of interest
-        PR_interf = (10**(tx_power/10)*(10**(gain/10))*(10**(scn.receiver_gain/10)*10**(-3)))/(10**(PL_temp/10)); # Compute the received power on each UE-AP pair
+        #print ("PL matrix is:", PL_temp)
+        #csvsaver.csvsaver(PL_temp,[],"PL_temp"+str(i)+".csv")
+        PR_interf = (10**(tx_power/10)*(10**(gain/10))*(10**(rx_gain/10)*10**(-3)))/(10**(PL_temp/10)); # Compute the received power on each UE-AP pair
+        #print ("Received Interference is:", PR_interf)
+        #csvsaver.csvsaver(PR_interf,[],"PR_interf"+str(i)+".csv")
         interf[:,i] = np.sum(np.where(np.isnan(PR_interf), 0, PR_interf), axis=1); #Interference from other APs for a given UE-AP pair
     return interf
 
@@ -191,11 +200,11 @@ def angsc(usr_loc, sc_loc, np, scn): # This function will find the beam that poi
     beam_angles = np.arange(scn.beam_hpbw_rx, 360 + scn.beam_hpbw_rx , scn.beam_hpbw_rx) # UE RX beam angles
     #print beam_angles
 
-
+    #csvsaver.csvsaver(usr_loc,[],"USERlocsFORSC.csv")
     coord_diff = usr_loc - sc_loc # Compute the Perpendicular
-    theta_diff = np.degrees(np.arctan(coord_diff[1]/coord_diff[0])) # Computes the vector of angles each UE makes with a MCBS
-    #print theta_diff
-
+    theta_diff = np.degrees(np.arctan2(coord_diff[1],coord_diff[0])) # Computes the vector of angles each UE makes with a MCBS
+    #print ("Calculated SC angles:", theta_diff)
+    #csvsaver.csvsaver(theta_diff,[],"ComputedAngleForSC.csv")
 
     theta_diff = np.where(theta_diff >= 0 , theta_diff, 360 + theta_diff)
     #print theta_diff
@@ -206,10 +215,10 @@ def angsc(usr_loc, sc_loc, np, scn): # This function will find the beam that poi
     #print angle_diff
 
     sect_ang = np.where(angle_diff>=0)[0][0]; # Stores the index where a given AP is located within the UE beam
+    return sect_ang
+    #csvsaver.csvsaver(sect_ang,[],"SectorsSC.csv")
+    #print ("Determined Sectors are:", sect_ang)
     
-    #print sect_ang
-    return int(sect_ang)
-
 # def interf_sect(interf, idx_curr_MCBS, scn, np): # This function returns the overall interference matrix given a Pathloss matrix and the sectorization matrix
 #     interf = np.empty((PL.shape[0],PL.shape[1])); # Initialize the interference matrix
 #     PR_interf = interf; # This is a temporary matrix to hold Rx Power values due to all other APs other than AP of interest

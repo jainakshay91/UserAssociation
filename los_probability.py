@@ -8,8 +8,9 @@ from scenario_var import scenario_var
 # ==================================================
 # Los Probability for UMi Street Canyon (Small Cell)
 
+
 scn = scenario_var();
-def los_prob(np, dist, sc_flag):
+def los_prob(np, dist,sc_flag):
     if sc_flag == 1: # Small Cell
         los_prob = 0; # Probability holder variable
         if dist<=18:
@@ -70,3 +71,6 @@ def los_prob(np, dist, sc_flag):
 #             los_prob = los_prob + intr_prob
 #         #print ("Macro Cell LOS Probability",los_prob/i )
 #         return los_prob/i # Return the average which will be close to the expected value 
+
+
+

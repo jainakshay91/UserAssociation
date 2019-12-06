@@ -14,14 +14,18 @@ def pathloss_CI(scn, dist, np, d3d, dsc, sc_flag):
    
     # =====================================================
     # We implement the NYU CI model for full distance range
+    
+    los_flag = 0 # Line of Sight and Non Line of Sight flag 
     if sc_flag == 0 or sc_flag == 1:
         FSPL = 20*np.log10((4*np.pi*np.where(sc_flag,scn.fc_sc,scn.fc_mc))/scn.c); # Calculate the Free Space Path loss
 
-        # =================================================================
-        # We consider a LOS scenario based on the LOS probability generator
+        # =====================================================================
+        # We consider a LOS scenario if the los probability is greater than 50%
+        
+        #print ("The Threshold for SC LOS-NLOS is:", scn.tau_sc[tau_flag])
+        #print ("The Threshold for MC LOS-NLOS is:", scn.tau_mc[tau_flag])
 
         if (np.random.rand(1) <= los_probability.los_prob(np,dist,sc_flag)  and sc_flag == 1) or (np.random.rand(1) <= los_probability.los_prob(np,dist,sc_flag) and sc_flag == 0):
-    
             los_flag = 1 # Return the los flag for the plots later
             #print ("LOS with flag:",sc_flag)
             n = np.where(sc_flag, 2.1, 2.0); # For LOS scenarios UMa has PLE = 2.0 and UMi at 28 and 73GHz has PLE = 2.1
@@ -32,8 +36,8 @@ def pathloss_CI(scn, dist, np, d3d, dsc, sc_flag):
             else: 
                 PL_CI = FSPL + 10*n*np.log10(d3d) + shadowing; # CI model Pathloss 
             return PL_CI, los_flag
+
         else:
-            
             los_flag = 0 # Return the los flag for the plots later (NLOS)
             #print ("NLOS with flag:",sc_flag)
             n = np.where(sc_flag, 3.2, 2.9); # For NLOS scenarios UMa has PLE = 2.0 and UMi at 28 and 73GHz has PLE = 2.1
@@ -46,8 +50,8 @@ def pathloss_CI(scn, dist, np, d3d, dsc, sc_flag):
             return PL_CI, los_flag
             
     elif sc_flag == 2:
-
-         #if los_probability.los_prob_sc(np,dist) >= 0.5: # Small Cells will always be in LOS for a MC
+        
+        #if los_probability.los_prob_sc(np,dist) >= 0.5: # Small Cells will always be in LOS for a MC
         los_flag = 1
         FSPL = 20*np.log10((4*np.pi*scn.fc_bh_sc)/scn.c); # Calculate the Free Space Path loss for Backhaul
         n = 2.0; # We consider BH to be in LOS scenario with a pathloss exponent of 2.1
@@ -69,6 +73,8 @@ def pathloss_CI(scn, dist, np, d3d, dsc, sc_flag):
         #     else: 
         #         PL_SC_MC_CI = FSPL + 10*n*np.log10(d3d) + shadowing; # CI model Pathloss between SC and MC
         #     return PL_SC_MC_CI, los_flag
+
+
 
 
 # ============================================
@@ -107,9 +113,9 @@ def pathloss_CI(scn, dist, np, d3d, dsc, sc_flag):
 #     return (pathloss_sc+shadowing)
 
 
-# # =====================================================
-# # 3GPP Macro Cell Pathloss
-# # =====================================================
+# =====================================================
+# 3GPP Macro Cell Pathloss
+# =====================================================
 
 
 # def pathloss_MC_3GPP(scn, dist, np, d3d, dsc):

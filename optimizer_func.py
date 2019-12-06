@@ -83,8 +83,6 @@ data_rate_consum_BH_mMTC = np.empty((num_AP_mMTC.shape[0],1)) # Consumed Data Ra
 for i in range(num_AP_mMTC.shape[0]):
 	data_rate_consum_BH_mMTC[i] = np.sum(np.random.random_sample((num_AP_mMTC[i],1))*(scn.mMTC_maxrate[1] - scn.mMTC_maxrate[0]) + scn.mMTC_maxrate[0])
 
-	
-#print data_rate_consum_BH_mMTC.shape
 #RX_power_mc_mMTC = optim_data_mMTC['arr_12']; # Received Power from Macro cells for all the mMTC devices
 #RX_power_mMTC = np.hstack((Rx_power_sc_mMTC, RX_power_mc_mMTC)); # Stack all the received powers for the mMTC users
 
@@ -94,46 +92,24 @@ for N in range(0,num_iter):
 	print "Dataset # " + str(N) + ": Collecting the Stored Variables"
 
 	optim_data = np.load(os.getcwd() + '/Data/Temp/optim_var_'+ str(N) + str(vars(args)['iter']) +'.npz', allow_pickle = True)
-	sinr_APs = optim_data['arr_0']; # Load the SINR data to be used for the optimization
-	user_AP_assoc = optim_data['arr_1'].item()['user_app' + str(N)]; # Load the User-Applications Association data to be used for the optimization
-	sinr_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
-	sinr_pad_val = optim_data['arr_4']; # In the small cell calculation we use an sinr pad value for ease of computation
-	num_scbs = optim_data['arr_5']; # Number of Small cells
-	num_mcbs = optim_data['arr_6']; # Number of Macro cells
-	mat_wlbh_sc = optim_data['arr_7']; # Wireless backhaul matrix for Small Cells
-	mat_wrdbh_sc = optim_data['arr_8']; # Wired backhaul matrix for Macro cells
-	Hops_MC = optim_data['arr_9']; # Number of hops to the IMS core from Macro cells
-	Hops_SC = optim_data['arr_10']; # Number of hops to the IMS core from Small cells
-	BH_Capacity_SC = optim_data['arr_11']; # Backhaul capacity for Small cells
+	sinr_eMBB = optim_data['arr_0']; # Load the SINR data to be used for the optimization
+	#user_AP_assoc = optim_data['arr_1'].item()['user_app' + str(N)]; # Load the User-Applications Association data to be used for the optimization
+	#sinr_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
+	sinr_pad_val = optim_data['arr_3']; # In the small cell calculation we use an sinr pad value for ease of computation
+	num_scbs = optim_data['arr_4']; # Number of Small cells
+	num_mcbs = optim_data['arr_5']; # Number of Macro cells
+	mat_wlbh_sc = optim_data['arr_6']; # Wireless backhaul matrix for Small Cells
+	mat_wrdbh_sc = optim_data['arr_7']; # Wired backhaul matrix for Macro cells
+	Hops_MC = optim_data['arr_8']; # Number of hops to the IMS core from Macro cells
+	Hops_SC = optim_data['arr_9']; # Number of hops to the IMS core from Small cells
+	BH_Capacity_SC = optim_data['arr_10']; # Backhaul capacity for Small cells
 	BH_Capacity_MC = scn.fib_BH_MC_capacity; # Backhaul capacity for Macro cells
-	SNR_iter = optim_data['arr_12']; # Small Cell Received Power 
-	SCBS_per_MCBS = optim_data['arr_13']; # Number of small cells per macro cell
+	SNR_eMBB = optim_data['arr_11']; # Small Cell Received Power 
+	SCBS_per_MCBS = optim_data['arr_12']; # Number of small cells per macro cell
 	
-
-	# ================================================================
-	# Update the Available Backhaul Capacity based on mMTC Consumption
-	#print num_scbs
-	BH_Capacity_SC = BH_Capacity_SC - data_rate_consum_BH_mMTC[0:num_scbs]; # We reduce the available backhaul capacity for small cells
-	BH_Capacity_MC = BH_Capacity_MC - data_rate_consum_BH_mMTC[num_scbs:num_scbs+num_mcbs]; # We reduce the available backhaul capacity for macro cells
-
-	# ===> Add the consumption from mMTC devices associated to small cell, which is in turn associated with a macro cell
-
-	ini_idx = 0; # Initial index
-	nex_idx = SCBS_per_MCBS[0]; # The next index
-	for i in range(SCBS_per_MCBS.shape[0]):
-		BH_Capacity_MC[i] = BH_Capacity_MC[i] - np.sum(data_rate_consum_BH_mMTC[ini_idx:nex_idx]) # Reduce the Available MC backhaul capacity further due the mMTC devices on the SCs associated to it
-		if i < (SCBS_per_MCBS.shape[0] - 1):
-			ini_idx = nex_idx # Update the indices
-			nex_idx = nex_idx + SCBS_per_MCBS[i+1] # Update the indices
-		else:
-			break
-
-	#print BH_Capacity_SC
-	#print "==============="
-	#print BH_Capacity_MC
 	#RX_power_mc = optim_data['arr_13']; # Macro Cell Received Power 
 	#RX_power = np.hstack((RX_power_mc,RX_power_sc)); # Stack all the received powers for the eMBB users
-	SNR_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
+	#SNR_eMBB = np.empty([np.sum(user_AP_assoc[:,1]),sinr_APs.shape[1]],dtype=float); # Array that holds the Application SINR values
 	# ==================================
 	# Print to Understand Matrix Formats
 	#print num_scbs
@@ -154,15 +130,36 @@ for N in range(0,num_iter):
 	#print mat_wrdbh_sc.shape
 	#print sinr_APs.shape
 
+	# ================================================================
+	# Update the Available Backhaul Capacity based on mMTC Consumption
+	#print num_scbs
+	BH_Capacity_SC = BH_Capacity_SC - data_rate_consum_BH_mMTC[0:num_scbs]; # We reduce the available backhaul capacity for small cells
+	BH_Capacity_MC = BH_Capacity_MC - data_rate_consum_BH_mMTC[num_scbs:num_scbs+num_mcbs]; # We reduce the available backhaul capacity for macro cells
 
-	print "Creating the Application to Access Point SINR association matrix"
-	iter = 0; # Application number tracking
-	for i in range(0,sinr_APs.shape[0]):
-		sinr_eMBB [iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],sinr_APs[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
-	 	SNR_eMBB[iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],SNR_iter[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
-	 	iter = iter + np.sum(user_AP_assoc[i,1]); # Incrementing the iterator for the next user-application sets
+	# ===> Add the consumption from mMTC devices associated to small cell, which is in turn associated with a macro cell
+
+	ini_idx = 0; # Initial index
+	nex_idx = SCBS_per_MCBS[0]; # The next index
+	for i in range(SCBS_per_MCBS.shape[0]):
+		BH_Capacity_MC[i] = BH_Capacity_MC[i] - np.sum(data_rate_consum_BH_mMTC[ini_idx:nex_idx]) # Reduce the Available MC backhaul capacity further due the mMTC devices on the SCs associated to it
+		if i < (SCBS_per_MCBS.shape[0] - 1):
+			ini_idx = nex_idx # Update the indices
+			nex_idx = nex_idx + SCBS_per_MCBS[i+1] # Update the indices
+		else:
+			break
+
+	#print "Creating the Application to Access Point SINR association matrix"
+	#iter = 0; # Application number tracking
+	# for i in range(0,sinr_APs.shape[0]):
+	# 	#sinr_eMBB [iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],sinr_APs[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
+	#  	SNR_eMBB[iter:iter + np.sum(user_AP_assoc[i,1]), :] = np.delete(np.outer(user_AP_assoc[i,1],SNR_iter[i,:]), np.where(user_AP_assoc[i,1] == 0), 0);# Application to Base Station SINR matrix 
+	#  	iter = iter + np.sum(user_AP_assoc[i,1]); # Incrementing the iterator for the next user-application sets
 	
-	np.savetxt('log.csv',sinr_eMBB, delimiter=",")
+	#sinr_eMBB = sinr_APs
+	#SNR_eMBB = SNR_iter
+	#np.savetxt('SINR.csv',sinr_eMBB, delimiter=",")
+	#print sinr_eMBB
+	csvsaver.csvsaver(sinr_eMBB, [], "SINR"+str(N)+".csv")
 	#print sinr_eMBB
 	#print sinr_applications[0]
 
@@ -176,10 +173,10 @@ for N in range(0,num_iter):
 			#rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for SC				
 		#else:
 			#rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, scn.mc_bw*np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for MC  
-		rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for MC  
+			rate[:,i] = np.where(sinr_eMBB[:,i] == sinr_pad_val, 0, np.log2(1 + 10**(sinr_eMBB[:,i]/10))); # Rate calculation for MC  
 
 	var_row_num = sinr_eMBB.shape[0];
-	var_col_num = sinr_APs.shape[1];
+	var_col_num = sinr_eMBB.shape[1];
 
 	#print var_row_num
 
@@ -197,7 +194,7 @@ for N in range(0,num_iter):
 			bh_paths[i] = (Hops_sc[i,:] + 1)*scn.wrd_link_delay; # Small cell path latency with wired backhaul
 	#bh_paths[:Hops_sc.shape[0],:] = Hops_sc*scn.wrd_link_delay + scn.wl_link_delay; # Small cell path latency
 	bh_paths[Hops_sc.shape[0]:bh_paths.shape[0]] = Hops_MC*scn.wrd_link_delay; # Macro cell path latency  
-	#print np.diag(bh_paths)
+	#print bh_paths
 	#print var_col_num
 
 	#print rate
@@ -220,7 +217,7 @@ for N in range(0,num_iter):
 	# =========
 	# Optimizer
 	# =========
-
+	#print rate 
 	print "Entering the Optimizer"
 
 	try:
@@ -234,15 +231,12 @@ for N in range(0,num_iter):
 		# ===> Establish the Objective Function
 
 		obj_func = quicksum(G_SC[i,j,k]*scn.BW_SC[k]*rate[i,j] for i in range(var_row_num) for j in range(num_scbs) for k in range(3)) + quicksum(G_MC[i,j - num_scbs,k]*scn.BW_MC[k]*rate[i,j] for i in range(var_row_num) for j in range(num_scbs, num_scbs + num_mcbs) for k in range(5)); 
-		# obj_func = 0; 
-		# #obj_func = LinExpr(); # Initialize the objective function
-		# #obj_func.addTerms(rate,X);
+		#obj_func = LinExpr(); # Initialize the objective function
+		#obj_func.addTerms(rate,X);
 		# for i in range(0,var_row_num):
 		# 	for j in range(0, var_col_num):
 		# 			if j < num_scbs:
-		# 				#print obj_func
 		# 				for k in range(3):
-		# 					#print j 
 		# 					obj_func = obj_func + (G_SC[i,j,k]*scn.BW_SC[k]*rate[i,j]); # Small cell contribution  
 		# 			elif j >= num_scbs:
 		# 				for f in range(5):
@@ -259,32 +253,31 @@ for N in range(0,num_iter):
 			#DC[i,0] = X.sum(i,'*'); # Constraint Expression
 			DC[i,0] = quicksum(X[i,j] for j in range(var_col_num))
 		
-		MC = m.addVars(var_row_num,1, name = "MC"); # Initializing the Constraint Variables with MC 
+		MC = m.addVars(var_row_num,1, name = "K"); # Initializing the Constraint Variables with MC 
 		for i in range(0,var_row_num):
 			#MC[i,0] = X.sum(i,np.arange(num_scbs,num_scbs+num_mcbs).tolist()); # Macro Cell Constraint Expression
 			MC[i,0] = quicksum(X[i,j] for j in range(num_scbs, num_mcbs+num_scbs)) # Macro Cell Constraint Expression
 
-		SC = m.addVars(var_row_num,1, name = "SC"); # Initializing the Constraint Variable with SC
+		SC = m.addVars(var_row_num,1, name = "J"); # Initializing the Constraint Variable with SC
 		for i in range(0,var_row_num):
 			#SC[i,0] = X.sum(i,np.arange(0,num_scbs).tolist()); # Small Cell Constraint Expression
 			SC[i,0] = quicksum(X[i,j] for j in range(num_scbs)) # Small Cell Constraint Expression
 		# ======================================================= 
-
-		# ======================================================= 
 		# Set up the Minimum Rate Constraint for the Applications
+
 
 		min_RATE = m.addVars(var_row_num, 1, name = "min_RATE"); # Initializing the Constraint variable
 		for i in range(0,var_row_num):
 			min_RATE[i,0] = quicksum(rate[i,j]*scn.BW_SC[k]*G_SC[i,j,k] for j in range(num_scbs) for k in range(3)) + quicksum(rate[i,j]*scn.BW_MC[k]*G_MC[i,j - num_scbs,k] for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5))
+			# for j in range(0, var_col_num):
+			# 	if j < num_scbs:
+			# 		for k in range(3):
+			# 			min_RATE[i,0] = min_RATE[i,0] + rate[i,j]*scn.BW_SC[k]*G_SC[i,j,k]; # Constraint expression
 
-		# for i in range(0,var_row_num):
-		# 	for j in range(0, var_col_num):
-		# 		if j < num_scbs:
-		# 			for k in range(3):
-		# 				min_RATE[i,0] = min_RATE[i,0] + rate[i,j]*scn.BW_SC[k]*G_SC[i,j,k]; # Constraint expression
-		# 		elif j >= num_scbs:
-		# 			for k in range(5):
-		# 				min_RATE[i,0] = min_RATE[i,0] + rate[i,j]*scn.BW_MC[k]*G_MC[i,j - num_scbs,k]; # Constraint expression
+			# 	elif j >= num_scbs:
+			# 		for k in range(5):
+			# 			min_RATE[i,0] = min_RATE[i,0] + rate[i,j]*scn.BW_MC[k]*G_MC[i,j - num_scbs,k]; # Constraint expression
+
 
 		# ===> Set up the Resource Allocation Constraint for an AP
 
@@ -294,20 +287,18 @@ for N in range(0,num_iter):
 				RB[j,0] = quicksum(G_SC[i,j,k]*scn.BW_SC[k] for i in range(var_row_num) for k in range(3))
 			elif j >= num_scbs:
 				RB[j,0] = quicksum(G_MC[i,j - num_scbs,k]*scn.BW_MC[k] for i in range(var_row_num) for k in range(5))
-
-		# for j in range(0, var_col_num):
-		# 	for i in range(0, var_row_num):
-		# 		if j < num_scbs:
-		# 			#RB[i,0] = LinExpr([scn.usr_scbw]*var_row_num,X.select('*',i)); # Constraint Expression for SCBS
-		# 			#print LinExpr(G_SC.select(i,j,'*'), scn.BW_SC)
-		# 			for k in range(3):
-		# 				#RB[j,0] = RB[j,0] + LinExpr(G_SC.select(i,j,'*'), scn.BW_SC)
-		# 				RB[j,0] = RB[j,0] + G_SC[i,j,k]*scn.BW_SC[k]
-		# 		elif j >= num_scbs:
-		# 			#RB[j,0] = RB[j,0] + LinExpr(G_MC.select(i,j - num_scbs,'*'), scn.BW_MC)
-		# 			for k in range(5):
-		# 				RB[j,0] = RB[j,0] + G_MC[i,j - num_scbs,k]*scn.BW_MC[k]
-				#RB[i,0] = LinExpr([scn.mc_bw]*var_row_num, X.select('*',i)); # Constraint Expression for MCBS
+			# for i in range(0, var_row_num):
+			# 	if j < num_scbs:
+			# 		#RB[i,0] = LinExpr([scn.usr_scbw]*var_row_num,X.select('*',i)); # Constraint Expression for SCBS
+			# 		#print LinExpr(G_SC.select(i,j,'*'), scn.BW_SC)
+			# 		for k in range(3):
+			# 			#RB[j,0] = RB[j,0] + LinExpr(G_SC.select(i,j,'*'), scn.BW_SC)
+			# 			RB[j,0] = RB[j,0] + G_SC[i,j,k]*scn.BW_SC[k]
+			# 	elif j >= num_scbs:
+			# 		#RB[j,0] = RB[j,0] + LinExpr(G_MC.select(i,j - num_scbs,'*'), scn.BW_MC)
+			# 		for k in range(5):
+			# 			RB[j,0] = RB[j,0] + G_MC[i,j - num_scbs,k]*scn.BW_MC[k]
+			# 	#RB[i,0] = LinExpr([scn.mc_bw]*var_row_num, X.select('*',i)); # Constraint Expression for MCBS
 		#max_BW = m.addVars(var_col_num,1, name="Max_BW"); # Initializing the Constraint Variable
 		#for i in range(0,)
 
@@ -315,10 +306,6 @@ for N in range(0,num_iter):
 		# Set up the Backhaul Capacity constraint 
 
 		BH_CAP_RES = m.addVars(var_col_num, 1, name = "BH_CAP_RES"); # Initializing the Constraint variable
-		# for j in range(0, num_scbs):
-		# 	for i in range(0, var_row_num):
-		# 		for k in range(3):
-		# 			BH_CAP_RES[j,0] = BH_CAP_RES[j,0] + rate[i,j]*G_SC[i,j,k]*scn.BW_SC[k]; # Constraint Expression
 		for j in range(0, num_scbs):
 			# for i in range(0, var_row_num):
 			# 	for k in range(3):
@@ -334,7 +321,7 @@ for N in range(0,num_iter):
 			# 	for k in range(5):
 			# 		BH_CAP_RES[j,0] = BH_CAP_RES[j,0] + rate[i,j]*G_MC[i,j - num_scbs,k]*scn.BW_MC[k]; # Macro cell backhaul capacity computation for constraint expression
 			# for l in range(ini_idx, out_idx):
-			# 	BH_CAP_RES[j,0] = BH_CAP_RES[j,0] + BH_CAP_RES[l,0];
+			#  	BH_CAP_RES[j,0] = BH_CAP_RES[j,0] + BH_CAP_RES[l,0];
 			count_scbs = out_idx; # Updated the counter for the next round  
 
 			#print BH_CAP_RES[i,0]
@@ -352,17 +339,17 @@ for N in range(0,num_iter):
 		# Unity Assignment Constraints
 
 		U_SC = m.addVars(var_row_num, int(num_scbs), name="USC");
+		
 		for i in range(var_row_num):
+			#U_SC[i,j] = LinExpr([1]*3,G_SC.select(i,j,'*'))
 			for j in range(num_scbs):
-				#U_SC[i,j] = LinExpr([1]*3,G_SC.select(i,j,'*'))
 				U_SC[i,j] = quicksum(G_SC[i,j,k] for k in range(3))
 
 		U_MC = m.addVars(var_row_num, int(num_mcbs), name="UMC")
 		for i in range(var_row_num):
+			#U_MC[i,j] = LinExpr([1]*5,G_MC.select(i,j,'*'))
 			for j in range(num_mcbs):
-				#U_MC[i,j] = LinExpr([1]*5,G_MC.select(i,j,'*'))
 				U_MC[i,j] = quicksum(G_MC[i,j,k] for k in range(5))
-
 
 
 		# ==========================
@@ -383,11 +370,11 @@ for N in range(0,num_iter):
 		m.addConstrs((G_SC[i,j,k] <= BW_SC[i,k] for i in range(var_row_num) for j in range(num_scbs) for k in range(3)), name = 'l1'); # Linearization constraint 1
 		m.addConstrs((G_SC[i,j,k] <= X[i,j] for i in range(var_row_num) for j in range(num_scbs) for k in range(3)), name = 'l2'); # Linearization constraint 2
 		m.addConstrs((G_SC[i,j,k] >= (BW_SC[i,k] + X[i,j] -1) for i in range(var_row_num) for j in range(num_scbs) for k in range(3)), name = 'l3'); # Linearization constraint 3
-		m.addConstrs((G_MC[i,j - num_scbs,k] <= BW_MC[i,k] for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l1'); # Linearization constraint 4
-		m.addConstrs((G_MC[i,j - num_scbs,k] <= X[i,j] for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l2'); # Linearization constraint 5
-		m.addConstrs((G_MC[i,j - num_scbs,k] >= (BW_MC[i,k] + X[i,j] -1) for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l3'); # Linearization constraint 6
-		m.addConstrs((U_SC[i,j] <= 1 for i in range(var_row_num) for j in range(num_scbs)))
-		m.addConstrs((U_MC[i,j] <= 1 for i in range(var_row_num) for j in range(num_mcbs)))
+		m.addConstrs((G_MC[i,j - num_scbs,k] <= BW_MC[i,k] for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l4'); # Linearization constraint 4
+		m.addConstrs((G_MC[i,j - num_scbs,k] <= X[i,j] for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l5'); # Linearization constraint 5
+		m.addConstrs((G_MC[i,j - num_scbs,k] >= (BW_MC[i,k] + X[i,j] -1) for i in range(var_row_num) for j in range(num_scbs, num_scbs+num_mcbs) for k in range(5)), name = 'l6'); # Linearization constraint 6
+		m.addConstrs((U_SC[i,j] <= 1 for i in range(var_row_num) for j in range(num_scbs)),name = 'U1')
+		m.addConstrs((U_MC[i,j] <= 1 for i in range(var_row_num) for j in range(num_mcbs)),name = 'U2')
 
 		if vars(args)['dual'] == 0:
 			print "==================="
@@ -395,44 +382,62 @@ for N in range(0,num_iter):
 			print "==================="
 			#m.addConstrs((U_SC[i,j] == 0 for i in range(var_row_num) for j in range(num_scbs)))
 			#m.addConstrs((U_MC[i,j] == 1 for i in range(var_row_num) for j in range(num_mcbs)))
-			m.addConstrs((DC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
+			m.addConstrs((DC[i,0] <= 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
 			#m.addConstrs((MC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Single Connectivity constraint 
 			#m.addConstrs((SC[i,0] == 0 for i in range(var_row_num)), name ='c14'); # Adding the Single Connectivity constraint 
 			
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
+			else:
+				m.addConstrs((min_RATE[i,0] >= 1 for i in range(var_row_num)), name ='c15'); # Adding the minimum rate constraint for other strategies, which is to provide some data rate atleast (1 bps)
+			
 			if vars(args)['bhaul'] == 1:
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
-				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC[i - num_scbs] for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
+				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC[i-num_scbs] for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
+				
 			if vars(args)['latency'] == 1:
 				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
+			
 		elif vars(args)['dual'] == 1:	
 			print "================="	
 			print "Dual Connectivity"
 			print "================="
-			#m.addConstrs((DC[i,0] <= 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+			m.addConstrs((DC[i,0] == 2 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
 			#m.addConstrs((U_SC[i,j] <= 1 for i in range(var_row_num) for j in range(num_scbs)))
 			#m.addConstrs((U_MC[i,j] == 1 for i in range(var_row_num) for j in range(num_mcbs)))
-			m.addConstrs((MC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
-			m.addConstrs((SC[i,0] <= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
+			#m.addConstrs((MC[i,0] == 1 for i in range(var_row_num)), name ='c'); # Adding the Dual Connectivity constraint 
+			#m.addConstrs((quicksum(X[i,j] for j in range(num_scbs, num_scbs+num_mcbs)) == 1 for i in range(var_row_num)), name ='c8'); # Adding the Dual Connectivity constraint 
+			#m.addConstrs((SC[i,0] <= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
 			
+
 			#m.addConstrs((DC[i,0] >= 1 for i in range(var_row_num)), name ='c5'); # Adding the Dual Connectivity constraint 
 			if vars(args)['minRate'] == 1:
 				m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint
+			else:
+				m.addConstrs((min_RATE[i,0] >= 1 for i in range(var_row_num)), name ='c15'); # Adding the minimum rate constraint for other strategies, which is to provide some data rate atleast (1 bps)
+				
 			if vars(args)['bhaul'] == 1:
+				#print "here"
 				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
-				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC[i - num_scbs] for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
-			if vars(args)['latency'] == 1:
-				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
-		
+				m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC[i-num_scbs] for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
+				#print "Applied Constraints"
 
+			if vars(args)['latency'] == 1:
+				#print "LATHere"
+				m.addConstrs((AP_latency[i,j] <= scn.eMBB_latency_req for i in range(0, var_row_num) for j in range(0, var_col_num)), name = 'c4'); # Path latency constraint 
+				#print "Applied Constraints"
+					
 		#m.addConstrs((min_RATE[i,0] >= scn.eMBB_minrate for i in range(var_row_num)), name ='c1'); # Adding the minimum rate constraint 
 		#m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_SC[i,0] for i in range(num_scbs)), name = 'c2'); # Adding the Backhaul capacity constraint
 		#m.addConstrs((BH_CAP_RES[i,0] <= BH_Capacity_MC for i in range(num_scbs,num_scbs + num_mcbs)), name = 'c3'); # Adding the Backhaul capacity constraint
 		#m.addConstrs((AP_latency[i,0] <= scn.eMBB_latency_req for i in range(var_row_num)), name = 'c4'); # Path latency constraint 
 		
-		if vars(args)['mipGP'] == 1:
-			m.Params.MIPGap = 0.01; # Set the Upper and Lower Bound Gap to 0.1%
+		#if vars(args)['mipGP'] == 1:
+		m.Params.MIPGap = 0.05; # Set the Upper and Lower Bound Gap to 5%
+		m.Params.TIME_LIMIT = 600; # Set a timelimit of 10 seconds
+		if vars(args)['dual'] == 1 and vars(args)['minRate'] == 1: 
+				m.Params.MIPFocus = 1; # To aid in convergence of the DC-MRT solution
+				m.Params.Cuts = 3; # Aggressive Cuts for faster convergence
 		else:
 			pass
 
@@ -440,7 +445,7 @@ for N in range(0,num_iter):
 		m.write("debug.lp");
 
 		m.optimize()
-
+		print "Optimized"
 		if m.status == 2:
 			# ============================ 
 			# Print the Optimized Solution 
@@ -535,7 +540,7 @@ for N in range(0,num_iter):
 					Rate_data[i,1] = np.sum(new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])])
 				#print np.where(new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])].size == 0 , "Size is 0", new_rate[i, num_scbs + np.nonzero(new_rate[i,num_scbs:num_scbs+num_mcbs])]) 
 
-			csvsaver.csvsaver(Rate_data,["SC Rate","MC Rate"], "OptimizedDataRate_user_MCSC.csv")
+			#csvsaver.csvsaver(Rate_data,["SC Rate","MC Rate"], "OptimizedDataRate_user_MCSC.csv")
 			#print np.sum(new_rate, axis = 1)
 			print np.amin(np.sum(new_rate,axis  = 1))
 			print np.amax(np.sum(new_rate,axis  = 1))
@@ -554,20 +559,17 @@ for N in range(0,num_iter):
 			#print M_sum.shape
 			#print ("SC:", G_sum)
 			#print ("MC:", M_sum)
-			if vars(args)['dual'] == 1 or vars(args)['minRate'] == 1:
-				filname_sc = 'GS'+str(vars(args)['dual'])+str(vars(args)['minRate'])+str(vars(args)['iter'])+'.csv' # Filename for the small cell
-				filname_mc = 'MC'+str(vars(args)['dual'])+str(vars(args)['minRate'])+str(vars(args)['iter'])+'.csv' # Filename for the Macro cell
-				csvsaver.csvsaver(G_sum,["Accepted Users per SC"], filname_sc)
-				csvsaver.csvsaver(M_sum,["Accepted Users per MC"], filname_mc)			
+			csvsaver.csvsaver(G_sum,["Accepted Users per SC"], "GS.csv")
+			csvsaver.csvsaver(M_sum,["Accepted Users per MC"], "MC.csv")			
 
-			if N == (num_iter-1) and (vars(args)['dual'] == 1 or vars(args)['bhaul'] == 1 or vars(args)['minRate'] == 1 or vars(args)['latency'] == 1):
-				#plotter.optimizer_plotter(new_rate) # We get the plot for the rates with maximum number of users
-				with open("Rate" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv:
-					csvWriter = csv.writer(my_csv,delimiter=',')
-					csvWriter.writerows(new_rate) # We write the rate matrix to the csv file for visualization
-				with open("OptAssignment" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv2:
-					csvWriter = csv.writer(my_csv2,delimiter=',')
-					csvWriter.writerows(np.asarray(X_optimal).reshape((var_row_num,var_col_num))) # We write the optimal association matrix to csv files for analysis purposes
+			# if N == (num_iter-1) and (vars(args)['dual'] == 1 or vars(args)['bhaul'] == 1 or vars(args)['minRate'] == 1 or vars(args)['latency'] == 1):
+			# 	#plotter.optimizer_plotter(new_rate) # We get the plot for the rates with maximum number of users
+			# 	with open("Rate" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv:
+			# 		csvWriter = csv.writer(my_csv,delimiter=',')
+			# 		csvWriter.writerows(new_rate) # We write the rate matrix to the csv file for visualization
+			# 	with open("OptAssignment" + str(vars(args)['iter']) + str(vars(args)['dual']) + str(vars(args)['bhaul']) + str(vars(args)['minRate']) + str(vars(args)['latency']) + ".csv", "w+") as my_csv2:
+			# 		csvWriter = csv.writer(my_csv2,delimiter=',')
+			# 		csvWriter.writerows(np.asarray(X_optimal).reshape((var_row_num,var_col_num))) # We write the optimal association matrix to csv files for analysis purposes
 			#plotter.optimizer_plotter(M_plt_idx[:,:,0] + M_plt_idx[:,:,1] + M_plt_idx[:,:,2] + M_plt_idx[:,:,3] + M_plt_idx[:,:,4])0
 			#plotter.optimizer_plotter(G_plt_idx[:,:,0] + G_plt_idx[:,:,1] + G_plt_idx[:,:,2])	
 
@@ -579,10 +581,13 @@ for N in range(0,num_iter):
 			#Data['X_optimal_data' + str(N)] = np.asarray(X_optimal).reshape((var_row_num,var_col_num)); # Optimal Association Matrix
 			Data['X_optimal_data' + str(N)] = (G_total_compute>0)*1; # Optimal Association Matrix
 			Data['Net_Throughput' + str(N)] = m.objVal; # Network wide throughput
+			Data['Optimal_BW' + str(N)] = G_total_compute; # Stores the optimal Bandwidth 
 			Data['Rates' + str(N)] = new_rate; # Data rate matrix  
 			Data['Status' + str(N)] = m.status; # Insert the status
 			Data['Apps'+str(N)] = var_row_num;
 			Data['APs'+str(N)] = var_col_num;
+			Data['Time'+str(N)] = m.Runtime;
+			Data['SINR'+str(N)] = sinr_eMBB;
 
 			#print np.sum((G_total_compute>0)*1, axis = 1) 
 			#print np.sum((np.asarray(X_optimal).reshape((var_row_num,var_col_num))>0)*1, axis =1)
@@ -623,7 +628,7 @@ for N in range(0,num_iter):
 
 		else:
 			Data['Status' + str(N)] = m.status; # Add the status for detecting infeasible solution
-			#print ("Status_Flags:" + str(k), str(m.status))
+			print ("Status_Flags:" + str(N), str(m.status))
 			Data['Apps' + str(N)] = var_row_num;
 			Data['APs' + str(N)] = var_col_num;
 			continue

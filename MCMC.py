@@ -317,8 +317,86 @@ def SA_MRT_LAT(MCMC_iter, chat_frequency):
 			send_message(message, chat) # Send the End process message
 			sys.exit('Error Encountered')	
 
+def DA_MRT_BHCAP(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '1','-dual', '1','-bhaul', '1','-latency', '0', '-mipGP', '1'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for DA + MRT + BHCAP"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')	
+
+def DA_MRT_BHCAP_LAT(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '1','-dual', '1','-bhaul', '1','-latency', '1', '-mipGP', '1'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for DA + MRT + BHCAP + LAT"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')	
 
 
+def SA_MRT_BHCAP(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '1','-dual', '0','-bhaul', '1','-latency', '0', '-mipGP', '0'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for SA + MRT + BHCAP"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')	
+
+def SA_MRT_BHCAP_LAT(MCMC_iter, chat_frequency):
+	for i in range(MCMC_iter):
+		chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+		try:
+			#subprocess.check_call(['python',os.path.join(os.getcwd(),"main.py")]); # Open Main File for Generating the scenario
+			subprocess.call(['python',os.path.join(os.getcwd(),"optimizer_func.py"),'-iter', str(i) ,'-minRate', '1','-dual', '0','-bhaul', '1','-latency', '1', '-mipGP', '0'])
+			#chat = last_chat_id(get_updates()) # Get the Bot Chat ID
+			if i%chat_frequency == 0:
+				try:
+					message = "Execution of Iteration " + str(i) + " Completed for SA + MRT + BHCAP + LAT"
+					send_message(message,chat) # Send the Message 
+				except(RuntimeError, TypeError, NameError, IndexError):
+					pass
+		except:
+			message = "Programme has encountered an error"
+			send_message(message, chat) # Send the message if an error has been encountered in the code
+			message = "Ending the Processing for Debugging"
+			send_message(message, chat) # Send the End process message
+			sys.exit('Error Encountered')	
 
 # ======================
 # Monte Carlo Simulation
@@ -328,8 +406,8 @@ def SA_MRT_LAT(MCMC_iter, chat_frequency):
 sys.path.append(os.getcwd()); # Add current working directory to python path
 os.chdir(os.getcwd()); # Change to the current working directory
 chat_frequency = 10; # Select the divider so as to obtain timely update messages
-num_processors = int(int(subprocess.check_output(['nproc']))/2)*2; # Number of Processors to be utilized 
-#num_processors = 2
+#num_processors = int(int(subprocess.check_output(['nproc']))/2)*2; # Number of Processors to be utilized 
+num_processors = 2
 scn = scenario_var();
 MCMC_iter = scn.MCMC_iter; # Number of Monte Carlo Iterations
 
@@ -350,7 +428,7 @@ if __name__ == '__main__':
 			print "------------------------------"
 			print ""
 			idx_range = np.arange(file_indexer, file_indexer + num_processors); # Data file Index numbers
-			pool.map(parallel_executor,idx_range.tolist()); # Maps the function to parallel processes
+			pool.map(parallel_executor,idx_range.tolist()); # Maps the function to parallel processes. 
 			file_indexer = file_indexer + num_processors; # Increase the Iterator number
 			print file_indexer
 		pool.close()
@@ -373,7 +451,12 @@ if __name__ == '__main__':
 	p10 = Process(target = SA_BHCAP, args = (MCMC_iter, chat_frequency))
 	p11 = Process(target = DA_MRT_LAT, args = (MCMC_iter, chat_frequency))
 	p12 = Process(target = SA_MRT_LAT, args = (MCMC_iter, chat_frequency))
-	
+	p13 = Process(target = DA_MRT_BHCAP, args = (MCMC_iter, chat_frequency))
+	p14 = Process(target = DA_MRT_BHCAP_LAT, args = (MCMC_iter, chat_frequency))
+	p15 = Process(target = SA_MRT_BHCAP, args = (MCMC_iter, chat_frequency))
+	p16 = Process(target = SA_MRT_BHCAP_LAT, args = (MCMC_iter, chat_frequency))
+
+
 	p1.start()
 	p2.start()
 	p3.start()
@@ -386,6 +469,10 @@ if __name__ == '__main__':
 	p10.start()
 	p11.start()
 	p12.start()
+	p13.start()
+	p14.start()
+	p15.start()
+	p16.start()
 
 	p1.join()
 	p2.join()
@@ -399,7 +486,10 @@ if __name__ == '__main__':
 	p10.join()
 	p11.join()
 	p12.join()
-	
+	p13.join()
+	p14.join()
+	p15.join()
+	p16.join()
 	
 	
 
