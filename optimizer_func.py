@@ -97,7 +97,7 @@ for N in range(0,num_iter):
 	Hops_MC = optim_data['arr_8']; # Number of hops to the IMS core from Macro cells
 	Hops_SC = optim_data['arr_9']; # Number of hops to the IMS core from Small cells
 	BH_Capacity_SC = optim_data['arr_10']; # Backhaul capacity for Small cells
-	BH_Capacity_MC = scn.fib_BH_MC_capacity; # Backhaul capacity for Macro cells
+	BH_Capacity_MC = scn.fib_BH_MC_capacity + 10*scn.avg_fib_BH_capacity; # Backhaul capacity for Macro cells
 	SNR_eMBB = optim_data['arr_11']; # Small Cell Received Power 
 	SCBS_per_MCBS = optim_data['arr_12']; # Number of small cells per macro cell
 	

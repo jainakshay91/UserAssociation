@@ -41,10 +41,13 @@ class scenario_var:
 	eMBB_minrate = 1e8; # 100 mbps minimum required data rate for most eMBB applications
 	fib_BH_capacity = 1e9; # 1Gbps of fibre backhaul capacity (Find a reference for this)
 	fib_BH_MC_capacity = 10e9; # 10Gbps of fiber backhaul for MCs
+	avg_fib_BH_capacity = 1.379*1e9; # This is the average backhaul usage for SC
+	avg_fib_BH_MC_capacity = 9.325*1e9; # This is the average backhaul usage for MC 
+	perct_incr = [0.1, 0.2, 0.5, 1.0]; # This is the various percentages of increment of BH 
 	wl_link_delay = 1*1e-3; # 1 ms link delay for the wireless link [Mona Jaber Paper] 
 	wrd_link_delay = 1*1e-3; # 1-7 ms link delay for the wired link [Mona Jaber Paper]
 	eMBB_latency_req = 3*1e-3; # 3 ms link latency requirement for the eMBB applications
-	MCMC_iter = 40; # Number of Monte Carlo Iterations
+	MCMC_iter = 100; # Number of Monte Carlo Iterations
 	num_Subcarriers_MCBS = 1200; # LTE number of subcarriers
 	num_Subcarriers_SCBS = 3300; # 5G NR number of subcarriers 
 	usr_scbw = 2*1e8; # 100 MHz bandwidth per user 
