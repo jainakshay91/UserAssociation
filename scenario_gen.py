@@ -609,8 +609,9 @@ def backhaul_tput(assoc_mat, SCBS_per_MCBS, wl_mat, np, scn, dsc):
             #print assoc_mat[l,next((i for i, x in enumerate(assoc_mat[l,:].tolist()) if x), None)]
             PL_SC_MC[l], flg = pathloss.pathloss_CI(scn, assoc_mat[l,next((i for i, x in enumerate(wl_mat[l,:].tolist()) if x), None)], np, dist_SC_MC[l], dsc, 2); # Calculating the pathloss for Small cells to Macro Cells
         else:
+            idx_BH_chx = np.random.randint(0,3); # BH Relaxation choice is added here
             PL_SC_MC[l] = 0; # This is the Fiber based backhaul
-            tput_SC[l] = scn.fib_BH_capacity; # Fiber backhaul capacity
+            tput_SC[l] = scn.fib_BH_capacity + scn.perct_incr[idx_BH_chx]*scn.avg_fib_BH_capacity; # Fiber backhaul capacity
 
     #print PL_SC_MC
     # ===> Computing the Throughput for the Small Cells to Macro Cells
