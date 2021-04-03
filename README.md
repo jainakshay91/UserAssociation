@@ -1,7 +1,7 @@
 # UserAssociation
 This repository consists of codes for the Policy based User Association method that is being developed. Currently the code for mMTC and eMBB is available for use. You can clone the Master Branch. 
 
-The main tasks done by this codebase are explained in the article: "User Association and Resource Allocation in 5G (AURA-5G): A Joint Optimization Framework", Elesvier Computer Networks. 
+The main tasks done by this codebase are explained in the article: "User Association and Resource Allocation in 5G (AURA-5G): A Joint Optimization Framework", Elsevier Computer Networks. 
 
 Specifically, the program generates the scenario and simulates the wireless evironment based on the parameters specified in the article mentioned above. The data is then fed to the Gurobi optimizer which generates feasible solutions. This metadata is then fed into the visualization toolbox developed, which assists in performing the necessary data analysis. 
 
