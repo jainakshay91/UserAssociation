@@ -1,5 +1,5 @@
 # UserAssociation
-This repository consists of codes for the Policy based User Association method that is being developed. Currently the code for mMTC and eMBB is available for use. You can clone the mMTCOptimizer Branch. 
+This repository consists of codes for the Policy based User Association method that is being developed. Currently the code for mMTC and eMBB is available for use. You can clone the Master Branch. 
 
 The main tasks done by this codebase are explained in the article: "User Association and Resource Allocation in 5G (AURA-5G): A Joint Optimization Framework", Elesvier Computer Networks. 
 
