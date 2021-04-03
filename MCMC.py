@@ -15,7 +15,7 @@ import json, requests
 # Create a Telegram Bot Communicator
 # ==================================
 
-TOKEN = "849800908:AAHHCf4rI24sAcNv-QwKiSqX1wYSxfHLDdA"
+TOKEN = ""
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
 def get_url(url):
