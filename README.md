@@ -7,13 +7,13 @@ Specifically, the program generates the scenario and simulates the wireless evir
 
 The program can be run from CLI, simply by: 
 
-python MCMC.py
+python MCMC.py \\
 python plotgen.py
 
 Note: Be careful about the directories for storing the metadata. Also there is a Telegram bot that can be created which can receive the status messages from the code. To do this, you need to go to Telegram, create a bot using botfather, and then use the token and insert it into the Token area that is left blank in the code. 
 
 For further queries, feel free to write me at: akshay.jain@upc.edu
 
-Collaborators: Dr. Elena Lopez-Aguilera, Dr. Ilker Demirkol
-Work Funded by: EU H2020 MSCA-ITN Project Grant # 675806. 
+Collaborators: Dr. Elena Lopez-Aguilera, Dr. Ilker Demirkol \\
+Work Funded by: EU H2020 MSCA-ITN Project Grant # 675806. \\
 Special Thanks: Dr. H Birkan Yilmaz
